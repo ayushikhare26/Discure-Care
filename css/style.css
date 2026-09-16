@@ -1,0 +1,452 @@
+/* Disicure Care Pvt. Ltd. — Custom Stylesheet */
+
+/* Local font import */
+@import url('fonts.css');
+
+:root {
+  --color-navy-950: #071224;
+  --color-blue-600: #2563eb;
+  --color-blue-700: #1d4ed8;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #374151; /* gray-700 */
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+}
+
+/* Custom Navy Helpers (extends Tailwind v2) */
+.text-navy-950 { color: var(--color-navy-950); }
+.bg-navy-950 { background-color: var(--color-navy-950); }
+.border-navy-950 { border-color: var(--color-navy-950); }
+.from-navy-950 { --tw-gradient-from: var(--color-navy-950); }
+.to-navy-950 { --tw-gradient-to: var(--color-navy-950); }
+.via-navy-950 { --tw-gradient-stops: var(--tw-gradient-from), var(--color-navy-950), var(--tw-gradient-to, rgba(7, 18, 36, 0)); }
+
+/* Sticky Navigation Layout Custom Classes */
+.navbar-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  transition: all 0.3s ease;
+  padding: 1.25rem 0;
+}
+
+.navbar-wrapper.scrolled {
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  padding: 0.75rem 0;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
+  border-bottom: 1px solid rgba(37, 99, 235, 0.08);
+}
+
+/* Nav Link Hover & Active indicators */
+.nav-link {
+  position: relative;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--color-blue-600);
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+  width: 100%;
+}
+
+.navbar-wrapper.scrolled .nav-link {
+  color: #4b5563; /* gray-600 */
+}
+.navbar-wrapper.scrolled .nav-link:hover,
+.navbar-wrapper.scrolled .nav-link.active {
+  color: var(--color-blue-600);
+}
+
+.navbar-wrapper:not(.scrolled) .nav-link {
+  color: #1f2937; /* gray-800 */
+}
+.navbar-wrapper:not(.scrolled) .nav-link:hover,
+.navbar-wrapper:not(.scrolled) .nav-link.active {
+  color: var(--color-blue-600);
+}
+
+/* Custom Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Preloader styling */
+#preloader {
+  position: fixed;
+  inset: 0;
+  background-color: #ffffff;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.preloader-content {
+  text-align: center;
+}
+
+/* Molecule orbiting loading animation */
+.molecule-spinner {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1.5rem;
+}
+
+.molecule-spinner .center-node {
+  fill: var(--color-blue-600);
+}
+
+.molecule-spinner .orbit circle {
+  fill: var(--color-blue-700);
+}
+
+.molecule-spinner .orbit line {
+  stroke: rgba(37, 99, 235, 0.4);
+  stroke-width: 2;
+}
+
+.molecule-spinner .orbit-1 {
+  transform-origin: 50px 50px;
+  animation: spin-orbit 4s linear infinite;
+}
+
+.molecule-spinner .orbit-2 {
+  transform-origin: 50px 50px;
+  animation: spin-orbit 6s linear infinite reverse;
+}
+
+.molecule-spinner .orbit-3 {
+  transform-origin: 50px 50px;
+  animation: spin-orbit 8s linear infinite;
+}
+
+@keyframes spin-orbit {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Floating Actions Bar */
+.floating-actions {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 40;
+}
+
+.action-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+  transform: translateY(-4px) scale(1.05);
+}
+
+.btn-whatsapp { background-color: #25d366; }
+.btn-phone { background-color: #3b82f6; }
+.btn-email { background-color: #0f172a; }
+
+/* Route fade animation */
+#app-view {
+  transition: opacity 0.2s ease-in-out;
+}
+
+/* Scroll reveal class configurations */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.scroll-reveal.reveal-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Dynamic Carousel/Marquee Track Adjustments */
+#marquee-container {
+  mask-image: linear-gradient(to right, transparent, white 10%, white 90%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, white 10%, white 90%, transparent);
+}
+
+/* Blister/packaging visualizations */
+.blister-foil-back {
+  background: linear-gradient(135deg, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.blister-foil-back::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.1) 10px, rgba(255, 255, 255, 0.1) 20px);
+}
+
+/* Floating Particle Animations */
+.dna-float {
+  animation: dna-bounce 8s ease-in-out infinite;
+}
+
+@keyframes dna-bounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(3deg); }
+}
+
+/* Mobile Navigation Drawer */
+#mobile-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+#mobile-drawer.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.drawer-content {
+  position: absolute;
+  top: 0;
+  right: -300px;
+  width: 280px;
+  height: 100%;
+  background-color: white;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+  transition: right 0.3s ease;
+}
+
+#mobile-drawer.open .drawer-content {
+  right: 0;
+}
+
+/* Overlay */
+.drawer-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(7, 18, 36, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+/* Button hover sweep animations */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: all 0.6s ease;
+  z-index: -1;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+/* --- Visual Quality Upgrade Extensions --- */
+
+/* Asymmetric Grid Spans */
+@media (min-width: 768px) {
+  .cap-card-wide {
+    grid-column: span 2;
+  }
+}
+
+/* Hero Product Collage Staging */
+.hero-collage-container {
+  position: relative;
+  width: 100%;
+  max-width: 550px;
+  height: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.hero-collage-base {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
+  filter: blur(20px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.collage-prod-1 {
+  transform: translate(-90px, -70px) rotate(-8deg);
+  z-index: 10;
+}
+.collage-prod-2 {
+  transform: translate(60px, -90px) rotate(6deg);
+  z-index: 12;
+}
+.collage-prod-3 {
+  transform: translate(-120px, 60px) rotate(-4deg);
+  z-index: 11;
+}
+.collage-prod-4 {
+  transform: translate(80px, 40px) rotate(12deg);
+  z-index: 15;
+}
+.collage-prod-5 {
+  transform: translate(-20px, -20px) scale(1.1);
+  z-index: 14;
+  box-shadow: 0 20px 40px -10px rgba(7, 18, 36, 0.15);
+}
+
+/* Scrollytelling Hero Product Layer */
+.hero-scroll-product {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.5);
+  opacity: 0;
+  transition: opacity 0.1s ease-out, transform 0.1s ease-out, filter 0.1s ease-out;
+  pointer-events: none;
+  width: 160px;
+}
+@media (max-width: 768px) {
+  .hero-scroll-product {
+    width: 100px;
+  }
+}
+
+/* Category filter buttons in Product Showcase */
+.filter-pill {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-bottom: 2px solid transparent;
+}
+
+.filter-pill.active {
+  color: var(--color-blue-600);
+  border-color: var(--color-blue-600);
+}
+
+/* Dynamic B2B enquiry pill buttons */
+.enquiry-pill {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(37, 99, 235, 0.15);
+  background-color: white;
+}
+
+.enquiry-pill:hover {
+  background-color: rgba(37, 99, 235, 0.05);
+  border-color: var(--color-blue-600);
+  color: var(--color-blue-600);
+  transform: translateY(-2px);
+}
+
+.enquiry-pill.active {
+  background-color: var(--color-blue-600);
+  color: white;
+  border-color: var(--color-blue-600);
+}
+
+/* Trust Strip Style */
+.trust-strip-item {
+  position: relative;
+}
+.trust-strip-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: -24px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 24px;
+  background-color: rgba(37, 99, 235, 0.15);
+}
+@media (max-width: 1024px) {
+  .trust-strip-item::after {
+    display: none !important;
+  }
+}
+
+/* Dynamic Intro Overlay Staging */
+#intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: #f4f9ff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+@keyframes intro-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.intro-float-img {
+  animation: intro-float 3s ease-in-out infinite;
+}
+

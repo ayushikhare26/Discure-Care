@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Primary SEO Metadata -->
+    <title>Disicure Care Pvt. Ltd. | Quality-Driven Pharmaceutical Solutions</title>
+    <meta name="description" content="Disicure Care Pvt. Ltd. is a premium pharmaceutical company offering quality-driven healthcare formulations, third-party manufacturing, PCD pharma franchises, and custom product development. Tagline: We Cure With Care.">
+    <meta name="keywords" content="Disicure Care, pharmaceutical manufacturing, third-party pharma manufacturing, PCD pharma franchise, Aceclofenac Paracetamol, Prebiotic Probiotic Zinc, Ofloxacin, Lycopene, Dehradun pharmacy">
+    <meta name="author" content="Disicure Care Pvt. Ltd.">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Disicure Care Pvt. Ltd. | Quality-Driven Pharmaceutical Solutions">
+    <meta property="og:description" content="Explore quality-driven B2B pharmaceutical manufacturing, custom development, packaging, and branding services. Tagline: We Cure With Care.">
+    <meta property="og:image" content="images/welcome_banner.jpg">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Disicure Care Pvt. Ltd. | Quality-Driven Pharmaceutical Solutions">
+    <meta property="twitter:description" content="Explore quality-driven B2B pharmaceutical manufacturing, custom development, packaging, and branding services. Tagline: We Cure With Care.">
+    <meta property="twitter:image" content="images/welcome_banner.jpg">
+
+    <!-- Canonical & Favicon (SEO readiness) -->
+    <link rel="canonical" href="https://disicurecare.netlify.app/">
+    <link rel="icon" type="image/jpeg" href="images/logo.jpg">
+
+    <!-- Local Stylesheets (Completely offline-ready) -->
+    <link rel="stylesheet" href="css/tailwind.min.css">
+    <link rel="stylesheet" href="css/fonts.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-slate-50/50 text-gray-700 antialiased overflow-x-hidden min-h-screen flex flex-col">
+
+    <!-- Premium Molecular Preloader -->
+    <div id="preloader">
+        <div class="preloader-content">
+            <svg class="molecule-spinner" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="12" class="center-node" />
+                <!-- Orbiting Nodes -->
+                <g class="orbit orbit-1">
+                    <circle cx="50" cy="20" r="6" />
+                    <line x1="50" y1="32" x2="50" y2="20" />
+                </g>
+                <g class="orbit orbit-2">
+                    <circle cx="76" cy="65" r="6" />
+                    <line x1="60" y1="56" x2="76" y2="65" />
+                </g>
+                <g class="orbit orbit-3">
+                    <circle cx="24" cy="65" r="6" />
+                    <line x1="40" y1="56" x2="24" y2="65" />
+                </g>
+            </svg>
+            <h2 class="text-xl font-extrabold text-navy-950 tracking-wider">DISICURE CARE</h2>
+            <p class="text-xs text-blue-600 font-bold uppercase tracking-widest mt-1">We Cure With Care</p>
+        </div>
+    </div>
+
+    <!-- Sticky Navigation Wrapper -->
+    <header class="navbar-wrapper" id="navbar-wrapper">
+        <div class="max-w-7xl mx-auto px-4 lg:px-8">
+            <nav class="flex items-center justify-between" id="navbar">
+                <!-- Brand Logo & Identity -->
+                <a href="#/" class="flex items-center gap-3 group">
+                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center border border-blue-100 shadow-sm overflow-hidden p-0.5">
+                        <img src="images/logo.jpg" alt="Disicure Care Logo" class="w-full h-full object-contain">
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-base font-extrabold text-navy-950 tracking-wide uppercase group-hover:text-blue-600 transition-colors duration-300">Disicure Care</span>
+                        <span class="text-[10px] text-blue-600 font-bold tracking-widest uppercase -mt-0.5">Pvt. Ltd.</span>
+                    </div>
+                </a>
+
+                <!-- Desktop Navigation Menu Links -->
+                <ul class="hidden lg:flex items-center gap-8 text-sm">
+                    <li><a href="#/" class="nav-link active">Home</a></li>
+                    <li><a href="#/about" class="nav-link">About</a></li>
+                    <li><a href="#/products" class="nav-link">Products</a></li>
+                    <li><a href="#/services" class="nav-link">Services</a></li>
+                    <li><a href="#/journey" class="nav-link">Our Journey</a></li>
+                    <li><a href="#/contact" class="nav-link">Contact</a></li>
+                </ul>
+
+                <!-- Desktop CTA Actions -->
+                <div class="hidden lg:flex items-center gap-4">
+                    <button onclick="window.DisicureMain.openEnquiryModal('General Business Enquiry')" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow-sm hover:shadow transition-all duration-300 transform hover:-translate-y-0.5">
+                        Enquire Now
+                    </button>
+                </div>
+
+                <!-- Mobile Navigation Toggle Menu Button -->
+                <button class="lg:hidden text-navy-950 hover:text-blue-600 focus:outline-none p-2" id="mobile-toggle" aria-label="Toggle Navigation Menu">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="w-7 h-7">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+                    </svg>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Mobile Drawer Menu Overlay -->
+    <div id="mobile-drawer" class="drawer">
+        <div class="drawer-overlay" id="drawer-overlay"></div>
+        <div class="drawer-content flex flex-col p-6">
+            <div class="flex items-center justify-between border-b border-blue-50 pb-4 mb-6">
+                <a href="#/" class="flex items-center gap-2">
+                    <img src="images/logo.jpg" alt="Disicure Care Logo" class="w-8 h-8 object-contain rounded-full">
+                    <span class="text-sm font-extrabold text-navy-950 uppercase">Disicure Care</span>
+                </a>
+                <button class="text-gray-400 hover:text-navy-950" id="close-drawer" aria-label="Close Mobile Drawer">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="w-6 h-6"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            
+            <ul class="flex flex-col gap-5 text-base font-bold text-gray-800 flex-1">
+                <li><a href="#/" class="nav-link block py-1">Home</a></li>
+                <li><a href="#/about" class="nav-link block py-1">About</a></li>
+                <li><a href="#/products" class="nav-link block py-1">Products</a></li>
+                <li><a href="#/services" class="nav-link block py-1">Services</a></li>
+                <li><a href="#/journey" class="nav-link block py-1">Our Journey</a></li>
+                <li><a href="#/contact" class="nav-link block py-1">Contact</a></li>
+            </ul>
+            
+            <div class="border-t border-blue-50 pt-6 mt-auto">
+                <button onclick="window.DisicureMain.openEnquiryModal('General Business Enquiry')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded text-center">
+                    Enquire Now
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Floating Communication Actions (WhatsApp, Phone, Mail) -->
+    <div class="floating-actions">
+        <!-- WhatsApp -->
+        <a href="https://wa.me/919792009307" target="_blank" rel="noopener noreferrer" class="action-btn btn-whatsapp" aria-label="Chat on WhatsApp">
+            <svg viewBox="0 0 24 24" class="w-6 h-6 fill-current"><path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984a9.96 9.96 0 001.33 4.982L2 22l5.233-1.371a9.994 9.994 0 004.773 1.226h.004c5.505 0 9.989-4.478 9.99-9.984a9.96 9.96 0 00-2.925-7.064 9.964 9.964 0 00-7.063-2.923zm5.035 14.175c-.276.776-1.357 1.411-1.854 1.503-.497.092-.992.176-2.915-.584-2.457-.973-4.043-3.473-4.165-3.637-.123-.164-1.002-1.332-1.002-2.541 0-1.21.635-1.803.862-2.049.227-.246.497-.307.662-.307.165 0 .331.006.475.012.148.006.348-.055.546.425.199.479.679 1.656.739 1.779.061.123.102.266.02.43-.082.164-.123.266-.246.41-.122.143-.258.32-.367.43-.122.123-.25.257-.107.502.143.246.636 1.05 1.37 1.702.946.84 1.74 1.1 1.987 1.224.246.123.389.102.532-.062.143-.164.615-.717.778-.962.164-.246.327-.205.551-.123.224.082 1.424.671 1.669.794.246.123.41.184.471.287.062.102.062.594-.214 1.37z"/></svg>
+        </a>
+        <!-- Call -->
+        <a href="tel:+919792009307" class="action-btn btn-phone" aria-label="Call Direct Line">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.622c0-1.272.933-2.316 2.193-2.47a12.448 12.448 0 0110.823 11.066c.009.072.012.146.012.22 0 1.258-1.009 2.225-2.223 2.225-1.173 0-2.164-.813-2.348-1.956a11.963 11.963 0 01-2.04-1.96 11.984 11.984 0 01-1.96-2.04c-1.144-.184-1.956-1.175-1.956-2.348 0-.074.003-.148.012-.22zM19.5 4.5h.008v.008h-.008V4.5z"/></svg>
+        </a>
+        <!-- Mail -->
+        <a href="mailto:disicurecare@gmail.com" class="action-btn btn-email" aria-label="Send Email">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+        </a>
+    </div>
+
+    <!-- Main Dynamic Application View Container (Padded top for sticky navbar) -->
+    <main id="app-view" class="flex-grow pt-24 opacity-0 transition-opacity duration-300">
+        <!-- Content gets dynamically resolved and injected by router.js -->
+    </main>
+
+    <!-- Large Corporate Footer -->
+    <footer class="bg-navy-950 text-white pt-16 pb-8 border-t border-blue-900/50">
+        <div class="max-w-7xl mx-auto px-4 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-6 md:mb-8">
+            
+            <!-- Column 1: Brand & Details -->
+            <div class="space-y-4">
+                <a href="#/" class="flex items-center gap-2">
+                    <img src="images/logo.jpg" alt="Disicure Care Logo" class="w-9 h-9 object-contain rounded-full">
+                    <span class="text-lg font-extrabold tracking-wide uppercase text-white">Disicure Care</span>
+                </a>
+                <p class="text-xs text-gray-400 leading-relaxed font-normal">
+                    Quality-Driven Pharmaceutical Solutions. Serving distributors, hospitals, and pharmacies pan-India with quality-focused pharmaceutical solutions.
+                </p>
+                <p class="text-xs font-bold text-blue-400">"We Cure With Care"</p>
+            </div>
+            
+            <!-- Column 2: Quick Links -->
+            <div>
+                <h4 class="text-sm font-extrabold uppercase tracking-wider text-blue-400 mb-4 border-l-2 border-blue-500 pl-3">Company Links</h4>
+                <ul class="space-y-2 text-xs font-semibold text-gray-400">
+                    <li><a href="#/" class="hover:text-blue-500 transition-colors">Home</a></li>
+                    <li><a href="#/about" class="hover:text-blue-500 transition-colors">About Us</a></li>
+                    <li><a href="#/products" class="hover:text-blue-500 transition-colors">Our Products</a></li>
+                    <li><a href="#/services" class="hover:text-blue-500 transition-colors">Our Services</a></li>
+                    <li><a href="#/journey" class="hover:text-blue-500 transition-colors">Our Journey</a></li>
+                </ul>
+            </div>
+            
+            <!-- Column 3: Featured Offerings -->
+            <div>
+                <h4 class="text-sm font-extrabold uppercase tracking-wider text-blue-400 mb-4 border-l-2 border-blue-500 pl-3">Services</h4>
+                <ul class="space-y-2 text-xs font-semibold text-gray-400">
+                    <li><a href="#/services/third-party-pharma-manufacturing" class="hover:text-blue-500 transition-colors">Third-Party Manufacturing</a></li>
+                    <li><a href="#/services/pcd-pharma-franchise" class="hover:text-blue-500 transition-colors">PCD Pharma Franchise</a></li>
+                    <li><a href="#/services/custom-pharma-product-development" class="hover:text-blue-500 transition-colors">Custom Formulation Development</a></li>
+                    <li><a href="#/services/private-label-pharma-manufacturing" class="hover:text-blue-500 transition-colors">Private Label Manufacturing</a></li>
+                    <li><a href="#/services/pharmaceutical-packaging-solutions" class="hover:text-blue-500 transition-colors">Packaging Solutions</a></li>
+                </ul>
+            </div>
+            
+            <!-- Column 4: Contact details -->
+            <div class="space-y-4">
+                <h4 class="text-sm font-extrabold uppercase tracking-wider text-blue-400 mb-4 border-l-2 border-blue-500 pl-3">Registered Office</h4>
+                <p class="text-xs text-gray-400 leading-relaxed font-normal">
+                    75, Vivekanand Enclave, Lane No.- 6C, Phase- II, Near Jogiwala, Dehradun-248001
+                </p>
+                <div class="space-y-1 text-xs text-gray-400 font-semibold">
+                    <p>Phone: +91 9792009307 | +91 9104313824</p>
+                    <p>Email: disicurecare@gmail.com</p>
+                </div>
+                <!-- Customer Care & Product Enquiries block -->
+                <div class="pt-3 border-t border-blue-900/30 text-xs font-semibold">
+                    <p class="text-blue-400 font-extrabold">Need Assistance?</p>
+                    <p class="text-[11px] text-gray-400 leading-normal font-normal mt-0.5">For Customer Care & Product Enquiries,</p>
+                    <a href="https://wa.me/919005874417?text=Hello%20Disicure%20Care%20Team%2C%20I%20need%20assistance%20regarding%20a%20product%20enquiry." target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 text-white hover:text-green-400 transition-colors mt-1.5">
+                        <svg class="w-4 h-4 fill-current text-green-500 hover:text-green-400 transition-colors" viewBox="0 0 24 24"><path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984a9.96 9.96 0 001.33 4.982L2 22l5.233-1.371a9.994 9.994 0 004.773 1.226h.004c5.505 0 9.989-4.478 9.99-9.984a9.96 9.96 0 00-2.925-7.064 9.964 9.964 0 00-7.063-2.923zm5.035 14.175c-.276.776-1.357 1.411-1.854 1.503-.497.092-.992.176-2.915-.584-2.457-.973-4.043-3.473-4.165-3.637-.123-.164-1.002-1.332-1.002-2.541 0-1.21.635-1.803.862-2.049.227-.246.497-.307.662-.307.165 0 .331.006.475.012.148.006.348-.055.546.425.199.479.679 1.656.739 1.779.061.123.102.266.02.43-.082.164-.123.266-.246.41-.122.143-.258.32-.367.43-.122.123-.25.257-.107.502.143.246.636 1.05 1.37 1.702.946.84 1.74 1.1 1.987 1.224.246.123.389.102.532-.062.143-.164.615-.717.778-.962.164-.246.327-.205.551-.123.224.082 1.424.671 1.669.794.246.123.41.184.471.287.062.102.062.594-.214 1.37z"/></svg>
+                        <span>+91 9005874417</span>
+                    </a>
+                </div>
+            </div>
+            
+        </div>
+        
+        <!-- Social Icons & Legal Bottom -->
+        <div class="max-w-7xl mx-auto px-4 lg:px-8 border-t border-blue-900/40 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p class="text-xs text-gray-400 font-normal">
+                &copy; 2026 Disicure Care Pvt. Ltd. All Rights Reserved.
+            </p>
+            
+            <!-- Legal Policy Nav Links -->
+            <ul class="flex flex-wrap gap-4 text-xs font-semibold text-gray-400">
+                <li><a href="#/privacy-policy" class="hover:text-blue-500 transition-colors">Privacy Policy</a></li>
+                <li><a href="#/terms" class="hover:text-blue-500 transition-colors">Terms & Conditions</a></li>
+                <li><a href="#/disclaimer" class="hover:text-blue-500 transition-colors">Disclaimer</a></li>
+            </ul>
+        </div>
+    </footer>
+
+    <!-- Interactive B2B Enquiry Modal -->
+    <div id="enquiry-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-navy-950/60 backdrop-blur-sm" id="close-modal-bg" onclick="window.DisicureMain.closeEnquiryModal()"></div>
+        
+        <!-- Modal Card -->
+        <div class="relative bg-white border border-blue-100 rounded-xl p-6 md:p-8 max-w-2xl w-full mx-4 shadow-2xl z-10 max-h-[90vh] overflow-y-auto transform transition-all duration-300">
+            <!-- Close Button -->
+            <button class="absolute top-4 right-4 text-gray-400 hover:text-navy-950 focus:outline-none" id="close-modal" aria-label="Close Enquiry Modal">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="w-6 h-6"><path d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+            
+            <h3 class="text-lg font-bold text-navy-950 mb-1">B2B Enquiry Form</h3>
+            <p class="text-xs text-gray-500 mb-6 font-normal">Please specify your organization details and product requirements for a wholesale quote.</p>
+            
+            <form id="modal-enquiry-form" class="space-y-4" onsubmit="window.DisicureMain.handleFormSubmit(event, 'modal-enquiry-form')">
+                <input type="hidden" id="modal-subject" name="subject" value="">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1" for="modal-name">Full Name *</label>
+                        <input type="text" id="modal-name" name="name" required class="w-full bg-slate-50 border border-blue-50 rounded p-2.5 text-xs focus:outline-none focus:border-blue-500 font-normal">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1" for="modal-company">Company Name</label>
+                        <input type="text" id="modal-company" name="company" class="w-full bg-slate-50 border border-blue-50 rounded p-2.5 text-xs focus:outline-none focus:border-blue-500 font-normal">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1" for="modal-phone">Mobile Number *</label>
+                        <input type="tel" id="modal-phone" name="phone" required class="w-full bg-slate-50 border border-blue-50 rounded p-2.5 text-xs focus:outline-none focus:border-blue-500 font-normal">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1" for="modal-whatsapp">WhatsApp Number</label>
+                        <input type="tel" id="modal-whatsapp" name="whatsapp" class="w-full bg-slate-50 border border-blue-50 rounded p-2.5 text-xs focus:outline-none focus:border-blue-500 font-normal">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="sm:col-span-1">
+                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1" for="modal-email">Email Address *</label>
+                        <input type="email" id="modal-email" name="email" required class="w-full bg-slate-50 border border-blue-50 rounded p-2.5 text-xs focus:outline-none focus:border-blue-500 font-normal">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1" for="modal-city">City *</label>
+                        <input type="text" id="modal-city" name="city" required class="w-full bg-slate-50 border border-blue-50 rounded p-2.5 text-xs focus:outline-none focus:border-blue-500 font-normal">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1" for="modal-state">State *</label>
+                        <input type="text" id="modal-state" name="state" required class="w-full bg-slate-50 border border-blue-50 rounded p-2.5 text-xs focus:outline-none focus:border-blue-500 font-normal">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1" for="modal-business-type">Business Type *</label>
+                        <select id="modal-business-type" name="business_type" required class="w-full bg-slate-50 border border-blue-50 rounded p-2.5 text-xs focus:outline-none focus:border-blue-500 font-normal">
+                            <option value="" disabled selected>Select Business Type</option>
+                            <option value="Distributor">Distributor</option>
+                            <option value="Stockist">Stockist</option>
+                            <option value="Pharmacy">Pharmacy</option>
+                            <option value="Hospital">Hospital</option>
+                            <option value="Clinic">Clinic</option>
+                            <option value="Pharma Company">Pharma Company</option>
+                            <option value="Entrepreneur">Entrepreneur</option>
+                            <option value="Institutional Buyer">Institutional Buyer</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1" for="modal-requirement-type">Requirement Type *</label>
+                        <select id="modal-requirement-type" name="requirement_type" required class="w-full bg-slate-50 border border-blue-50 rounded p-2.5 text-xs focus:outline-none focus:border-blue-500 font-normal">
+                            <option value="" disabled selected>Select Requirement</option>
+                            <option value="Third-Party Manufacturing">Third-Party Manufacturing</option>
+                            <option value="Private Label">Private Label</option>
+                            <option value="PCD Franchise">PCD Franchise</option>
+                            <option value="Custom Formulation">Custom Formulation</option>
+                            <option value="Bulk Supply">Bulk Supply</option>
+                            <option value="Hospital Supply">Hospital Supply</option>
+                            <option value="Product Enquiry">Product Enquiry</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1" for="modal-molecule">Product / Molecule</label>
+                        <input type="text" id="modal-molecule" name="molecule" class="w-full bg-slate-50 border border-blue-50 rounded p-2.5 text-xs focus:outline-none focus:border-blue-500 font-normal" placeholder="e.g. Disimol-SP, Paracetamol">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1" for="modal-quantity">Approximate Quantity</label>
+                        <input type="text" id="modal-quantity" name="quantity" class="w-full bg-slate-50 border border-blue-50 rounded p-2.5 text-xs focus:outline-none focus:border-blue-500 font-normal" placeholder="e.g. 1000 boxes, 50,000 tabs">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1" for="modal-message">Enquiry Message *</label>
+                    <textarea id="modal-message" name="message" rows="3" required class="w-full bg-slate-50 border border-blue-50 rounded p-2.5 text-xs focus:outline-none focus:border-blue-500 font-normal" placeholder="Specify dosage specifications or custom request details..."></textarea>
+                </div>
+                
+                <div class="pt-2">
+                    <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded transition-all flex items-center justify-center gap-2">
+                        <span class="btn-text">Register Enquiry</span>
+                        <svg class="animate-spin h-4 w-4 text-white hidden spinner" viewBox="0 0 24 24" fill="none">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="form-feedback hidden text-center text-[10px] font-bold p-2.5 rounded mt-2"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Application Module Scripts (Loaded sequentially for offline compatibility over file://) -->
+    <script src="js/data.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // Start client-side history hash listener
+        DisicureRouter.init();
+    </script>
+</body>
+</html>
