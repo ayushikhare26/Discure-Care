@@ -919,7 +919,7 @@ const DisicureMain = {
         });
     },
 
-    // --- 11. LEAD MANAGEMENT SYSTEM (LMS) & ADMIN DASHBOARD CONTROLLER ---
+    // --- 11. LEAD MANAGEMENT & PAYMENT MANAGEMENT ADMIN PANEL CONTROLLER ---
     lmsState: {
         searchQuery: '',
         statusFilter: 'all',
@@ -928,10 +928,16 @@ const DisicureMain = {
         sortBy: 'newest'
     },
 
-    initAdminPanel: function() {
-        if (!window.DisicureLeads) return;
+    pmsState: {
+        searchQuery: '',
+        statusFilter: 'all',
+        modeFilter: 'all'
+    },
 
-        // Tab Switching buttons if present
+    initAdminPanel: function() {
+        if (!window.DisicureLeads && !window.DisicurePayments) return;
+
+        // LMS Search Input
         const searchInput = document.getElementById('lms-search-input');
         if (searchInput) {
             searchInput.addEventListener('input', (e) => {
@@ -940,7 +946,7 @@ const DisicureMain = {
             });
         }
 
-        // Status Filter
+        // LMS Status Filter
         const statusFilter = document.getElementById('lms-status-filter');
         if (statusFilter) {
             statusFilter.addEventListener('change', (e) => {
@@ -949,7 +955,7 @@ const DisicureMain = {
             });
         }
 
-        // Business Filter
+        // LMS Business Filter
         const businessFilter = document.getElementById('lms-business-filter');
         if (businessFilter) {
             businessFilter.addEventListener('change', (e) => {
@@ -958,7 +964,7 @@ const DisicureMain = {
             });
         }
 
-        // Source Filter
+        // LMS Source Filter
         const sourceFilter = document.getElementById('lms-source-filter');
         if (sourceFilter) {
             sourceFilter.addEventListener('change', (e) => {
@@ -967,7 +973,7 @@ const DisicureMain = {
             });
         }
 
-        // Sort Filter
+        // LMS Sort Filter
         const sortFilter = document.getElementById('lms-sort-filter');
         if (sortFilter) {
             sortFilter.addEventListener('change', (e) => {
@@ -976,8 +982,34 @@ const DisicureMain = {
             });
         }
 
-        // Initial Full Render (Dashboard + Table + Charts + Directories)
+        // PMS (Payment Management) Listeners
+        const pmsSearch = document.getElementById('pms-search-input');
+        if (pmsSearch) {
+            pmsSearch.addEventListener('input', (e) => {
+                this.pmsState.searchQuery = e.target.value.toLowerCase().trim();
+                this.renderPaymentsTable();
+            });
+        }
+
+        const pmsStatus = document.getElementById('pms-status-filter');
+        if (pmsStatus) {
+            pmsStatus.addEventListener('change', (e) => {
+                this.pmsState.statusFilter = e.target.value;
+                this.renderPaymentsTable();
+            });
+        }
+
+        const pmsMode = document.getElementById('pms-mode-filter');
+        if (pmsMode) {
+            pmsMode.addEventListener('change', (e) => {
+                this.pmsState.modeFilter = e.target.value;
+                this.renderPaymentsTable();
+            });
+        }
+
+        // Initial Full Render
         this.renderAdminLeads();
+        this.renderPaymentsTable();
     },
 
     // Tab Switching Functionality
@@ -1011,6 +1043,8 @@ const DisicureMain = {
             this.renderDashboardAnalytics();
         } else if (tabId === 'tab-leads') {
             this.renderAdminLeads();
+        } else if (tabId === 'tab-financials') {
+            this.renderPaymentsTable();
         }
     },
 
@@ -1840,6 +1874,424 @@ const DisicureMain = {
         if (confirm('Reset lead management database to initial demo leads?')) {
             window.DisicureLeads.resetToDefaults();
             this.renderAdminLeads();
+        }
+    },
+
+    // =========================================================================
+    // --- 12. PAYMENT MANAGEMENT SYSTEM (PMS) CONTROLLER METHODS ---
+    // =========================================================================
+    renderPaymentsTable: function() {
+        if (!window.DisicurePayments) return;
+        const allPayments = window.DisicurePayments.getAllPayments();
+        const summary = window.DisicurePayments.getSummary();
+
+        // Update Summary KPI Cards
+        const setElText = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = val;
+        };
+
+        setElText('pms-total-invoiced', summary.totalInvoicedFormatted);
+        setElText('pms-total-received', summary.totalReceivedFormatted);
+        setElText('pms-total-pending', summary.totalPendingFormatted);
+        setElText('pms-total-overdue', summary.overdueAmountFormatted);
+
+        // Filter Payments
+        const query = this.pmsState.searchQuery;
+        let filtered = allPayments.filter(pay => {
+            const matchesQuery = !query || 
+                (pay.clientName && pay.clientName.toLowerCase().includes(query)) ||
+                (pay.invoiceId && pay.invoiceId.toLowerCase().includes(query)) ||
+                (pay.paymentId && pay.paymentId.toLowerCase().includes(query)) ||
+                (pay.notes && pay.notes.toLowerCase().includes(query));
+
+            const matchesStatus = this.pmsState.statusFilter === 'all' || pay.paymentStatus === this.pmsState.statusFilter;
+            const matchesMode = this.pmsState.modeFilter === 'all' || pay.paymentMode === this.pmsState.modeFilter;
+
+            return matchesQuery && matchesStatus && matchesMode;
+        });
+
+        const tbody = document.getElementById('pms-payments-tbody');
+        const emptyState = document.getElementById('pms-empty-state');
+        const countDisplay = document.getElementById('pms-showing-count');
+
+        if (countDisplay) {
+            countDisplay.innerText = `Showing ${filtered.length} of ${allPayments.length} Invoices / Transactions`;
+        }
+
+        if (!tbody) return;
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '';
+            if (emptyState) emptyState.classList.remove('hidden');
+            return;
+        }
+
+        if (emptyState) emptyState.classList.add('hidden');
+
+        const formatINR = (val) => '₹' + Number(val || 0).toLocaleString('en-IN');
+
+        let rowsHtml = '';
+        filtered.forEach(p => {
+            const statusObj = window.DisicurePayments.STATUSES.find(s => s.label === p.paymentStatus) || window.DisicurePayments.STATUSES[0];
+
+            rowsHtml += `
+            <tr class="border-b border-gray-100 hover:bg-blue-50/30 transition-colors text-xs">
+                <!-- Invoice / Ref ID -->
+                <td class="p-3.5 whitespace-nowrap">
+                    <button onclick="window.DisicureMain.openPaymentDrawer('${p.paymentId}')" class="font-extrabold text-blue-600 hover:underline block text-left font-mono">
+                        ${p.invoiceId}
+                    </button>
+                    <span class="text-[10px] text-gray-400 block mt-0.5">${p.paymentId}</span>
+                </td>
+
+                <!-- Client / Partner Name -->
+                <td class="p-3.5">
+                    <div class="font-extrabold text-navy-950 text-sm">${p.clientName}</div>
+                    <div class="text-[11px] text-gray-500 font-normal mt-0.5 line-clamp-1">${p.notes || 'Commercial Batch Contract'}</div>
+                </td>
+
+                <!-- Total Amount -->
+                <td class="p-3.5 whitespace-nowrap">
+                    <span class="font-extrabold text-navy-950 text-sm">${formatINR(p.totalAmount)}</span>
+                </td>
+
+                <!-- Amount Received -->
+                <td class="p-3.5 whitespace-nowrap">
+                    <span class="font-extrabold text-emerald-600 text-sm">${formatINR(p.amountReceived)}</span>
+                </td>
+
+                <!-- Pending Amount -->
+                <td class="p-3.5 whitespace-nowrap">
+                    <span class="font-extrabold ${p.pendingAmount > 0 ? 'text-amber-600' : 'text-gray-400'} text-sm">${formatINR(p.pendingAmount)}</span>
+                </td>
+
+                <!-- Payment Date -->
+                <td class="p-3.5 whitespace-nowrap text-gray-600 font-medium">
+                    ${p.paymentDate}
+                </td>
+
+                <!-- Payment Mode -->
+                <td class="p-3.5 whitespace-nowrap">
+                    <span class="inline-block px-2.5 py-1 bg-slate-100 text-slate-700 rounded text-[10px] font-bold uppercase tracking-wider">
+                        ${p.paymentMode}
+                    </span>
+                </td>
+
+                <!-- Payment Status -->
+                <td class="p-3.5 whitespace-nowrap">
+                    <select onchange="window.DisicureMain.changePaymentStatusQuick('${p.paymentId}', this.value)" class="text-xs font-bold rounded-lg border border-gray-200 p-1.5 bg-white shadow-sm focus:outline-none focus:border-blue-500">
+                        ${window.DisicurePayments.STATUSES.map(s => `
+                            <option value="${s.label}" ${s.label === p.paymentStatus ? 'selected' : ''}>${s.label}</option>
+                        `).join('')}
+                    </select>
+                </td>
+
+                <!-- Proof / Document -->
+                <td class="p-3.5 whitespace-nowrap">
+                    ${p.proofDocument ? `
+                        <button onclick="window.DisicureMain.openProofModal('${p.invoiceId} - ${p.clientName}', '${p.proofDocument}')" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-[11px] font-bold transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            <span class="max-w-[90px] truncate">${p.proofDocument}</span>
+                        </button>
+                    ` : `
+                        <span class="text-[11px] text-gray-400 italic">No proof</span>
+                    `}
+                </td>
+
+                <!-- Actions -->
+                <td class="p-3.5 whitespace-nowrap text-right">
+                    <div class="flex items-center justify-end gap-1.5">
+                        <button onclick="window.DisicureMain.openPaymentDrawer('${p.paymentId}')" class="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-md transition-colors" title="Edit Payment Record">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        </button>
+                        <button onclick="window.DisicureMain.deletePayment('${p.paymentId}')" class="p-1.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-md transition-colors" title="Delete Record">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            `;
+        });
+
+        tbody.innerHTML = rowsHtml;
+    },
+
+    // Live calculation for Add Payment Modal
+    calcNewPaymentPending: function() {
+        const totalInput = document.getElementById('pms-new-total');
+        const receivedInput = document.getElementById('pms-new-received');
+        const display = document.getElementById('pms-new-pending-display');
+        const statusSelect = document.getElementById('pms-new-status');
+
+        if (!totalInput || !receivedInput || !display) return;
+
+        const total = parseFloat(totalInput.value) || 0;
+        const received = parseFloat(receivedInput.value) || 0;
+        const pending = Math.max(0, total - received);
+
+        display.value = '₹' + Number(pending).toLocaleString('en-IN');
+
+        if (statusSelect) {
+            if (received >= total && total > 0) {
+                statusSelect.value = '🟢 Paid';
+            } else if (received > 0 && received < total) {
+                statusSelect.value = '🟡 Partial';
+            } else {
+                statusSelect.value = '🔴 Pending';
+            }
+        }
+    },
+
+    // Live calculation for Edit Payment Drawer
+    calcEditPaymentPending: function() {
+        const totalInput = document.getElementById('pms-edit-total');
+        const receivedInput = document.getElementById('pms-edit-received');
+        const display = document.getElementById('pms-edit-pending-display');
+        const statusSelect = document.getElementById('pms-edit-status');
+
+        if (!totalInput || !receivedInput || !display) return;
+
+        const total = parseFloat(totalInput.value) || 0;
+        const received = parseFloat(receivedInput.value) || 0;
+        const pending = Math.max(0, total - received);
+
+        display.value = '₹' + Number(pending).toLocaleString('en-IN');
+
+        if (statusSelect) {
+            if (received >= total && total > 0) {
+                statusSelect.value = '🟢 Paid';
+            } else if (received > 0 && received < total) {
+                statusSelect.value = '🟡 Partial';
+            } else {
+                statusSelect.value = '🔴 Pending';
+            }
+        }
+    },
+
+    handleProofUpload: function(event, targetHiddenInputId) {
+        const file = event.target.files[0];
+        if (file) {
+            const targetInput = document.getElementById(targetHiddenInputId);
+            if (targetInput) {
+                targetInput.value = file.name;
+            }
+        }
+    },
+
+    // Open/Close Add Payment Modal
+    openAddPaymentModal: function() {
+        const modal = document.getElementById('pms-add-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+            this.calcNewPaymentPending();
+        }
+    },
+
+    closeAddPaymentModal: function() {
+        const modal = document.getElementById('pms-add-modal');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            const form = document.getElementById('pms-new-payment-form');
+            if (form) form.reset();
+        }
+    },
+
+    saveNewPayment: function(event) {
+        event.preventDefault();
+        const form = document.getElementById('pms-new-payment-form');
+        if (!form) return;
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        window.DisicurePayments.addPayment(data);
+        this.closeAddPaymentModal();
+        this.renderPaymentsTable();
+        this.renderDashboardAnalytics();
+    },
+
+    // Open/Close Edit Payment Drawer
+    openPaymentDrawer: function(paymentId) {
+        const payments = window.DisicurePayments.getAllPayments();
+        const payment = payments.find(p => p.paymentId === paymentId);
+        if (!payment) return;
+
+        const drawer = document.getElementById('pms-edit-drawer');
+        const container = document.getElementById('pms-drawer-content');
+        if (!drawer || !container) return;
+
+        container.innerHTML = `
+        <div class="space-y-6">
+            <div class="flex items-center justify-between border-b border-gray-100 pb-4">
+                <div>
+                    <span class="text-xs font-bold text-blue-600 uppercase tracking-wider block">Payment Transaction</span>
+                    <h3 class="text-xl font-extrabold text-navy-950 font-mono">${payment.invoiceId} — ${payment.paymentId}</h3>
+                </div>
+                <div>
+                    <span class="text-xs font-bold text-gray-400 block text-right">Recorded: ${payment.createdDate}</span>
+                    <span class="text-[10px] text-gray-400 block text-right">Updated: ${payment.lastUpdatedDate}</span>
+                </div>
+            </div>
+
+            <form id="pms-edit-payment-form" onsubmit="window.DisicureMain.savePaymentEdit(event, '${payment.paymentId}')" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Client / Partner Name *</label>
+                        <input type="text" name="clientName" value="${payment.clientName}" required class="w-full bg-white border border-gray-200 rounded p-2.5 text-xs font-bold focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Invoice / Reference ID *</label>
+                        <input type="text" name="invoiceId" value="${payment.invoiceId}" required class="w-full bg-white border border-gray-200 rounded p-2.5 text-xs font-mono focus:border-blue-500">
+                    </div>
+                </div>
+
+                <!-- Financial Breakdown -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-blue-50/40 p-4 rounded-xl border border-blue-100">
+                    <div>
+                        <label class="block text-[10px] font-bold text-blue-900 uppercase tracking-wider mb-1">Total Amount (₹) *</label>
+                        <input type="number" id="pms-edit-total" name="totalAmount" value="${payment.totalAmount}" required min="0" step="any" oninput="window.DisicureMain.calcEditPaymentPending()" class="w-full bg-white border border-gray-200 rounded p-2 text-xs font-extrabold text-navy-950 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-emerald-900 uppercase tracking-wider mb-1">Amount Received (₹) *</label>
+                        <input type="number" id="pms-edit-received" name="amountReceived" value="${payment.amountReceived}" required min="0" step="any" oninput="window.DisicureMain.calcEditPaymentPending()" class="w-full bg-white border border-gray-200 rounded p-2 text-xs font-extrabold text-emerald-600 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Pending Amount (₹)</label>
+                        <input type="text" id="pms-edit-pending-display" readonly value="₹${Number(payment.pendingAmount).toLocaleString('en-IN')}" class="w-full bg-gray-100 border border-gray-200 rounded p-2 text-xs font-extrabold text-amber-700 cursor-not-allowed">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Payment Date *</label>
+                        <input type="date" name="paymentDate" value="${payment.paymentDate}" required class="w-full bg-white border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Payment Mode *</label>
+                        <select name="paymentMode" class="w-full bg-white border border-gray-200 rounded p-2.5 text-xs font-medium focus:border-blue-500">
+                            ${window.DisicurePayments.PAYMENT_MODES.map(m => `
+                                <option value="${m}" ${m === payment.paymentMode ? 'selected' : ''}>${m}</option>
+                            `).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Payment Status *</label>
+                        <select id="pms-edit-status" name="paymentStatus" class="w-full bg-white border border-gray-200 rounded p-2.5 text-xs font-bold focus:border-blue-500">
+                            ${window.DisicurePayments.STATUSES.map(s => `
+                                <option value="${s.label}" ${s.label === payment.paymentStatus ? 'selected' : ''}>${s.label}</option>
+                            `).join('')}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Proof Document -->
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Payment Proof / Document</label>
+                    <div class="flex items-center gap-3">
+                        <input type="file" id="pms-edit-proof-file" accept="image/*,.pdf,.doc,.docx" onchange="window.DisicureMain.handleProofUpload(event, 'pms-edit-proof-name')" class="text-xs text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                        <input type="text" id="pms-edit-proof-name" name="proofDocument" value="${payment.proofDocument || 'proof_receipt.pdf'}" class="flex-1 bg-white border border-gray-200 rounded p-2 text-xs font-mono text-gray-600">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Payment Notes & Batch Reference</label>
+                    <textarea name="notes" rows="3" class="w-full bg-white border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500 font-normal">${payment.notes || ''}</textarea>
+                </div>
+
+                <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                    <button type="button" onclick="window.DisicureMain.deletePayment('${payment.paymentId}')" class="px-4 py-2.5 bg-rose-50 text-rose-700 hover:bg-rose-600 hover:text-white text-xs font-bold rounded transition-colors">
+                        Delete Record
+                    </button>
+                    <div class="flex gap-3">
+                        <button type="button" onclick="window.DisicureMain.closePaymentDrawer()" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded transition-colors">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow transition-colors">
+                            Save Changes
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        `;
+
+        drawer.classList.remove('hidden');
+        drawer.classList.add('flex');
+        document.body.classList.add('overflow-hidden');
+    },
+
+    closePaymentDrawer: function() {
+        const drawer = document.getElementById('pms-edit-drawer');
+        if (drawer) {
+            drawer.classList.remove('flex');
+            drawer.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    },
+
+    savePaymentEdit: function(event, paymentId) {
+        event.preventDefault();
+        const form = document.getElementById('pms-edit-payment-form');
+        if (!form) return;
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        window.DisicurePayments.updatePayment(paymentId, data);
+        this.closePaymentDrawer();
+        this.renderPaymentsTable();
+        this.renderDashboardAnalytics();
+    },
+
+    deletePayment: function(paymentId) {
+        if (confirm(`Are you sure you want to delete payment record ${paymentId}?`)) {
+            window.DisicurePayments.deletePayment(paymentId);
+            this.closePaymentDrawer();
+            this.renderPaymentsTable();
+            this.renderDashboardAnalytics();
+        }
+    },
+
+    changePaymentStatusQuick: function(paymentId, newStatus) {
+        if (!window.DisicurePayments) return;
+        window.DisicurePayments.updateStatus(paymentId, newStatus);
+        this.renderPaymentsTable();
+        this.renderDashboardAnalytics();
+    },
+
+    // Proof Document Modal
+    openProofModal: function(title, filename) {
+        const modal = document.getElementById('pms-proof-modal');
+        const titleEl = document.getElementById('pms-proof-title');
+        const fileEl = document.getElementById('pms-proof-filename');
+
+        if (titleEl) titleEl.innerText = title;
+        if (fileEl) fileEl.innerText = filename;
+
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+    },
+
+    closeProofModal: function() {
+        const modal = document.getElementById('pms-proof-modal');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    },
+
+    exportPaymentsCSV: function() {
+        if (window.DisicurePayments) {
+            window.DisicurePayments.exportToCSV();
         }
     }
 };

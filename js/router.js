@@ -2186,41 +2186,144 @@ const DisicureRouter = {
             </div>
 
             <!-- ================================================================= -->
-            <!-- TAB 5: FINANCIALS & LEDGER                                       -->
+            <!-- TAB 5: PAYMENT MANAGEMENT & FINANCIALS                           -->
             <!-- ================================================================= -->
             <div id="tab-financials" class="admin-tab-content hidden">
                 <section class="py-8 bg-white min-h-[70vh]">
                     <div class="max-w-7xl mx-auto px-4 lg:px-8 space-y-6">
-                        <div class="flex items-center justify-between border-b border-gray-100 pb-4">
+                        
+                        <!-- Header & Top Action Buttons -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
                             <div>
-                                <h2 class="text-xl font-extrabold text-navy-950">💳 Commercial Financials & Invoicing Ledger</h2>
-                                <p class="text-xs text-gray-500 font-normal">Accounts receivable, manufacturing contract milestones, and collection cycles.</p>
+                                <h2 class="text-xl font-extrabold text-navy-950 flex items-center gap-2">
+                                    <span>💳 Commercial Payment Management & Invoicing</span>
+                                    <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">Live PMS</span>
+                                </h2>
+                                <p class="text-xs text-gray-500 font-normal mt-0.5">Maintain client invoice collections, record payments, track pending balances, and upload payment proofs.</p>
                             </div>
-                            <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">FY 2026-27 Active</span>
+                            <div class="flex items-center gap-2">
+                                <button onclick="window.DisicureMain.exportPaymentsCSV()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-gray-700 text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
+                                    <svg class="w-3.5 h-3.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                    <span>Export CSV</span>
+                                </button>
+                                <button onclick="window.DisicureMain.openAddPaymentModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 transform hover:-translate-y-0.5">
+                                    <span>+ Record Payment</span>
+                                </button>
+                            </div>
                         </div>
                         
-                        <!-- Financial Highlights Grid -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div class="bg-blue-50/40 border border-blue-100 p-6 rounded-2xl">
-                                <span class="text-xs font-extrabold text-blue-700 uppercase tracking-wider block">Total Business Invoiced</span>
-                                <div class="text-3xl font-extrabold text-navy-950 mt-2">₹48,50,000</div>
-                                <p class="text-xs text-gray-500 mt-2">Across 180+ wholesale batches & contract runs</p>
+                        <!-- 4 Payment Summary KPI Metric Cards -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="bg-blue-50/40 border border-blue-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-blue-700 uppercase tracking-wider block">💰 Total Invoiced</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-navy-950 mt-1.5" id="pms-total-invoiced">₹48,50,000</div>
+                                <p class="text-[11px] text-gray-500 mt-1">Across all wholesale orders</p>
                             </div>
-                            <div class="bg-emerald-50/40 border border-emerald-100 p-6 rounded-2xl">
-                                <span class="text-xs font-extrabold text-emerald-700 uppercase tracking-wider block">Payments Cleared & Received</span>
-                                <div class="text-3xl font-extrabold text-emerald-600 mt-2">₹32,80,000</div>
-                                <p class="text-xs text-gray-500 mt-2">67.6% collection clearance efficiency</p>
+                            <div class="bg-emerald-50/40 border border-emerald-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-emerald-700 uppercase tracking-wider block">🟢 Amount Received</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-emerald-600 mt-1.5" id="pms-total-received">₹32,80,000</div>
+                                <p class="text-[11px] text-emerald-700 font-medium mt-1">Cleared & credited funds</p>
                             </div>
-                            <div class="bg-orange-50/40 border border-orange-100 p-6 rounded-2xl">
-                                <span class="text-xs font-extrabold text-orange-700 uppercase tracking-wider block">Outstanding Receivables</span>
-                                <div class="text-3xl font-extrabold text-orange-600 mt-2">₹15,70,000</div>
-                                <p class="text-xs text-gray-500 mt-2">Under active 15–30 day credit cycles</p>
+                            <div class="bg-amber-50/40 border border-amber-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-amber-700 uppercase tracking-wider block">🔴 Pending Amount</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-amber-600 mt-1.5" id="pms-total-pending">₹15,70,000</div>
+                                <p class="text-[11px] text-amber-700 font-medium mt-1">Active credit & milestone terms</p>
+                            </div>
+                            <div class="bg-rose-50/40 border border-rose-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-rose-700 uppercase tracking-wider block">⚫ Overdue Amount</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-rose-600 mt-1.5" id="pms-total-overdue">₹1,60,000</div>
+                                <p class="text-[11px] text-rose-700 font-medium mt-1">Exceeded 45-day credit cycle</p>
+                            </div>
+                        </div>
+
+                        <!-- Search & Filter Controls Toolbar -->
+                        <div class="bg-slate-50 border border-gray-200 p-4 rounded-xl shadow-sm space-y-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                <!-- Search Input -->
+                                <div class="lg:col-span-2 relative">
+                                    <input type="text" id="pms-search-input" placeholder="Search by Client Name, Invoice ID, or Reference..." class="w-full bg-white border border-gray-200 rounded-lg p-2.5 pl-10 text-xs font-medium focus:outline-none focus:border-blue-500 shadow-sm">
+                                    <span class="absolute left-3.5 top-3 text-gray-400">
+                                        ${DisicureRouter.icons.search}
+                                    </span>
+                                </div>
+
+                                <!-- Status Filter -->
+                                <div>
+                                    <select id="pms-status-filter" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-bold text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
+                                        <option value="all">All Payment Statuses</option>
+                                        <option value="🟢 Paid">🟢 Paid</option>
+                                        <option value="🟡 Partial">🟡 Partial</option>
+                                        <option value="🔴 Pending">🔴 Pending</option>
+                                        <option value="⚫ Overdue">⚫ Overdue</option>
+                                    </select>
+                                </div>
+
+                                <!-- Mode Filter -->
+                                <div>
+                                    <select id="pms-mode-filter" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-medium text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
+                                        <option value="all">All Payment Modes</option>
+                                        <option value="NEFT / RTGS">NEFT / RTGS</option>
+                                        <option value="UPI / IMPS">UPI / IMPS</option>
+                                        <option value="Cheque / DD">Cheque / DD</option>
+                                        <option value="Letter of Credit (LC)">Letter of Credit (LC)</option>
+                                        <option value="Bank Wire Transfer">Bank Wire Transfer</option>
+                                        <option value="Cash Deposit">Cash Deposit</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Count Indicator -->
+                            <div class="flex items-center justify-between pt-1 text-xs">
+                                <span class="font-bold text-gray-600" id="pms-showing-count">Loading payment records...</span>
+                                <span class="text-gray-400 text-[11px]">Instant live search & automatic balance sync</span>
+                            </div>
+                        </div>
+
+                        <!-- Payments Data Table Card -->
+                        <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse" id="pms-payments-table">
+                                    <thead>
+                                        <tr class="bg-slate-100/80 border-b border-gray-200 text-[11px] font-extrabold text-gray-600 uppercase tracking-wider">
+                                            <th class="p-3.5">Invoice / Ref ID</th>
+                                            <th class="p-3.5">Client / Partner Name</th>
+                                            <th class="p-3.5">Total Amount</th>
+                                            <th class="p-3.5">Amount Received</th>
+                                            <th class="p-3.5">Pending Amount</th>
+                                            <th class="p-3.5">Payment Date</th>
+                                            <th class="p-3.5">Payment Mode</th>
+                                            <th class="p-3.5">Payment Status</th>
+                                            <th class="p-3.5">Proof / Document</th>
+                                            <th class="p-3.5 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pms-payments-tbody">
+                                        <!-- Populated dynamically via window.DisicureMain.renderPaymentsTable() -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Empty State Notice -->
+                            <div id="pms-empty-state" class="hidden py-16 text-center">
+                                <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    ${DisicureRouter.icons.search}
+                                </div>
+                                <h3 class="text-base font-extrabold text-navy-950">No Payment Records Found</h3>
+                                <p class="text-xs text-gray-500 max-w-sm mx-auto mt-1 font-normal leading-relaxed">
+                                    No records match your selected search or filter criteria. Record a new payment or adjust the filters.
+                                </p>
                             </div>
                         </div>
 
                         <!-- Aging Ledger Table -->
-                        <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-4">
-                            <h3 class="text-base font-extrabold text-navy-950">Receivables Aging Schedule</h3>
+                        <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-4 mt-8">
+                            <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                                <div>
+                                    <h3 class="text-base font-extrabold text-navy-950">Receivables Aging & Credit Portfolio</h3>
+                                    <p class="text-xs text-gray-500">Distribution of unsettled balances against standard 15–30 day commercial terms.</p>
+                                </div>
+                                <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded">Commercial Risk Matrix</span>
+                            </div>
                             <div id="lms-financials-aging" class="space-y-3">
                                 <!-- Populated dynamically -->
                             </div>
@@ -2368,6 +2471,142 @@ const DisicureRouter = {
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+
+            <!-- Add New Payment Modal -->
+            <div id="pms-add-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <!-- Backdrop -->
+                <div class="absolute inset-0 bg-navy-950/60 backdrop-blur-sm" onclick="window.DisicureMain.closeAddPaymentModal()"></div>
+                
+                <!-- Modal Card -->
+                <div class="relative bg-white rounded-2xl p-6 md:p-8 max-w-2xl w-full mx-4 shadow-2xl z-10 max-h-[90vh] overflow-y-auto">
+                    <button class="absolute top-4 right-4 text-gray-400 hover:text-navy-950 focus:outline-none" onclick="window.DisicureMain.closeAddPaymentModal()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                    
+                    <h3 class="text-xl font-extrabold text-navy-950 mb-1">💳 Record Client Payment</h3>
+                    <p class="text-xs text-gray-500 mb-6 font-normal">Log commercial batch payments, credit milestone collections, or invoice advances.</p>
+                    
+                    <form id="pms-new-payment-form" onsubmit="window.DisicureMain.saveNewPayment(event)" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Client / Partner Name *</label>
+                                <input type="text" name="clientName" required placeholder="e.g. Medilink Pharma Network" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500 font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Invoice / Reference ID *</label>
+                                <input type="text" name="invoiceId" required placeholder="e.g. INV-DC-2026-888" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500 font-mono">
+                            </div>
+                        </div>
+
+                        <!-- Amount Grid with live auto calculation -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-blue-50/40 p-4 rounded-xl border border-blue-100">
+                            <div>
+                                <label class="block text-[10px] font-bold text-blue-900 uppercase tracking-wider mb-1">Total Amount (₹) *</label>
+                                <input type="number" id="pms-new-total" name="totalAmount" required min="0" step="any" placeholder="0" oninput="window.DisicureMain.calcNewPaymentPending()" class="w-full bg-white border border-gray-200 rounded p-2 text-xs focus:border-blue-500 font-extrabold text-navy-950">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-emerald-900 uppercase tracking-wider mb-1">Amount Received (₹) *</label>
+                                <input type="number" id="pms-new-received" name="amountReceived" required min="0" step="any" placeholder="0" oninput="window.DisicureMain.calcNewPaymentPending()" class="w-full bg-white border border-gray-200 rounded p-2 text-xs focus:border-blue-500 font-extrabold text-emerald-600">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Pending Amount (₹)</label>
+                                <input type="text" id="pms-new-pending-display" readonly value="₹0" class="w-full bg-gray-100 border border-gray-200 rounded p-2 text-xs font-extrabold text-amber-700 cursor-not-allowed">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Payment Date *</label>
+                                <input type="date" name="paymentDate" required value="${new Date().toISOString().substring(0, 10)}" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Payment Mode *</label>
+                                <select name="paymentMode" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-medium focus:border-blue-500">
+                                    <option value="NEFT / RTGS">NEFT / RTGS</option>
+                                    <option value="UPI / IMPS">UPI / IMPS</option>
+                                    <option value="Cheque / DD">Cheque / DD</option>
+                                    <option value="Letter of Credit (LC)">Letter of Credit (LC)</option>
+                                    <option value="Bank Wire Transfer">Bank Wire Transfer</option>
+                                    <option value="Cash Deposit">Cash Deposit</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Payment Status *</label>
+                                <select id="pms-new-status" name="paymentStatus" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold focus:border-blue-500">
+                                    <option value="🟢 Paid">🟢 Paid</option>
+                                    <option value="🟡 Partial">🟡 Partial</option>
+                                    <option value="🔴 Pending">🔴 Pending</option>
+                                    <option value="⚫ Overdue">⚫ Overdue</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Upload Proof / Document -->
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Payment Proof / Document (Receipt, Cheque, UTR)</label>
+                            <div class="flex items-center gap-3">
+                                <input type="file" id="pms-new-proof-file" accept="image/*,.pdf,.doc,.docx" onchange="window.DisicureMain.handleProofUpload(event, 'pms-new-proof-name')" class="text-xs text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                                <input type="hidden" id="pms-new-proof-name" name="proofDocument" value="bank_receipt.pdf">
+                            </div>
+                            <span class="text-[10px] text-gray-400 block mt-1">Accepts Bank UTR slips, Cheque scans, NEFT receipts, or PDF invoices.</span>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Payment Notes & Batch Reference</label>
+                            <textarea name="notes" rows="2" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500 font-normal" placeholder="Add specific transaction notes, UTR numbers, or manufacturing batch references..."></textarea>
+                        </div>
+
+                        <div class="pt-2 flex justify-end gap-3 border-t border-gray-100">
+                            <button type="button" onclick="window.DisicureMain.closeAddPaymentModal()" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded transition-colors">
+                                Cancel
+                            </button>
+                            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow transition-colors">
+                                Save Payment Record
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Edit Payment Drawer -->
+            <div id="pms-edit-drawer" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <!-- Backdrop -->
+                <div class="absolute inset-0 bg-navy-950/60 backdrop-blur-sm" onclick="window.DisicureMain.closePaymentDrawer()"></div>
+                
+                <!-- Drawer Box -->
+                <div class="relative bg-white rounded-2xl p-6 md:p-8 max-w-2xl w-full mx-4 shadow-2xl z-10 max-h-[92vh] overflow-y-auto transform transition-all duration-300">
+                    <button class="absolute top-4 right-4 text-gray-400 hover:text-navy-950 focus:outline-none" onclick="window.DisicureMain.closePaymentDrawer()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                    <div id="pms-drawer-content">
+                        <!-- Populated dynamically via window.DisicureMain.openPaymentDrawer(paymentId) -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Proof Document Preview Modal -->
+            <div id="pms-proof-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <div class="absolute inset-0 bg-navy-950/70 backdrop-blur-sm" onclick="window.DisicureMain.closeProofModal()"></div>
+                <div class="relative bg-white rounded-2xl p-6 md:p-8 max-w-lg w-full mx-4 shadow-2xl z-10 text-center space-y-4">
+                    <button class="absolute top-4 right-4 text-gray-400 hover:text-navy-950 focus:outline-none" onclick="window.DisicureMain.closeProofModal()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                    <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    </div>
+                    <h3 class="text-lg font-extrabold text-navy-950" id="pms-proof-title">Payment Document Proof</h3>
+                    <p class="text-xs text-gray-500 font-mono bg-slate-50 p-2.5 rounded border border-gray-200" id="pms-proof-filename">proof_file.pdf</p>
+                    <div class="p-4 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-medium border border-emerald-100 flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                        <span>Document verified & securely archived in Disicure PMS Vault</span>
+                    </div>
+                    <div class="pt-2">
+                        <button onclick="window.DisicureMain.closeProofModal()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded transition-colors">
+                            Close Viewer
+                        </button>
+                    </div>
                 </div>
             </div>
             `;
