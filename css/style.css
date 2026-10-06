@@ -27,29 +27,35 @@ h1, h2, h3, h4, h5, h6 {
 .via-navy-950 { --tw-gradient-stops: var(--tw-gradient-from), var(--color-navy-950), var(--tw-gradient-to, rgba(7, 18, 36, 0)); }
 
 /* Sticky Navigation Layout Custom Classes */
+/* Sticky Navigation Layout Custom Classes */
 .navbar-wrapper {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 50;
-  transition: all 0.3s ease;
-  padding: 1.25rem 0;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  padding: 0.85rem 0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
 }
 
 .navbar-wrapper.scrolled {
-  background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  padding: 0.75rem 0;
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
-  border-bottom: 1px solid rgba(37, 99, 235, 0.08);
+  padding: 0.65rem 0;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid rgba(37, 99, 235, 0.12);
 }
 
 /* Nav Link Hover & Active indicators */
 .nav-link {
   position: relative;
   font-weight: 600;
-  transition: color 0.3s ease;
+  color: #334155; /* slate-700 */
+  transition: color 0.2s ease;
+  padding: 0.25rem 0;
 }
 
 .nav-link::after {
@@ -60,28 +66,18 @@ h1, h2, h3, h4, h5, h6 {
   width: 0;
   height: 2px;
   background-color: var(--color-blue-600);
-  transition: width 0.3s ease;
+  border-radius: 2px;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--color-blue-600);
 }
 
 .nav-link:hover::after,
 .nav-link.active::after {
   width: 100%;
-}
-
-.navbar-wrapper.scrolled .nav-link {
-  color: #4b5563; /* gray-600 */
-}
-.navbar-wrapper.scrolled .nav-link:hover,
-.navbar-wrapper.scrolled .nav-link.active {
-  color: var(--color-blue-600);
-}
-
-.navbar-wrapper:not(.scrolled) .nav-link {
-  color: #1f2937; /* gray-800 */
-}
-.navbar-wrapper:not(.scrolled) .nav-link:hover,
-.navbar-wrapper:not(.scrolled) .nav-link.active {
-  color: var(--color-blue-600);
 }
 
 /* Custom Scrollbar styling */

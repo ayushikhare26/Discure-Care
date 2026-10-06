@@ -818,17 +818,22 @@ const DisicureRouter = {
             </section>
 
             <!-- Business Partnership CTA (Full-Width Blue Band) -->
-            <section class="py-12 md:py-8 md:py-12 bg-gradient-to-r from-blue-700 to-blue-900 text-white relative overflow-hidden">
-                <div class="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-blue-800/50 via-transparent to-transparent pointer-events-none"></div>
+            <section class="py-12 md:py-16 bg-gradient-to-r from-blue-700 via-blue-800 to-navy-950 text-white relative overflow-hidden">
+                <div class="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-blue-600/30 via-transparent to-transparent pointer-events-none"></div>
                 <div class="max-w-5xl mx-auto px-4 text-center space-y-6 relative z-10 scroll-reveal">
-                    <span class="text-xs font-bold text-blue-200 tracking-wider uppercase font-extrabold">B2B Opportunities</span>
-                    <h2 class="text-3xl sm:text-4xl font-extrabold">BUILD YOUR PHARMA BUSINESS WITH DISICURE CARE</h2>
-                    <p class="text-base text-blue-100 max-w-2xl mx-auto leading-relaxed font-normal">
-                        From product development and manufacturing to branding, packaging, marketing and supply — explore solutions designed around your pharmaceutical business requirements.
+                    <span class="text-xs font-bold text-cyan-300 tracking-wider uppercase bg-blue-950/60 px-3 py-1 rounded-full border border-blue-400/30">Strategic Collaboration</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight uppercase">Scale Your Pharmaceutical Business With Disicure Care</h2>
+                    <p class="text-base text-blue-100/90 max-w-2xl mx-auto leading-relaxed font-normal">
+                        From formulation development and contract manufacturing to branding, packaging, PCD franchise networks and bulk institutional supply — explore solutions designed around your pharmaceutical business requirements.
                     </p>
-                    <div class="flex flex-wrap gap-4 justify-center pt-4">
-                        <a href="#/contact" class="px-8 py-3.5 bg-white text-blue-800 text-xs font-bold rounded-md hover:bg-blue-50 transition-all duration-300 shadow-md">Discuss Your Requirement</a>
-                        <a href="#/contact" class="px-8 py-3.5 bg-blue-600 border border-blue-500 text-white text-xs font-bold rounded-md hover:bg-blue-700 transition-all duration-300">Contact Us</a>
+                    <div class="flex flex-wrap gap-4 justify-center pt-2">
+                        <button onclick="window.DisicureMain.openEnquiryModal('Footer B2B Partnership Discussion', 'Third-Party Manufacturing')" class="px-7 py-3.5 bg-white hover:bg-blue-50 text-blue-900 text-xs font-bold rounded-lg transition-all duration-200 shadow-lg transform hover:-translate-y-0.5 uppercase tracking-wider">
+                            Discuss Your Requirement
+                        </button>
+                        <a href="https://wa.me/919005874417?text=Hello%20Disicure%20Care%20Team%2C%20I%20am%20interested%20in%20your%20pharmaceutical%20business%20solutions.%20Please%20share%20details%20and%20quotation." target="_blank" rel="noopener noreferrer" class="px-7 py-3.5 bg-[#25D366] hover:bg-[#20ba59] text-white text-xs font-bold rounded-lg transition-all duration-200 shadow-lg hover:shadow-green-500/20 transform hover:-translate-y-0.5 flex items-center gap-2 uppercase tracking-wider">
+                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                            <span>WhatsApp Assistance</span>
+                        </a>
                     </div>
                 </div>
             </section>
