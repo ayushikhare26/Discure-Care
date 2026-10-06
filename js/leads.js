@@ -18,6 +18,7 @@ const DisicureLeads = {
 
     // Default Assigned Team Members
     TEAM_MEMBERS: [
+        'Ayushi Khare (Managing Director)',
         'Nishant Chaturvedi (Director)',
         'Institutional Supply Desk',
         'PCD Franchise Operations',

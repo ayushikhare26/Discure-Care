@@ -2061,6 +2061,25 @@ const DisicureRouter = {
                 <section class="py-8 bg-white min-h-[70vh]">
                     <div class="max-w-7xl mx-auto px-4 lg:px-8 space-y-6">
                         
+                        <!-- Header & Actions Bar -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+                            <div>
+                                <h2 class="text-xl font-extrabold text-navy-950 flex items-center gap-2">
+                                    <span>📋 Website Enquiries & Lead Management (LMS)</span>
+                                    <span class="text-[10px] font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">Live Inbound Pipeline</span>
+                                </h2>
+                                <p class="text-xs text-gray-500 font-normal mt-0.5">All website enquiries from Contact Forms, Product Inquiries, and WhatsApp automatically appear here. View, filter, assign, change status, schedule follow-ups, convert to Client or Partner, and export.</p>
+                            </div>
+                            <div class="flex items-center gap-2.5 flex-wrap">
+                                <button onclick="window.DisicureMain.exportLeadsCSV()" class="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-gray-700 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 border border-gray-200">
+                                    <span>📥 Export to Excel / CSV</span>
+                                </button>
+                                <button onclick="window.DisicureMain.openAddLeadModal()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-2 transform hover:-translate-y-0.5">
+                                    <span>+ Add Manual Enquiry</span>
+                                </button>
+                            </div>
+                        </div>
+
                         <!-- Search & Filter Controls Toolbar -->
                         <div class="bg-slate-50 border border-gray-200 p-4 rounded-xl shadow-sm space-y-4">
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">

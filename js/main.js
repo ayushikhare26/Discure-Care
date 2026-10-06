@@ -23,6 +23,37 @@ const DisicureMain = {
         this.enquiryAPIUrl = null; // Configure with real backend endpoint later
     },
 
+    // Global Toast Notification Helper
+    showToast: function(type, message) {
+        let container = document.getElementById('disicure-toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'disicure-toast-container';
+            container.className = 'fixed bottom-5 right-5 z-[99999] flex flex-col gap-2 pointer-events-none';
+            document.body.appendChild(container);
+        }
+
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? 'bg-emerald-600 text-white' : type === 'error' ? 'bg-rose-600 text-white' : 'bg-navy-900 text-white';
+        const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+        
+        toast.className = `${bgColor} px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs font-bold pointer-events-auto transform translate-y-4 opacity-0 transition-all duration-300 max-w-md`;
+        toast.innerHTML = `<span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[11px]">${icon}</span><span class="flex-1 leading-snug">${message}</span>`;
+        
+        container.appendChild(toast);
+        
+        requestAnimationFrame(() => {
+            toast.classList.remove('translate-y-4', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+        });
+
+        setTimeout(() => {
+            toast.classList.remove('translate-y-0', 'opacity-100');
+            toast.classList.add('translate-y-4', 'opacity-0');
+            setTimeout(() => toast.remove(), 350);
+        }, 4000);
+    },
+
     // --- 1. PRELOADER CONTROLLER ---
     initPreloader: function() {
         const preloader = document.getElementById('preloader');
@@ -1153,7 +1184,7 @@ const DisicureMain = {
         const total = allLeads.length;
         let filtered = allLeads.filter(lead => {
             // Search Query
-            const query = this.lmsState.searchQuery;
+            const query = (this.lmsState.searchQuery || '').toLowerCase().trim();
             const matchesQuery = !query || 
                 (lead.name && lead.name.toLowerCase().includes(query)) ||
                 (lead.leadId && lead.leadId.toLowerCase().includes(query)) ||
@@ -1265,7 +1296,7 @@ const DisicureMain = {
                 <!-- Assigned Person -->
                 <td class="p-3.5 whitespace-nowrap">
                     <select onchange="window.DisicureMain.changeLeadAssignedQuick('${lead.leadId}', this.value)" class="text-xs font-medium rounded-lg border border-gray-200 p-1.5 bg-white shadow-sm focus:outline-none focus:border-blue-500 max-w-[150px] truncate">
-                        ${window.DisicureLeads.TEAM_MEMBERS.map(m => `
+                        ${[...new Set([...window.DisicureLeads.TEAM_MEMBERS, lead.assignedPerson].filter(Boolean))].map(m => `
                             <option value="${m}" ${m === lead.assignedPerson ? 'selected' : ''}>${m}</option>
                         `).join('')}
                     </select>
@@ -1279,6 +1310,16 @@ const DisicureMain = {
                 <!-- Actions -->
                 <td class="p-3.5 whitespace-nowrap text-right">
                     <div class="flex items-center justify-end gap-1.5">
+                        <!-- Convert to Client -->
+                        <button onclick="window.DisicureMain.convertLeadToClient('${lead.leadId}')" class="px-2 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white rounded-md transition-colors text-[10px] font-bold flex items-center gap-1 border border-emerald-200" title="Convert Enquiry to Client Profile">
+                            <span>🏢 Client</span>
+                        </button>
+
+                        <!-- Convert to Partner -->
+                        <button onclick="window.DisicureMain.convertLeadToPartner('${lead.leadId}')" class="px-2 py-1 bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white rounded-md transition-colors text-[10px] font-bold flex items-center gap-1 border border-purple-200" title="Onboard as Registered Partner">
+                            <span>🤝 Partner</span>
+                        </button>
+
                         <!-- Edit Drawer -->
                         <button onclick="window.DisicureMain.openLeadDrawer('${lead.leadId}')" class="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-md transition-colors" title="View / Edit Lead">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -1334,11 +1375,20 @@ const DisicureMain = {
         container.innerHTML = `
         <div class="space-y-6">
             <!-- Header with ID & Status -->
-            <div class="flex items-center justify-between border-b border-gray-100 pb-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
                 <div>
-                    <span class="text-xs font-bold text-blue-600 uppercase tracking-wider block">Lead Record</span>
+                    <span class="text-xs font-bold text-blue-600 uppercase tracking-wider block">Website Enquiry Record</span>
                     <h3 class="text-xl font-extrabold text-navy-950">${lead.leadId} — ${lead.name}</h3>
                 </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button type="button" onclick="window.DisicureMain.convertLeadToClient('${lead.leadId}')" class="px-3.5 py-1.5 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white border border-emerald-200 rounded-lg text-xs font-bold transition-all flex items-center gap-1 shadow-sm">
+                        <span>🏢 Convert to Client</span>
+                    </button>
+                    <button type="button" onclick="window.DisicureMain.convertLeadToPartner('${lead.leadId}')" class="px-3.5 py-1.5 bg-purple-50 hover:bg-purple-600 text-purple-700 hover:text-white border border-purple-200 rounded-lg text-xs font-bold transition-all flex items-center gap-1 shadow-sm">
+                        <span>🤝 Convert to Partner</span>
+                    </button>
+                </div>
+            </div>
                 <div>
                     <span class="text-xs font-bold text-gray-400 block text-right">Captured: ${lead.createdDate}</span>
                     <span class="text-[10px] text-gray-400 block text-right">Updated: ${lead.lastUpdatedDate}</span>
@@ -1360,7 +1410,7 @@ const DisicureMain = {
                     <div>
                         <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Assigned Person *</label>
                         <select name="assignedPerson" class="w-full bg-white border border-gray-200 rounded p-2 text-xs font-medium focus:border-blue-500">
-                            ${window.DisicureLeads.TEAM_MEMBERS.map(m => `
+                            ${[...new Set([...window.DisicureLeads.TEAM_MEMBERS, lead.assignedPerson].filter(Boolean))].map(m => `
                                 <option value="${m}" ${m === lead.assignedPerson ? 'selected' : ''}>${m}</option>
                             `).join('')}
                         </select>
@@ -1506,6 +1556,143 @@ const DisicureMain = {
             this.closeLeadDrawer();
             this.renderAdminLeads();
         }
+    },
+
+    // Convert Lead to Client Profile (Module 15)
+    convertLeadToClient: function(leadId) {
+        if (!window.DisicureLeads || !window.DisicureClients) return;
+        const allLeads = window.DisicureLeads.getAllLeads();
+        const lead = allLeads.find(l => l.leadId === leadId);
+        if (!lead) return;
+
+        // Create new Client
+        const newClient = window.DisicureClients.addClient({
+            companyName: lead.name.includes('Hospital') || lead.name.includes('Pharma') || lead.name.includes('Ltd') || lead.name.includes('Care') 
+                ? lead.name 
+                : `${lead.name} Enterprises`,
+            contactPerson: lead.name,
+            designation: 'Decision Maker / Proprietor',
+            mobile: lead.mobile,
+            whatsapp: lead.whatsapp || lead.mobile,
+            email: lead.email || '',
+            city: lead.city || 'Dehradun',
+            state: lead.state || 'Uttarakhand',
+            businessType: lead.businessType || 'Healthcare Distributor',
+            accountStatus: 'Active Account',
+            creditLimit: '₹10,00,000',
+            creditDays: 30,
+            requirements: [
+                {
+                    reqId: `REQ-${Date.now().toString().slice(-4)}`,
+                    title: lead.requirementType || 'Product Procurement',
+                    category: lead.productOrService || 'Pharmaceutical Formulations',
+                    specifications: `Enquiry Details: ${lead.productOrService}. Initial notes: ${lead.notes || 'None'}`,
+                    batchSize: 'Standard Initial Order',
+                    status: 'Active Fulfillment',
+                    targetDate: new Date().toISOString().split('T')[0],
+                    budget: '₹5,00,000'
+                }
+            ],
+            leads: [
+                {
+                    leadId: lead.leadId,
+                    inquiryDate: lead.createdDate,
+                    requirement: lead.requirementType,
+                    status: 'Converted',
+                    value: 500000,
+                    valueFormatted: '₹5,00,000',
+                    originPartner: lead.source || 'Website Enquiry Form'
+                }
+            ],
+            notes: [
+                {
+                    noteId: `NOT-${Date.now()}`,
+                    date: new Date().toISOString().replace('T', ' ').substring(0, 16),
+                    author: 'LMS Conversion Engine',
+                    tag: 'Lead Converted',
+                    text: `Converted from Website Enquiry #${lead.leadId}. Original Source: ${lead.source}. Initial Requirements: ${lead.requirementType} - ${lead.productOrService}.`
+                }
+            ],
+            communicationHistory: [
+                {
+                    commId: `COMM-${Date.now()}`,
+                    type: 'System Note',
+                    date: new Date().toISOString().replace('T', ' ').substring(0, 16),
+                    contactPerson: lead.name,
+                    summary: `Enquiry received via ${lead.source} and converted to active customer account.`,
+                    nextAction: 'Assign dedicated account manager and dispatch initial proforma quotation.',
+                    loggedBy: 'Admin'
+                }
+            ]
+        });
+
+        // Update Lead status and log note
+        window.DisicureLeads.updateLead(leadId, {
+            leadStatus: '🏆 Converted',
+            notes: (lead.notes ? lead.notes + '\n\n' : '') + `[${new Date().toISOString().replace('T', ' ').substring(0, 16)}] Converted into Client Account: ${newClient.companyName} (${newClient.id}).`
+        });
+
+        this.closeLeadDrawer();
+        this.renderAdminLeads();
+        this.showToast('success', `Enquiry ${lead.leadId} successfully converted into Client: ${newClient.companyName}!`);
+        
+        // Open the newly created client's 360 profile
+        setTimeout(() => {
+            this.switchAdminTab('tab-clients');
+            this.openClient360Modal(newClient.id);
+        }, 600);
+    },
+
+    // Convert Lead to Partner Profile (Module 15)
+    convertLeadToPartner: function(leadId) {
+        if (!window.DisicureLeads || !window.DisicurePartner) return;
+        const allLeads = window.DisicureLeads.getAllLeads();
+        const lead = allLeads.find(l => l.leadId === leadId);
+        if (!lead) return;
+
+        // Determine partner type
+        let pType = '🏢 Pharma Distributor';
+        const bType = (lead.businessType || '').toLowerCase();
+        if (bType.includes('franchise') || bType.includes('pcd')) pType = '🤝 PCD Pharma Franchise';
+        else if (bType.includes('marketing') || bType.includes('agency')) pType = '📢 Marketing Partner / Agency';
+        else if (bType.includes('freelance') || bType.includes('sales')) pType = '💼 Sales Partner / Freelancer';
+
+        const newPartner = window.DisicurePartner.addPartner({
+            companyName: lead.name.includes('Pharma') || lead.name.includes('Distributor') ? lead.name : `${lead.name} Healthcare & Distribution`,
+            contactPerson: lead.name,
+            partnerType: pType,
+            mobile: lead.mobile,
+            whatsapp: lead.whatsapp || lead.mobile,
+            email: lead.email || `partner_${Date.now().toString().slice(-4)}@disicurecare.com`,
+            city: lead.city || 'Dehradun',
+            state: lead.state || 'Uttarakhand',
+            defaultCommissionModel: 'percentage',
+            defaultCommissionRate: 10,
+            defaultCommissionLabel: '10% Revenue Share',
+            accountStatus: '🟢 Active'
+        });
+
+        // Update Lead status and log note
+        window.DisicureLeads.updateLead(leadId, {
+            leadStatus: '🏆 Converted',
+            notes: (lead.notes ? lead.notes + '\n\n' : '') + `[${new Date().toISOString().replace('T', ' ').substring(0, 16)}] Converted and onboarded as Partner: ${newPartner.companyName} (${newPartner.partnerId}).`
+        });
+
+        this.closeLeadDrawer();
+        this.renderAdminLeads();
+        this.showToast('success', `Enquiry ${lead.leadId} onboarded as Partner: ${newPartner.companyName}! (Login: ${newPartner.email} / partner123)`);
+
+        // Switch to Partner Tab
+        setTimeout(() => {
+            this.switchAdminTab('tab-partners');
+        }, 600);
+    },
+
+    // Export Leads to CSV / Excel (Module 15)
+    exportLeadsCSV: function() {
+        if (!window.DisicureLeads) return;
+        window.DisicureLeads.exportToCSV();
+        this.showToast('success', 'Enquiries & LMS ledger exported to CSV / Excel!');
     },
 
     // Open Manual Add Lead Modal
