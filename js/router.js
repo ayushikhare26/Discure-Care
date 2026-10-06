@@ -3949,13 +3949,13 @@ const DisicureRouter = {
                     </div>
 
                     <!-- ========================================================= -->
-                    <!-- SUB-TAB 2: MY LEADS & PIPELINE (LEAD STATUS TRACKER)      -->
+                    <!-- SUB-TAB 2: MY LEADS & PIPELINE (PARTNER LEAD TRACKING LIFECYCLE) -->
                     <!-- ========================================================= -->
                     <div id="prt-tab-leads" class="prt-tab-content hidden space-y-6">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-4">
                             <div>
-                                <h3 class="text-base font-extrabold text-navy-950">📋 My Generated Leads & Pipeline</h3>
-                                <p class="text-xs text-gray-500">Track status, conversion stages, and claim referral commissions for client accounts.</p>
+                                <h3 class="text-base font-extrabold text-navy-950">📋 Partner Lead Tracking & Lifecycle Pipeline</h3>
+                                <p class="text-xs text-gray-500">End-to-end commercial chain: Partner → Lead → Client → Requirement → Status → Business Value → Commission → Payment.</p>
                             </div>
                             <button onclick="window.DisicureMain.openPartnerLeadModal()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-lg shadow transition-colors flex items-center gap-1.5 self-start sm:self-auto">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
@@ -3963,39 +3963,121 @@ const DisicureRouter = {
                             </button>
                         </div>
 
+                        <!-- PARTNER LEAD TRACKING FUNNEL SUMMARY CARD (MODULE 11) -->
+                        <div class="bg-gradient-to-br from-slate-900 via-navy-950 to-blue-950 text-white p-5 rounded-2xl border border-blue-900/60 shadow-lg space-y-4">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-blue-800/40 pb-3">
+                                <div>
+                                    <span class="text-[10px] font-extrabold text-blue-300 uppercase tracking-wider">🎯 Lead Conversion Funnel & Commercial Realization</span>
+                                    <h4 class="text-sm font-extrabold text-white">Live Funnel Progress: Generated → Contacted → Qualified → Converted</h4>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs text-blue-200 font-medium">Pipeline Value:</span>
+                                    <span class="text-xs font-mono font-extrabold text-emerald-400" id="prt-funnel-pipeline-val">${kpi.totalPipelineValue || '₹0'}</span>
+                                </div>
+                            </div>
+
+                            <!-- Funnel Stages KPI Tiles -->
+                            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 text-center">
+                                <div class="p-3 bg-white/5 rounded-xl border border-white/10">
+                                    <span class="text-[10px] font-bold text-blue-200 uppercase tracking-wider block">Generated</span>
+                                    <div class="text-lg font-extrabold text-white mt-0.5" id="prt-fn-generated">${kpi.leadsGenerated}</div>
+                                    <span class="text-[9px] text-gray-300">100% Inflow</span>
+                                </div>
+                                <div class="p-3 bg-blue-500/10 rounded-xl border border-blue-500/20">
+                                    <span class="text-[10px] font-bold text-blue-300 uppercase tracking-wider block">Contacted</span>
+                                    <div class="text-lg font-extrabold text-blue-300 mt-0.5" id="prt-fn-contacted">${kpi.contactedLeads || 0}</div>
+                                    <span class="text-[9px] text-blue-200">Reached Out</span>
+                                </div>
+                                <div class="p-3 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
+                                    <span class="text-[10px] font-bold text-indigo-300 uppercase tracking-wider block">Qualified</span>
+                                    <div class="text-lg font-extrabold text-indigo-300 mt-0.5" id="prt-fn-qualified">${kpi.qualifiedLeads || 0}</div>
+                                    <span class="text-[9px] text-indigo-200">Verified Demand</span>
+                                </div>
+                                <div class="p-3 bg-purple-500/15 rounded-xl border border-purple-500/30">
+                                    <span class="text-[10px] font-bold text-purple-300 uppercase tracking-wider block">Converted</span>
+                                    <div class="text-lg font-extrabold text-purple-300 mt-0.5" id="prt-fn-converted">${kpi.leadsConverted}</div>
+                                    <span class="text-[9px] text-purple-200 font-bold">${kpi.conversionRate}% Win Rate</span>
+                                </div>
+                                <div class="p-3 bg-emerald-500/15 rounded-xl border border-emerald-500/30">
+                                    <span class="text-[10px] font-bold text-emerald-300 uppercase tracking-wider block">Business Done</span>
+                                    <div class="text-base font-extrabold text-emerald-400 mt-0.5 truncate" id="prt-fn-business">${kpi.businessGenerated}</div>
+                                    <span class="text-[9px] text-emerald-200">Converted Value</span>
+                                </div>
+                                <div class="p-3 bg-teal-500/15 rounded-xl border border-teal-500/30">
+                                    <span class="text-[10px] font-bold text-teal-300 uppercase tracking-wider block">Commission</span>
+                                    <div class="text-base font-extrabold text-teal-300 mt-0.5 truncate" id="prt-fn-commission">${kpi.commissionEarned}</div>
+                                    <span class="text-[9px] text-teal-200">Margin Accrued</span>
+                                </div>
+                                <div class="p-3 bg-emerald-500/20 rounded-xl border border-emerald-500/40">
+                                    <span class="text-[10px] font-bold text-emerald-200 uppercase tracking-wider block">Paid</span>
+                                    <div class="text-base font-extrabold text-emerald-300 mt-0.5 truncate" id="prt-fn-paid">${kpi.paymentReceived}</div>
+                                    <span class="text-[9px] text-emerald-200">Disbursed</span>
+                                </div>
+                                <div class="p-3 bg-amber-500/15 rounded-xl border border-amber-500/30">
+                                    <span class="text-[10px] font-bold text-amber-300 uppercase tracking-wider block">Pending</span>
+                                    <div class="text-base font-extrabold text-amber-400 mt-0.5 truncate" id="prt-fn-pending">${kpi.pendingPayment}</div>
+                                    <span class="text-[9px] text-amber-200">Ledger Balance</span>
+                                </div>
+                            </div>
+
+                            <!-- Commercial Lifecycle Chain Ribbon Indicator -->
+                            <div class="p-2.5 bg-slate-950/60 rounded-xl border border-blue-900/50 flex items-center justify-between text-[11px] overflow-x-auto gap-2">
+                                <span class="font-bold text-blue-300 whitespace-nowrap">🔄 Complete Lifecycle Chain:</span>
+                                <div class="flex items-center gap-1.5 font-bold text-gray-300 whitespace-nowrap">
+                                    <span class="px-2 py-0.5 bg-blue-900/80 text-blue-200 rounded">1. 🤝 Partner</span>
+                                    <span class="text-blue-400">→</span>
+                                    <span class="px-2 py-0.5 bg-indigo-900/80 text-indigo-200 rounded">2. 📋 Lead</span>
+                                    <span class="text-blue-400">→</span>
+                                    <span class="px-2 py-0.5 bg-purple-900/80 text-purple-200 rounded">3. 🏥 Client</span>
+                                    <span class="text-blue-400">→</span>
+                                    <span class="px-2 py-0.5 bg-cyan-900/80 text-cyan-200 rounded">4. 📦 Requirement</span>
+                                    <span class="text-blue-400">→</span>
+                                    <span class="px-2 py-0.5 bg-amber-900/80 text-amber-200 rounded">5. 📊 Status</span>
+                                    <span class="text-blue-400">→</span>
+                                    <span class="px-2 py-0.5 bg-emerald-900/80 text-emerald-200 rounded">6. 💰 Business Value</span>
+                                    <span class="text-blue-400">→</span>
+                                    <span class="px-2 py-0.5 bg-teal-900/80 text-teal-200 rounded">7. 💵 Commission</span>
+                                    <span class="text-blue-400">→</span>
+                                    <span class="px-2 py-0.5 bg-green-900/80 text-green-200 rounded">8. 💳 Payment</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Lead Filters Toolbar -->
                         <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row gap-3 items-center justify-between">
-                            <div class="w-full sm:w-72 relative">
-                                <input type="text" id="prt-lead-search" placeholder="Search my leads by client name, city..." oninput="window.DisicureMain.filterPartnerLeads()" class="w-full bg-slate-50 border border-gray-200 rounded-lg p-2.5 pl-8 text-xs font-medium focus:outline-none focus:border-blue-500">
+                            <div class="w-full sm:w-80 relative">
+                                <input type="text" id="prt-lead-search" placeholder="Search by Lead ID, Client, Requirement, City..." oninput="window.DisicureMain.filterPartnerLeads()" class="w-full bg-slate-50 border border-gray-200 rounded-lg p-2.5 pl-8 text-xs font-medium focus:outline-none focus:border-blue-500">
                                 <span class="absolute left-2.5 top-3 text-gray-400">${DisicureRouter.icons.search}</span>
                             </div>
                             <div class="w-full sm:w-auto flex items-center gap-2">
-                                <span class="text-xs text-gray-500 font-bold whitespace-nowrap">Lead Status:</span>
+                                <span class="text-xs text-gray-500 font-bold whitespace-nowrap">Filter Status:</span>
                                 <select id="prt-lead-status-filter" onchange="window.DisicureMain.filterPartnerLeads()" class="bg-slate-50 border border-gray-200 rounded-lg p-2 text-xs font-bold text-navy-950 focus:border-blue-500">
-                                    <option value="all">All Lead Statuses</option>
-                                    <option value="🟢 New">🟢 New</option>
-                                    <option value="🔵 Contacted">🔵 Contacted</option>
-                                    <option value="🟡 Follow-up">🟡 Follow-up</option>
-                                    <option value="🟠 Negotiation">🟠 Negotiation</option>
-                                    <option value="🟣 Converted">🟣 Converted</option>
+                                    <option value="all">All Lead Lifecycle Statuses</option>
+                                    <option value="🟢 New">🟢 New (Enquiry Received)</option>
+                                    <option value="🔵 Contacted">🔵 Contacted (Reached Out)</option>
+                                    <option value="🟡 Qualified">🟡 Qualified / Follow-up</option>
+                                    <option value="🟠 Negotiation">🟠 Negotiation (Terms Review)</option>
+                                    <option value="🟣 Converted">🟣 Converted (PO & Deal Closed)</option>
                                     <option value="🔴 Lost">🔴 Lost</option>
                                     <option value="⚫ On Hold">⚫ On Hold</option>
                                 </select>
                             </div>
                         </div>
 
+                        <!-- Full Lifecycle Tracking Table -->
                         <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left text-xs border-collapse">
                                     <thead>
                                         <tr class="bg-slate-100 text-gray-600 text-[11px] font-extrabold uppercase">
-                                            <th class="p-3.5">Lead ID & Date</th>
-                                            <th class="p-3.5">Client & Contact</th>
-                                            <th class="p-3.5">Location</th>
-                                            <th class="p-3.5">Requirement</th>
-                                            <th class="p-3.5">Lead Status</th>
-                                            <th class="p-3.5">Scheduled Follow-up</th>
-                                            <th class="p-3.5">Commission</th>
+                                            <th class="p-3.5">Lead & Partner ID</th>
+                                            <th class="p-3.5">Client & Location</th>
+                                            <th class="p-3.5">Requirement & Scope</th>
+                                            <th class="p-3.5">Funnel Status</th>
+                                            <th class="p-3.5">Business Value</th>
+                                            <th class="p-3.5">Commission / Earning</th>
+                                            <th class="p-3.5">Payment Settlement</th>
+                                            <th class="p-3.5 text-right">Lifecycle Chain</th>
                                         </tr>
                                     </thead>
                                     <tbody id="prt-full-leads-tbody">
@@ -4351,12 +4433,24 @@ const DisicureRouter = {
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Estimated Value (₹)</label>
-                                    <input type="text" name="estimatedValue" placeholder="e.g. ₹3,50,000" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Estimated Value (₹) *</label>
+                                    <input type="number" name="estimatedValue" id="prt-newlead-val-input" oninput="window.DisicureMain.calculateLeadAnticipatedCommission(this.value)" placeholder="e.g. 500000" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold text-navy-950 focus:border-blue-500">
                                 </div>
                                 <div>
                                     <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Next Follow-up Date</label>
                                     <input type="date" name="followUpDate" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                                </div>
+                            </div>
+
+                            <!-- Live Anticipated Commission Realization Calculator Preview -->
+                            <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 flex items-center justify-between text-xs">
+                                <div>
+                                    <span class="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">Anticipated Partner Margin</span>
+                                    <span class="text-xs text-emerald-700 font-medium">Calculated based on your partner tier terms</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-sm font-extrabold text-emerald-800" id="prt-newlead-comm-preview">₹0</span>
+                                    <span class="text-[10px] text-emerald-600 block">Est. Earning</span>
                                 </div>
                             </div>
 
@@ -4436,6 +4530,81 @@ const DisicureRouter = {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+
+                <!-- LEAD LIFECYCLE CHAIN AUDIT MODAL (MODULE 11) -->
+                <div id="prt-lead-lifecycle-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                    <div class="absolute inset-0 bg-navy-950/60 backdrop-blur-sm" onclick="window.DisicureMain.closePartnerLeadLifecycleModal()"></div>
+                    <div class="relative bg-white rounded-3xl p-6 md:p-8 max-w-3xl w-full mx-4 shadow-2xl z-10 max-h-[92vh] overflow-y-auto space-y-6">
+                        <button class="absolute top-5 right-5 text-gray-400 hover:text-navy-950 focus:outline-none" onclick="window.DisicureMain.closePartnerLeadLifecycleModal()">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                        
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-blue-50 text-blue-700 border border-blue-200" id="prt-lc-leadid">PLEAD-2026-801</span>
+                                <span class="text-xs text-gray-400">•</span>
+                                <span class="text-xs text-gray-500 font-medium" id="prt-lc-createddate">2026-09-15</span>
+                            </div>
+                            <h3 class="text-2xl font-extrabold text-navy-950 mt-1" id="prt-lc-clientname">Client Name</h3>
+                            <p class="text-xs text-gray-500 font-normal">Complete End-to-End Commercial Lifecycle Chain Tracker</p>
+                        </div>
+
+                        <!-- 8-Step Lifecycle Chain Visualization -->
+                        <div class="bg-gradient-to-r from-slate-900 to-navy-950 p-5 rounded-2xl text-white space-y-4 shadow-inner">
+                            <h4 class="text-xs font-bold text-blue-300 uppercase tracking-wider">🔄 8-Step Commercial Chain Realization</h4>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs" id="prt-lc-chain-badges">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Two-Column Attributes Breakdown -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                            <!-- Left: Lead & Requirement Info -->
+                            <div class="p-4 bg-slate-50 rounded-2xl border border-gray-200 space-y-3">
+                                <h4 class="text-xs font-extrabold text-navy-950 uppercase tracking-wider border-b border-gray-200 pb-2">📋 Client & Requirement Details</h4>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between"><span class="text-gray-500">Contact Person:</span><span class="font-bold text-navy-950" id="prt-lc-contact">Mr. Alok Goyal</span></div>
+                                    <div class="flex justify-between"><span class="text-gray-500">Mobile / WhatsApp:</span><span class="font-mono font-bold text-navy-950" id="prt-lc-mobile">+91 98371 44552</span></div>
+                                    <div class="flex justify-between"><span class="text-gray-500">Email:</span><span class="font-medium text-navy-950" id="prt-lc-email">alok@shrirampharma.in</span></div>
+                                    <div class="flex justify-between"><span class="text-gray-500">Location:</span><span class="font-bold text-navy-950" id="prt-lc-location">Agra, UP</span></div>
+                                    <div class="pt-2 border-t border-gray-100">
+                                        <span class="text-gray-500 block mb-1">Product Requirement:</span>
+                                        <p class="p-2.5 bg-white rounded-lg border border-gray-200 font-medium text-navy-950" id="prt-lc-requirement">Requirement</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Commercial & Payment Realization -->
+                            <div class="p-4 bg-slate-50 rounded-2xl border border-gray-200 space-y-3">
+                                <h4 class="text-xs font-extrabold text-navy-950 uppercase tracking-wider border-b border-gray-200 pb-2">💰 Commercial & Payout Settlement</h4>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between"><span class="text-gray-500">Funnel Status:</span><span class="font-bold" id="prt-lc-status">🟣 Converted</span></div>
+                                    <div class="flex justify-between"><span class="text-gray-500">Total Business Value:</span><span class="font-extrabold text-navy-950 text-sm" id="prt-lc-bizvalue">₹5,00,000</span></div>
+                                    <div class="flex justify-between"><span class="text-gray-500">Partner Commission Rate:</span><span class="font-bold text-indigo-700" id="prt-lc-rate">10%</span></div>
+                                    <div class="flex justify-between"><span class="text-gray-500">Commission / Earning:</span><span class="font-extrabold text-emerald-700 text-sm" id="prt-lc-commission">₹50,000</span></div>
+                                    <div class="flex justify-between"><span class="text-gray-500">Payment Clearance:</span><span class="font-bold" id="prt-lc-paystatus">🟢 Paid</span></div>
+                                    <div class="flex justify-between"><span class="text-gray-500">Amount Paid:</span><span class="font-bold text-emerald-700" id="prt-lc-paid">₹50,000</span></div>
+                                    <div class="flex justify-between"><span class="text-gray-500">Amount Pending:</span><span class="font-bold text-amber-700" id="prt-lc-pending">₹0</span></div>
+                                    <div class="flex justify-between"><span class="text-gray-500">Payment UTR / Ref:</span><span class="font-mono font-bold text-navy-950" id="prt-lc-payref">UTR-HDFC-9921</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Timestamped Audit Milestone Stepper -->
+                        <div class="p-4 bg-white rounded-2xl border border-gray-200 space-y-3">
+                            <h4 class="text-xs font-extrabold text-navy-950 uppercase tracking-wider">⏱️ Audit Progression & Milestone History</h4>
+                            <div class="space-y-3 relative pl-4 border-l-2 border-blue-200 ml-2 text-xs" id="prt-lc-stages-timeline">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end gap-3 pt-2 border-t border-gray-100">
+                            <button type="button" onclick="window.DisicureMain.closePartnerLeadLifecycleModal()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow">
+                                Close Lifecycle View
+                            </button>
+                        </div>
                     </div>
                 </div>
 

@@ -3493,13 +3493,24 @@ const DisicureMain = {
         setElText('prt-kpi-received', kpi.paymentReceived);
         setElText('prt-kpi-pending', kpi.pendingPayment);
 
+        // Update Module 11 Funnel Specific KPIs
+        setElText('prt-fn-generated', kpi.leadsGenerated);
+        setElText('prt-fn-contacted', kpi.contactedLeads || 0);
+        setElText('prt-fn-qualified', kpi.qualifiedLeads || 0);
+        setElText('prt-fn-converted', kpi.leadsConverted || 0);
+        setElText('prt-fn-business', kpi.businessGenerated);
+        setElText('prt-fn-commission', kpi.commissionEarned);
+        setElText('prt-fn-paid', kpi.paymentReceived);
+        setElText('prt-fn-pending', kpi.pendingPayment);
+        setElText('prt-funnel-pipeline-val', kpi.totalPipelineValue || '₹0');
+
         // Status Badge Helper
         const getStatusBadge = (statusStr) => {
             if (!statusStr) return `<span class="px-2 py-0.5 rounded text-xs font-bold bg-gray-100 text-gray-700">🟢 New</span>`;
             let badgeStyle = 'bg-gray-100 text-gray-700 border-gray-200';
             if (statusStr.includes('New')) badgeStyle = 'bg-emerald-50 text-emerald-700 border-emerald-200';
             else if (statusStr.includes('Contacted')) badgeStyle = 'bg-blue-50 text-blue-700 border-blue-200';
-            else if (statusStr.includes('Follow-up')) badgeStyle = 'bg-amber-50 text-amber-700 border-amber-200';
+            else if (statusStr.includes('Qualified') || statusStr.includes('Follow-up')) badgeStyle = 'bg-indigo-50 text-indigo-700 border-indigo-200';
             else if (statusStr.includes('Negotiation')) badgeStyle = 'bg-orange-50 text-orange-700 border-orange-200';
             else if (statusStr.includes('Converted')) badgeStyle = 'bg-purple-50 text-purple-700 border-purple-200';
             else if (statusStr.includes('Lost')) badgeStyle = 'bg-rose-50 text-rose-700 border-rose-200';
@@ -3540,7 +3551,7 @@ const DisicureMain = {
             }
         }
 
-        // 3. Sub-Tab 2: Full Leads & Pipeline Table (Filtered strictly for this partner)
+        // 3. Sub-Tab 2: Full Leads & Pipeline Table (Filtered strictly for this partner with 8-column lifecycle chain)
         const fullLeadsTbody = document.getElementById('prt-full-leads-tbody');
         if (fullLeadsTbody) {
             const query = this.prtLeadState.searchQuery;
@@ -3555,34 +3566,57 @@ const DisicureMain = {
                     (l.requirement && l.requirement.toLowerCase().includes(query)) ||
                     (l.leadId && l.leadId.toLowerCase().includes(query));
 
-                const matchesStatus = statusFilt === 'all' || l.leadStatus === statusFilt;
+                const matchesStatus = statusFilt === 'all' || l.leadStatus === statusFilt || (statusFilt === '🟡 Qualified' && (l.leadStatus.includes('Qualified') || l.leadStatus.includes('Follow-up')));
                 return matchesQuery && matchesStatus;
             });
 
             if (filteredLeads.length === 0) {
-                fullLeadsTbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400">No leads match your filter or search query. Click "+ Register New Client Lead".</td></tr>`;
+                fullLeadsTbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-400">No leads match your filter or search query. Click "+ Register New Client Lead".</td></tr>`;
             } else {
-                fullLeadsTbody.innerHTML = filteredLeads.map(l => `
+                fullLeadsTbody.innerHTML = filteredLeads.map(l => {
+                    const payStatusClass = l.paymentStatus && l.paymentStatus.includes('Paid') ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                           l.paymentStatus && l.paymentStatus.includes('Partial') ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                           l.paymentStatus && l.paymentStatus.includes('Pending') ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                                           'bg-gray-100 text-gray-600 border-gray-200';
+
+                    return `
                     <tr class="border-b border-gray-100 hover:bg-blue-50/20 transition-colors">
-                        <td class="p-3.5 font-mono font-bold text-purple-700">${l.leadId}<span class="block text-[10px] text-gray-400 font-normal">${l.createdDate}</span></td>
+                        <td class="p-3.5 font-mono font-bold text-purple-700 whitespace-nowrap">
+                            ${l.leadId}
+                            <span class="block text-[10px] text-gray-400 font-normal">📅 ${l.createdDate}</span>
+                            <span class="block text-[10px] text-indigo-700 font-bold truncate max-w-[130px]">${l.partnerName || session.companyName}</span>
+                        </td>
                         <td class="p-3.5">
                             <div class="font-extrabold text-navy-950">${l.clientName}</div>
                             <div class="text-[11px] text-gray-500 font-medium">👤 ${l.contactPerson} (${l.mobile})</div>
+                            <div class="text-[10px] text-gray-400">📍 ${l.city}, ${l.state || ''}</div>
                         </td>
-                        <td class="p-3.5 text-gray-700 font-medium">📍 ${l.city}, ${l.state || ''}</td>
                         <td class="p-3.5">
                             <div class="text-xs text-navy-950 font-medium max-w-xs">${l.requirement}</div>
-                            <span class="text-[10px] text-emerald-700 font-bold block mt-0.5">Est. Value: ${l.estimatedValue || 'Under Eval'}</span>
+                            ${l.followUpDate ? `<span class="text-[10px] text-amber-800 font-bold block mt-0.5">📅 Next: ${l.followUpDate}</span>` : ''}
                         </td>
                         <td class="p-3.5 whitespace-nowrap">${getStatusBadge(l.leadStatus)}</td>
-                        <td class="p-3.5 font-mono text-xs text-amber-800 font-bold">
-                            ${l.followUpDate ? `📅 ${l.followUpDate}` : 'Not scheduled'}
+                        <td class="p-3.5 whitespace-nowrap">
+                            <span class="font-extrabold text-navy-950 text-xs block">${l.businessValue || 'Under Eval'}</span>
+                            <span class="text-[10px] text-gray-400 block">Gross Order</span>
                         </td>
-                        <td class="p-3.5 font-extrabold text-emerald-700 whitespace-nowrap">
-                            ${l.commission || 'Calculating'}
+                        <td class="p-3.5 whitespace-nowrap">
+                            <span class="font-extrabold text-emerald-700 text-xs block">${l.commission || 'Calculating'}</span>
+                            <span class="text-[10px] text-indigo-700 font-bold block">${l.commissionRate || '10%'} margin</span>
+                        </td>
+                        <td class="p-3.5 whitespace-nowrap">
+                            <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${payStatusClass}">${l.paymentStatus || '⚪ In Pipeline'}</span>
+                            ${l.paymentRef && l.paymentRef !== 'N/A (Pipeline)' ? `<span class="block text-[10px] font-mono text-gray-500 mt-0.5">${l.paymentRef}</span>` : ''}
+                        </td>
+                        <td class="p-3.5 text-right whitespace-nowrap">
+                            <button onclick="window.DisicureMain.openPartnerLeadLifecycleModal('${l.leadId}')" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1 shadow-sm">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                <span>View Chain</span>
+                            </button>
                         </td>
                     </tr>
-                `).join('');
+                    `;
+                }).join('');
             }
         }
 
@@ -3867,6 +3901,111 @@ const DisicureMain = {
         }
     },
 
+    calculateLeadAnticipatedCommission: function(val) {
+        const previewEl = document.getElementById('prt-newlead-comm-preview');
+        if (!previewEl) return;
+        const session = window.DisicurePartner ? window.DisicurePartner.getCurrentSession() : null;
+        const rate = session && session.commercialTerms && session.commercialTerms.includes('%') 
+            ? (parseFloat(session.commercialTerms.match(/(\d+)%/)?.[1]) || 10) 
+            : 10;
+        
+        const numVal = parseFloat(String(val).replace(/[^0-9.]/g, '')) || 0;
+        const comm = Math.round((numVal * rate) / 100);
+        previewEl.innerText = `₹${comm.toLocaleString('en-IN')}`;
+    },
+
+    openPartnerLeadLifecycleModal: function(leadId) {
+        if (!window.DisicurePartner) return;
+        const lead = window.DisicurePartner.getLeadById(leadId);
+        if (!lead) return;
+
+        const setElText = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = val;
+        };
+
+        setElText('prt-lc-leadid', lead.leadId);
+        setElText('prt-lc-createddate', `Registered: ${lead.createdDate}`);
+        setElText('prt-lc-clientname', lead.clientName);
+        setElText('prt-lc-contact', lead.contactPerson || 'N/A');
+        setElText('prt-lc-mobile', lead.mobile || 'N/A');
+        setElText('prt-lc-email', lead.email || 'N/A');
+        setElText('prt-lc-location', `${lead.city || ''}, ${lead.state || ''}`);
+        setElText('prt-lc-requirement', lead.requirement || 'N/A');
+        setElText('prt-lc-status', lead.leadStatus || '🟢 New');
+        setElText('prt-lc-bizvalue', lead.businessValue || (lead.businessValueNumeric ? `₹${lead.businessValueNumeric.toLocaleString('en-IN')}` : 'Under Evaluation'));
+        setElText('prt-lc-rate', lead.commissionRate || '10%');
+        setElText('prt-lc-commission', lead.commission || (lead.commissionNumeric ? `₹${lead.commissionNumeric.toLocaleString('en-IN')}` : 'Calculating'));
+        setElText('prt-lc-paystatus', lead.paymentStatus || '⚪ In Pipeline');
+        setElText('prt-lc-paid', lead.paidFormatted || (lead.paidNumeric ? `₹${lead.paidNumeric.toLocaleString('en-IN')}` : '₹0'));
+        setElText('prt-lc-pending', lead.pendingFormatted || (lead.pendingNumeric ? `₹${lead.pendingNumeric.toLocaleString('en-IN')}` : '₹0'));
+        setElText('prt-lc-payref', lead.paymentRef || 'N/A (Pipeline)');
+
+        // Render 8 Chain Badges
+        const chainBadgesContainer = document.getElementById('prt-lc-chain-badges');
+        if (chainBadgesContainer) {
+            const isConverted = lead.leadStatus && lead.leadStatus.includes('Converted');
+            const isNegotiation = isConverted || (lead.leadStatus && lead.leadStatus.includes('Negotiation'));
+            const isQualified = isNegotiation || (lead.leadStatus && (lead.leadStatus.includes('Qualified') || lead.leadStatus.includes('Follow-up')));
+            const isContacted = isQualified || (lead.leadStatus && lead.leadStatus.includes('Contacted'));
+            const isPaid = lead.paymentStatus && lead.paymentStatus.includes('Paid');
+
+            const steps = [
+                { num: '1', title: 'Partner Attributed', active: true, val: lead.partnerName || 'Partner' },
+                { num: '2', title: 'Lead Ingested', active: true, val: lead.leadId },
+                { num: '3', title: 'Client Contacted', active: isContacted, val: isContacted ? 'Done' : 'Pending' },
+                { num: '4', title: 'Requirement Qualified', active: isQualified, val: isQualified ? 'Qualified' : 'Pending' },
+                { num: '5', title: 'Negotiation Closed', active: isNegotiation, val: isNegotiation ? 'Agreed' : 'In Review' },
+                { num: '6', title: 'Business Value Locked', active: isConverted, val: lead.businessValue || '₹0' },
+                { num: '7', title: 'Commission Earned', active: isConverted, val: lead.commission || '₹0' },
+                { num: '8', title: 'Payment Settlement', active: isPaid, val: isPaid ? 'Paid' : (lead.paymentStatus || 'Pending') }
+            ];
+
+            chainBadgesContainer.innerHTML = steps.map(s => `
+                <div class="p-2.5 rounded-xl border ${s.active ? 'bg-blue-600/30 border-blue-400 text-white' : 'bg-white/5 border-white/10 text-gray-400'}">
+                    <span class="text-[10px] font-bold block opacity-80">${s.num}. ${s.title}</span>
+                    <span class="text-xs font-extrabold mt-0.5 block truncate ${s.active ? 'text-emerald-300' : 'text-gray-500'}">${s.val}</span>
+                </div>
+            `).join('');
+        }
+
+        // Render Lifecycle Audit Progression Stepper
+        const timelineContainer = document.getElementById('prt-lc-stages-timeline');
+        if (timelineContainer) {
+            const stages = lead.lifecycleStages && lead.lifecycleStages.length > 0 ? lead.lifecycleStages : [
+                { stage: 'Partner Attributed', timestamp: lead.createdDate, detail: `${lead.partnerName || 'Partner'}` },
+                { stage: 'Lead Registered', timestamp: lead.createdDate, detail: `${lead.leadId} created for ${lead.clientName}` }
+            ];
+
+            timelineContainer.innerHTML = stages.map(st => `
+                <div class="relative group">
+                    <div class="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-blue-600 border-2 border-white shadow"></div>
+                    <div class="flex items-center justify-between">
+                        <span class="font-extrabold text-navy-950 text-xs">${st.stage}</span>
+                        <span class="text-[10px] font-mono text-gray-400">${st.timestamp}</span>
+                    </div>
+                    <p class="text-[11px] text-gray-600 mt-0.5 font-medium">${st.detail}</p>
+                </div>
+            `).join('');
+        }
+
+        const modal = document.getElementById('prt-lead-lifecycle-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+    },
+
+    closePartnerLeadLifecycleModal: function() {
+        const modal = document.getElementById('prt-lead-lifecycle-modal');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    },
+
     savePartnerLead: function(event) {
         event.preventDefault();
         const form = document.getElementById('prt-new-lead-form');
@@ -3879,7 +4018,7 @@ const DisicureMain = {
         window.DisicurePartner.addPartnerLead(session.partnerId, data);
         this.closePartnerLeadModal();
         this.renderPartnerDashboardData();
-        alert('Lead registered in Master LMS. Commission tracking active.');
+        alert('Lead registered in Master LMS with complete lifecycle chain. Commission tracking active.');
     },
 
     savePartnerSelfProfile: function(event) {
@@ -4003,8 +4142,8 @@ const DisicureMain = {
 
                 <!-- Business & Orders -->
                 <td class="p-3.5 whitespace-nowrap">
-                    <div class="font-extrabold text-navy-950">${p.totalBusinessValue}</div>
-                    <span class="text-[10px] text-blue-600 font-bold block mt-0.5">${p.activeOrdersCount || p.referredLeadsCount || 0} Batches / Refs</span>
+                    <div class="font-extrabold text-navy-950">${p.businessGeneratedFormatted || p.totalBusinessValue || '₹0'}</div>
+                    <span class="text-[10px] text-blue-600 font-bold block mt-0.5">${p.activeOrdersCount || p.leadsGeneratedCount || 0} Batches / Leads</span>
                 </td>
 
                 <!-- Account Status -->

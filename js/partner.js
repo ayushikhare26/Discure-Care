@@ -40,16 +40,16 @@ const DisicurePartner = {
             commercialTerms: '22% Commercial Wholesale Discount • 30 Days Credit',
             gstin: '09AABCM1234F1Z8',
             drugLicense: 'UP/20B/2021/8849',
-            businessGeneratedFormatted: '₹34,50,000',
-            businessGeneratedNumeric: 3450000,
-            commissionEarnedFormatted: '₹4,14,000',
-            commissionEarnedNumeric: 414000,
-            paymentReceivedFormatted: '₹31,30,000',
-            paymentReceivedNumeric: 3130000,
-            pendingPaymentFormatted: '₹3,20,000',
-            pendingPaymentNumeric: 320000,
-            leadsGeneratedCount: 16,
-            leadsConvertedCount: 11,
+            businessGeneratedFormatted: '₹14,50,000',
+            businessGeneratedNumeric: 1450000,
+            commissionEarnedFormatted: '₹1,45,000',
+            commissionEarnedNumeric: 145000,
+            paymentReceivedFormatted: '₹1,05,000',
+            paymentReceivedNumeric: 105000,
+            pendingPaymentFormatted: '₹40,000',
+            pendingPaymentNumeric: 40000,
+            leadsGeneratedCount: 10,
+            leadsConvertedCount: 3,
             activeOrdersCount: 2,
             completedBatchesCount: 18,
             accountManager: 'Mr. Nishant Chaturvedi (Director)',
@@ -256,11 +256,14 @@ const DisicurePartner = {
         }
     ],
 
-    // Seed realistic Initial Leads belonging strictly to partners
+    // Seed realistic Initial Leads belonging strictly to partners with complete lifecycle chains:
+    // Partner → Lead → Client → Requirement → Status → Business Value → Commission/Earning → Payment
     INITIAL_PARTNER_LEADS: [
+        // --- PARTNER A (Medilink Pharma Network: PRT-2026-101): EXACT 10 LEADS FUNNEL (8 Contacted, 5 Qualified, 3 Converted) ---
         {
             leadId: 'PLEAD-2026-801',
             partnerId: 'PRT-2026-101',
+            partnerName: 'Medilink Pharma Network',
             clientName: 'Shri Ram Chemist & Druggist Hub',
             contactPerson: 'Mr. Alok Goyal',
             mobile: '+91 98371 44552',
@@ -268,16 +271,37 @@ const DisicurePartner = {
             city: 'Agra',
             state: 'Uttar Pradesh',
             requirement: 'Monthly Supply 20,000 Strips DISIZOLE-DSR + Paracetamol',
-            estimatedValue: '₹4,50,000',
-            commission: '₹45,000',
             leadStatus: '🟣 Converted',
+            businessValueNumeric: 500000,
+            businessValue: '₹5,00,000',
+            commissionRate: '10%',
+            commissionNumeric: 50000,
+            commission: '₹50,000',
+            paymentStatus: '🟢 Paid',
+            paidNumeric: 50000,
+            paidFormatted: '₹50,000',
+            pendingNumeric: 0,
+            pendingFormatted: '₹0',
+            paymentRef: 'UTR-HDFC-992144',
+            paymentDate: '2026-09-30',
             followUpDate: '2026-10-15',
-            notes: 'Order confirmed and scheduled for third-party packaging batch.',
-            createdDate: '2026-09-15'
+            notes: 'Commercial contract executed. ₹50,000 commission cleared via RTGS to Partner account.',
+            createdDate: '2026-09-15',
+            lifecycleStages: [
+                { stage: 'Partner Attributed', timestamp: '2026-09-15 10:00', detail: 'Medilink Pharma Network (Agra Zone)' },
+                { stage: 'Lead Registered', timestamp: '2026-09-15 10:15', detail: 'PLEAD-2026-801 created by Mr. Rajesh Singhal' },
+                { stage: 'Client Contacted', timestamp: '2026-09-16 11:30', detail: 'Mr. Alok Goyal contacted; verified stock requirement' },
+                { stage: 'Requirement Qualified', timestamp: '2026-09-18 14:00', detail: 'Formulation: 20,000 strips DISIZOLE-DSR' },
+                { stage: 'Negotiation', timestamp: '2026-09-22 16:30', detail: 'Wholesale price locked at ₹25/strip' },
+                { stage: 'Converted & PO Signed', timestamp: '2026-09-25 12:00', detail: 'Purchase Order #PO-SRC-2026-88 valued at ₹5,00,000' },
+                { stage: 'Commission Calculated', timestamp: '2026-09-26 10:00', detail: '10% partner margin accrued = ₹50,000' },
+                { stage: 'Payment Disbursed', timestamp: '2026-09-30 15:30', detail: 'Cleared ₹50,000 via UTR-HDFC-992144' }
+            ]
         },
         {
             leadId: 'PLEAD-2026-802',
             partnerId: 'PRT-2026-101',
+            partnerName: 'Medilink Pharma Network',
             clientName: 'Mathura Medicare Wholesale',
             contactPerson: 'Mr. Deepak Sharma',
             mobile: '+91 97580 99881',
@@ -285,33 +309,310 @@ const DisicurePartner = {
             city: 'Mathura',
             state: 'Uttar Pradesh',
             requirement: 'Bulk PCD Franchise for Antibiotics & Cough Syrups',
-            estimatedValue: '₹3,20,000',
-            commission: '₹32,000',
-            leadStatus: '🟠 Negotiation',
+            leadStatus: '🟣 Converted',
+            businessValueNumeric: 600000,
+            businessValue: '₹6,00,000',
+            commissionRate: '10%',
+            commissionNumeric: 60000,
+            commission: '₹60,000',
+            paymentStatus: '🟡 Partial',
+            paidNumeric: 55000,
+            paidFormatted: '₹55,000',
+            pendingNumeric: 5000,
+            pendingFormatted: '₹5,000',
+            paymentRef: 'UTR-ICICI-881290',
+            paymentDate: '2026-10-02',
             followUpDate: '2026-10-08',
-            notes: 'Negotiating wholesale price tiers and delivery schedule for Mathura region.',
-            createdDate: '2026-09-28'
+            notes: 'PCD franchise agreement executed. ₹55,000 paid; ₹5,000 retention due upon second batch dispatch.',
+            createdDate: '2026-09-20',
+            lifecycleStages: [
+                { stage: 'Partner Attributed', timestamp: '2026-09-20 09:30', detail: 'Medilink Pharma Network (Agra Zone)' },
+                { stage: 'Lead Registered', timestamp: '2026-09-20 09:45', detail: 'PLEAD-2026-802 created for Mathura wholesale' },
+                { stage: 'Client Contacted', timestamp: '2026-09-21 15:00', detail: 'Mr. Deepak Sharma briefed on PCD terms' },
+                { stage: 'Requirement Qualified', timestamp: '2026-09-23 11:30', detail: 'PCD Antibiotics & Syrups franchise portfolio' },
+                { stage: 'Negotiation', timestamp: '2026-09-26 14:00', detail: 'Exclusive territory agreed for Mathura dist.' },
+                { stage: 'Converted & PO Signed', timestamp: '2026-09-28 17:00', detail: 'Agreement executed for ₹6,00,000' },
+                { stage: 'Commission Calculated', timestamp: '2026-09-29 11:00', detail: '10% partner margin = ₹60,000' },
+                { stage: 'Partial Payment Cleared', timestamp: '2026-10-02 16:00', detail: '₹55,000 disbursed (UTR-ICICI-881290), ₹5,000 pending' }
+            ]
         },
         {
-            leadId: 'PLEAD-2026-802B',
+            leadId: 'PLEAD-2026-803',
             partnerId: 'PRT-2026-101',
-            clientName: 'Gwalior LifeCare Pharmacy',
+            partnerName: 'Medilink Pharma Network',
+            clientName: 'Taj City Multi-Speciality Hospital',
+            contactPerson: 'Dr. S. K. Mittal',
+            mobile: '+91 98370 77665',
+            email: 'mittal@tajcityhospital.in',
+            city: 'Agra',
+            state: 'Uttar Pradesh',
+            requirement: 'Annual Rabeprazole & Cefpodoxime Hospital Supply Contract',
+            leadStatus: '🟣 Converted',
+            businessValueNumeric: 350000,
+            businessValue: '₹3,50,000',
+            commissionRate: '10%',
+            commissionNumeric: 35000,
+            commission: '₹35,000',
+            paymentStatus: '🔴 Pending',
+            paidNumeric: 0,
+            paidFormatted: '₹0',
+            pendingNumeric: 35000,
+            pendingFormatted: '₹35,000',
+            paymentRef: 'INV-DC-2026-803',
+            paymentDate: 'Pending Verification',
+            followUpDate: '2026-10-12',
+            notes: 'Contract awarded. First batch in blistering; partner commission invoice submitted and scheduled for clearance.',
+            createdDate: '2026-09-22',
+            lifecycleStages: [
+                { stage: 'Partner Attributed', timestamp: '2026-09-22 11:00', detail: 'Medilink Pharma Network' },
+                { stage: 'Lead Registered', timestamp: '2026-09-22 11:15', detail: 'PLEAD-2026-803 hospital tender referral' },
+                { stage: 'Client Contacted', timestamp: '2026-09-24 10:00', detail: 'Dr. Mittal presented Disicure certified COAs' },
+                { stage: 'Requirement Qualified', timestamp: '2026-09-26 16:00', detail: 'Rabeprazole & Cefpodoxime institutional pack' },
+                { stage: 'Negotiation', timestamp: '2026-09-29 15:30', detail: 'Institutional rate approved by Disicure Director' },
+                { stage: 'Converted & MOU Signed', timestamp: '2026-10-01 12:00', detail: 'Annual contract closed at ₹3,50,000' },
+                { stage: 'Commission Accrued', timestamp: '2026-10-02 09:30', detail: '₹35,000 partner commission ledgered' },
+                { stage: 'Payment Pending', timestamp: '2026-10-02 10:00', detail: 'Accounts voucher generated (VOUCH-803); pending payout' }
+            ]
+        },
+        {
+            leadId: 'PLEAD-2026-804',
+            partnerId: 'PRT-2026-101',
+            partnerName: 'Medilink Pharma Network',
+            clientName: 'Gwalior LifeCare Pharmacy Chain',
             contactPerson: 'Dr. S. K. Gupta',
             mobile: '+91 94251 33221',
             email: 'gupta@lifecaregwalior.com',
             city: 'Gwalior',
             state: 'Madhya Pradesh',
             requirement: 'Inquiry for DISIPOD-200 and Multivitamin formulations',
-            estimatedValue: '₹2,80,000',
-            commission: '₹28,000',
-            leadStatus: '🟡 Follow-up',
+            leadStatus: '🟠 Negotiation',
+            businessValueNumeric: 320000,
+            businessValue: '₹3,20,000',
+            commissionRate: '10%',
+            commissionNumeric: 32000,
+            commission: '₹32,000 (Potential)',
+            paymentStatus: '⚪ In Negotiation',
+            paidNumeric: 0,
+            paidFormatted: '₹0',
+            pendingNumeric: 0,
+            pendingFormatted: '₹0',
+            paymentRef: 'N/A (Pipeline)',
+            paymentDate: 'Pending Close',
             followUpDate: '2026-10-09',
-            notes: 'Samples dispatched via BlueDart. Client testing packaging finish.',
-            createdDate: '2026-10-02'
+            notes: 'Samples dispatched via BlueDart. Client reviewing pricing discounts on bulk volume.',
+            createdDate: '2026-09-25',
+            lifecycleStages: [
+                { stage: 'Partner Attributed', timestamp: '2026-09-25 14:00', detail: 'Medilink Pharma Network' },
+                { stage: 'Lead Registered', timestamp: '2026-09-25 14:20', detail: 'PLEAD-2026-804 Gwalior retail chain' },
+                { stage: 'Client Contacted', timestamp: '2026-09-27 11:00', detail: 'Sample box dispatched with Visual Aid' },
+                { stage: 'Requirement Qualified', timestamp: '2026-09-30 15:00', detail: 'DISIPOD-200 & DISIVIT-Z 15,000 tabs' },
+                { stage: 'Negotiation Active', timestamp: '2026-10-03 14:30', detail: 'Commercial contract draft under review' }
+            ]
         },
         {
-            leadId: 'PLEAD-2026-803',
+            leadId: 'PLEAD-2026-805',
+            partnerId: 'PRT-2026-101',
+            partnerName: 'Medilink Pharma Network',
+            clientName: 'Aligarh Medical Agency',
+            contactPerson: 'Mr. Pradeep Agarwal',
+            mobile: '+91 98971 22334',
+            email: 'pradeep@aligarhemedical.in',
+            city: 'Aligarh',
+            state: 'Uttar Pradesh',
+            requirement: 'PCD Franchise for Respiratory Line & Syrups',
+            leadStatus: '🟠 Negotiation',
+            businessValueNumeric: 280000,
+            businessValue: '₹2,80,000',
+            commissionRate: '10%',
+            commissionNumeric: 28000,
+            commission: '₹28,000 (Potential)',
+            paymentStatus: '⚪ In Negotiation',
+            paidNumeric: 0,
+            paidFormatted: '₹0',
+            pendingNumeric: 0,
+            pendingFormatted: '₹0',
+            paymentRef: 'N/A (Pipeline)',
+            paymentDate: 'Pending Close',
+            followUpDate: '2026-10-10',
+            notes: 'Territory non-compete clause under review by partner legal representative.',
+            createdDate: '2026-09-27',
+            lifecycleStages: [
+                { stage: 'Partner Attributed', timestamp: '2026-09-27 10:30', detail: 'Medilink Pharma Network' },
+                { stage: 'Lead Registered', timestamp: '2026-09-27 10:45', detail: 'PLEAD-2026-805 Aligarh distributor desk' },
+                { stage: 'Client Contacted', timestamp: '2026-09-29 16:00', detail: 'Discussed exclusivity for Aligarh region' },
+                { stage: 'Requirement Qualified', timestamp: '2026-10-01 12:30', detail: 'Syrups & Cough Relief line' },
+                { stage: 'Negotiation Active', timestamp: '2026-10-04 11:00', detail: 'Finalizing quarterly volume threshold' }
+            ]
+        },
+        {
+            leadId: 'PLEAD-2026-806',
+            partnerId: 'PRT-2026-101',
+            partnerName: 'Medilink Pharma Network',
+            clientName: 'Firozabad Health Point',
+            contactPerson: 'Mr. Vivek Jain',
+            mobile: '+91 97600 55441',
+            email: 'vivek@firozabadhealth.com',
+            city: 'Firozabad',
+            state: 'Uttar Pradesh',
+            requirement: 'Generic Paracetamol 650 Bulk Stock Supply',
+            leadStatus: '🔵 Contacted',
+            businessValueNumeric: 210000,
+            businessValue: '₹2,10,000',
+            commissionRate: '10%',
+            commissionNumeric: 21000,
+            commission: '₹21,000 (Potential)',
+            paymentStatus: '⚪ Discussion Initiated',
+            paidNumeric: 0,
+            paidFormatted: '₹0',
+            pendingNumeric: 0,
+            pendingFormatted: '₹0',
+            paymentRef: 'N/A (Pipeline)',
+            paymentDate: 'Pending Close',
+            followUpDate: '2026-10-11',
+            notes: 'Product specification sheets and Batch COAs shared. Ready for price quotes.',
+            createdDate: '2026-09-29',
+            lifecycleStages: [
+                { stage: 'Partner Attributed', timestamp: '2026-09-29 15:00', detail: 'Medilink Pharma Network' },
+                { stage: 'Lead Registered', timestamp: '2026-09-29 15:15', detail: 'PLEAD-2026-806 Firozabad wholesale' },
+                { stage: 'Client Contacted', timestamp: '2026-10-01 10:30', detail: 'Mr. Vivek Jain confirmed commercial interest' }
+            ]
+        },
+        {
+            leadId: 'PLEAD-2026-807',
+            partnerId: 'PRT-2026-101',
+            partnerName: 'Medilink Pharma Network',
+            clientName: 'Bharatpur Clinical Care Pharmacy',
+            contactPerson: 'Dr. M. L. Sharma',
+            mobile: '+91 94140 88992',
+            email: 'sharma@bharatpurclinic.in',
+            city: 'Bharatpur',
+            state: 'Rajasthan',
+            requirement: 'Pediatric Drops & Anti-Allergic Suspensions',
+            leadStatus: '🔵 Contacted',
+            businessValueNumeric: 190000,
+            businessValue: '₹1,90,000',
+            commissionRate: '10%',
+            commissionNumeric: 19000,
+            commission: '₹19,000 (Potential)',
+            paymentStatus: '⚪ Discussion Initiated',
+            paidNumeric: 0,
+            paidFormatted: '₹0',
+            pendingNumeric: 0,
+            pendingFormatted: '₹0',
+            paymentRef: 'N/A (Pipeline)',
+            paymentDate: 'Pending Close',
+            followUpDate: '2026-10-13',
+            notes: 'Initial phone conference done. Catalog sent via WhatsApp & Email.',
+            createdDate: '2026-10-01',
+            lifecycleStages: [
+                { stage: 'Partner Attributed', timestamp: '2026-10-01 11:30', detail: 'Medilink Pharma Network' },
+                { stage: 'Lead Registered', timestamp: '2026-10-01 11:45', detail: 'PLEAD-2026-807 Bharatpur clinic' },
+                { stage: 'Client Contacted', timestamp: '2026-10-02 14:00', detail: 'Introductory detailing call completed' }
+            ]
+        },
+        {
+            leadId: 'PLEAD-2026-808',
+            partnerId: 'PRT-2026-101',
+            partnerName: 'Medilink Pharma Network',
+            clientName: 'Mainpuri Druggists Association Member Hub',
+            contactPerson: 'Mr. Arvind Yadav',
+            mobile: '+91 98391 66550',
+            email: 'arvind@mainpuridrug.org',
+            city: 'Mainpuri',
+            state: 'Uttar Pradesh',
+            requirement: 'Third-party Syrups Batch 5,000 units',
+            leadStatus: '🔵 Contacted',
+            businessValueNumeric: 160000,
+            businessValue: '₹1,60,000',
+            commissionRate: '10%',
+            commissionNumeric: 16000,
+            commission: '₹16,000 (Potential)',
+            paymentStatus: '⚪ Discussion Initiated',
+            paidNumeric: 0,
+            paidFormatted: '₹0',
+            pendingNumeric: 0,
+            pendingFormatted: '₹0',
+            paymentRef: 'N/A (Pipeline)',
+            paymentDate: 'Pending Close',
+            followUpDate: '2026-10-14',
+            notes: 'Discussion ongoing regarding custom bottle labeling and outer cartoon design.',
+            createdDate: '2026-10-02',
+            lifecycleStages: [
+                { stage: 'Partner Attributed', timestamp: '2026-10-02 10:00', detail: 'Medilink Pharma Network' },
+                { stage: 'Lead Registered', timestamp: '2026-10-02 10:20', detail: 'PLEAD-2026-808 Mainpuri Hub' },
+                { stage: 'Client Contacted', timestamp: '2026-10-03 12:00', detail: 'Shared technical specs of syrups line' }
+            ]
+        },
+        {
+            leadId: 'PLEAD-2026-809',
+            partnerId: 'PRT-2026-101',
+            partnerName: 'Medilink Pharma Network',
+            clientName: 'Hathras Lifeline Chemist',
+            contactPerson: 'Mr. Kamal Kishore',
+            mobile: '+91 97590 33221',
+            email: 'kamal@hathraslifeline.in',
+            city: 'Hathras',
+            state: 'Uttar Pradesh',
+            requirement: 'Injectables and Pain Management Formulation Enquiry',
+            leadStatus: '🟢 New',
+            businessValueNumeric: 120000,
+            businessValue: '₹1,20,000',
+            commissionRate: '10%',
+            commissionNumeric: 12000,
+            commission: '₹12,000 (Potential)',
+            paymentStatus: '⚪ New Lead Received',
+            paidNumeric: 0,
+            paidFormatted: '₹0',
+            pendingNumeric: 0,
+            pendingFormatted: '₹0',
+            paymentRef: 'N/A (Pipeline)',
+            paymentDate: 'Pending Close',
+            followUpDate: '2026-10-16',
+            notes: 'New enquiry received from partner field MR. Needs sales assignment.',
+            createdDate: '2026-10-04',
+            lifecycleStages: [
+                { stage: 'Partner Attributed', timestamp: '2026-10-04 09:15', detail: 'Medilink Pharma Network' },
+                { stage: 'Lead Registered', timestamp: '2026-10-04 09:30', detail: 'PLEAD-2026-809 Hathras Chemist logged' }
+            ]
+        },
+        {
+            leadId: 'PLEAD-2026-810',
+            partnerId: 'PRT-2026-101',
+            partnerName: 'Medilink Pharma Network',
+            clientName: 'Etah Wellness Care Clinic',
+            contactPerson: 'Dr. Anoop Chauhan',
+            mobile: '+91 94110 99883',
+            email: 'anoop@etahwellness.in',
+            city: 'Etah',
+            state: 'Uttar Pradesh',
+            requirement: 'Multivitamin & Mineral Syrups Trial Batch',
+            leadStatus: '🟢 New',
+            businessValueNumeric: 110000,
+            businessValue: '₹1,10,000',
+            commissionRate: '10%',
+            commissionNumeric: 11000,
+            commission: '₹11,000 (Potential)',
+            paymentStatus: '⚪ New Lead Received',
+            paidNumeric: 0,
+            paidFormatted: '₹0',
+            pendingNumeric: 0,
+            pendingFormatted: '₹0',
+            paymentRef: 'N/A (Pipeline)',
+            paymentDate: 'Pending Close',
+            followUpDate: '2026-10-17',
+            notes: 'New enquiry registered online via Partner Portal.',
+            createdDate: '2026-10-05',
+            lifecycleStages: [
+                { stage: 'Partner Attributed', timestamp: '2026-10-05 14:00', detail: 'Medilink Pharma Network' },
+                { stage: 'Lead Registered', timestamp: '2026-10-05 14:15', detail: 'PLEAD-2026-810 Etah Clinic logged' }
+            ]
+        },
+
+        // --- OTHER PARTNERS SEED LEADS WITH RICH LIFECYCLE CHAINS ---
+        {
+            leadId: 'PLEAD-2026-820',
             partnerId: 'PRT-2026-102',
+            partnerName: 'Apollo Super Speciality Hospital Procurement',
             clientName: 'Apollo Heart & Oncology Super Speciality Hospital',
             contactPerson: 'Dr. Sunita Verma',
             mobile: '+91 98111 22334',
@@ -319,16 +620,35 @@ const DisicurePartner = {
             city: 'Lucknow',
             state: 'Uttar Pradesh',
             requirement: 'Annual Institutional Rate Contract (Rabeprazole & Antibiotics)',
-            estimatedValue: '₹28,00,000',
-            commission: '₹0 (Institutional)',
             leadStatus: '🟣 Converted',
+            businessValueNumeric: 2800000,
+            businessValue: '₹28,00,000',
+            commissionRate: '0%',
+            commissionNumeric: 0,
+            commission: '₹0 (Institutional)',
+            paymentStatus: '🟢 Paid',
+            paidNumeric: 2800000,
+            paidFormatted: '₹28,00,000',
+            pendingNumeric: 0,
+            pendingFormatted: '₹0',
+            paymentRef: 'LC-APOLLO-2026-88',
+            paymentDate: '2026-03-15',
             followUpDate: '2026-10-20',
             notes: 'Institutional MOU signed. Regular monthly bulk dispatches underway.',
-            createdDate: '2026-02-12'
+            createdDate: '2026-02-12',
+            lifecycleStages: [
+                { stage: 'Partner Attributed', timestamp: '2026-02-12 10:00', detail: 'Apollo Super Speciality Procurement' },
+                { stage: 'Lead Registered', timestamp: '2026-02-12 10:30', detail: 'PLEAD-2026-820 Annual rate contract' },
+                { stage: 'Client Contacted', timestamp: '2026-02-14 11:00', detail: 'Chief Pharmacist Dr. Sunita Verma' },
+                { stage: 'Requirement Qualified', timestamp: '2026-02-20 15:00', detail: 'Oncology & Antibiotic formulations' },
+                { stage: 'Converted & LC Issued', timestamp: '2026-03-01 12:00', detail: 'MOU executed for ₹28,00,000' },
+                { stage: 'Payment Cleared', timestamp: '2026-03-15 16:00', detail: 'Direct Letter of Credit settlement ₹28,00,000' }
+            ]
         },
         {
-            leadId: 'PLEAD-2026-804',
+            leadId: 'PLEAD-2026-830',
             partnerId: 'PRT-2026-103',
+            partnerName: 'Apex Healthcare Media & Promotions',
             clientName: 'Sunrise Multi-Speciality Clinic Network',
             contactPerson: 'Dr. Alok Verma',
             mobile: '+91 98390 12345',
@@ -336,33 +656,33 @@ const DisicurePartner = {
             city: 'Varanasi',
             state: 'Uttar Pradesh',
             requirement: 'Contract Packaging 50,000 Caps (DISIZOLE-DSR)',
-            estimatedValue: '₹3,20,000',
-            commission: '₹32,000',
             leadStatus: '🟣 Converted',
+            businessValueNumeric: 320000,
+            businessValue: '₹3,20,000',
+            commissionRate: '10%',
+            commissionNumeric: 32000,
+            commission: '₹32,000',
+            paymentStatus: '🟢 Paid',
+            paidNumeric: 32000,
+            paidFormatted: '₹32,000',
+            pendingNumeric: 0,
+            pendingFormatted: '₹0',
+            paymentRef: 'UTR-HDFC-882910',
+            paymentDate: '2026-09-28',
             followUpDate: '2026-10-18',
-            notes: 'Doctor sample visual aid shared. Commercial PO received.',
-            createdDate: '2026-09-18'
+            notes: 'Doctor sample visual aid shared. Commercial PO received and commission disbursed.',
+            createdDate: '2026-09-18',
+            lifecycleStages: [
+                { stage: 'Partner Attributed', timestamp: '2026-09-18 11:00', detail: 'Apex Healthcare Media' },
+                { stage: 'Lead Registered', timestamp: '2026-09-18 11:30', detail: 'PLEAD-2026-830 Digital Inbound Lead' },
+                { stage: 'Converted & Contract Cleared', timestamp: '2026-09-25 14:00', detail: 'PO received for ₹3,20,000' },
+                { stage: 'Payment Disbursed', timestamp: '2026-09-28 17:00', detail: '₹32,000 commission cleared via UTR-HDFC-882910' }
+            ]
         },
         {
-            leadId: 'PLEAD-2026-805',
-            partnerId: 'PRT-2026-103',
-            clientName: 'Citycare Pharmacy Franchise Group',
-            contactPerson: 'Mr. Prateek Jain',
-            mobile: '+91 97210 65432',
-            email: 'prateek@citycare.in',
-            city: 'Kanpur',
-            state: 'Uttar Pradesh',
-            requirement: 'PCD Franchise for Respiratory Line',
-            estimatedValue: '₹1,80,000',
-            commission: '₹18,000',
-            leadStatus: '🟠 Negotiation',
-            followUpDate: '2026-10-09',
-            notes: 'Discussing exclusive territory rights for Kanpur Nagar.',
-            createdDate: '2026-10-02'
-        },
-        {
-            leadId: 'PLEAD-2026-806',
+            leadId: 'PLEAD-2026-840',
             partnerId: 'PRT-2026-104',
+            partnerName: 'Dr. Manoj K. Saxena (Independent Associate)',
             clientName: 'Doon Valley Wellness Center & Clinics',
             contactPerson: 'Dr. K. N. Joshi',
             mobile: '+91 94111 88776',
@@ -370,33 +690,32 @@ const DisicurePartner = {
             city: 'Dehradun',
             state: 'Uttarakhand',
             requirement: 'Third-Party Syrup Manufacturing 2,000 bottles (DISILIV-DS & DISIKUF)',
-            estimatedValue: '₹1,40,000',
-            commission: '₹11,200',
             leadStatus: '🟣 Converted',
+            businessValueNumeric: 140000,
+            businessValue: '₹1,40,000',
+            commissionRate: '8%',
+            commissionNumeric: 11200,
+            commission: '₹11,200',
+            paymentStatus: '🟢 Paid',
+            paidNumeric: 11200,
+            paidFormatted: '₹11,200',
+            pendingNumeric: 0,
+            pendingFormatted: '₹0',
+            paymentRef: 'UTR-PNB-554411',
+            paymentDate: '2026-09-30',
             followUpDate: '2026-10-14',
             notes: 'First batch delivered successfully. Repeat scheduled for next month.',
-            createdDate: '2026-09-22'
+            createdDate: '2026-09-22',
+            lifecycleStages: [
+                { stage: 'Partner Attributed', timestamp: '2026-09-22 10:00', detail: 'Dr. Manoj K. Saxena' },
+                { stage: 'Converted & Delivered', timestamp: '2026-09-28 15:00', detail: 'Syrups batch cleared ₹1,40,000' },
+                { stage: 'Payment Disbursed', timestamp: '2026-09-30 16:30', detail: '8% referral incentive ₹11,200 paid' }
+            ]
         },
         {
-            leadId: 'PLEAD-2026-807',
-            partnerId: 'PRT-2026-104',
-            clientName: 'Rishikesh Central Pharmacy',
-            contactPerson: 'Mr. Manish Rawat',
-            mobile: '+91 98970 44551',
-            email: 'rawat@rishikeshpharmacy.com',
-            city: 'Rishikesh',
-            state: 'Uttarakhand',
-            requirement: 'Supply of Paracetamol 650 & Cefpodoxime-200 Tablets',
-            estimatedValue: '₹95,000',
-            commission: '₹7,600',
-            leadStatus: '🟡 Follow-up',
-            followUpDate: '2026-10-10',
-            notes: 'Following up after product catalog presentation.',
-            createdDate: '2026-10-04'
-        },
-        {
-            leadId: 'PLEAD-2026-808',
+            leadId: 'PLEAD-2026-850',
             partnerId: 'PRT-2026-105',
+            partnerName: 'BioPharm PCD Strategic Associates',
             clientName: 'Patna Central Hospital & Trauma Center',
             contactPerson: 'Dr. R. K. Choudhary',
             mobile: '+91 94310 77889',
@@ -404,16 +723,30 @@ const DisicurePartner = {
             city: 'Patna',
             state: 'Bihar',
             requirement: 'Institutional Bulk Antibiotic & Injectable Supply Contract',
-            estimatedValue: '₹8,40,000',
-            commission: '₹1,68,000',
             leadStatus: '🟣 Converted',
+            businessValueNumeric: 840000,
+            businessValue: '₹8,40,000',
+            commissionRate: '20%',
+            commissionNumeric: 168000,
+            commission: '₹1,68,000',
+            paymentStatus: '🟢 Paid',
+            paidNumeric: 168000,
+            paidFormatted: '₹1,68,000',
+            paymentRef: 'UTR-SBI-778822',
+            paymentDate: '2026-09-15',
             followUpDate: '2026-10-16',
             notes: 'Agreement signed for 6 months. First batch dispatched.',
-            createdDate: '2026-08-20'
+            createdDate: '2026-08-20',
+            lifecycleStages: [
+                { stage: 'Partner Attributed', timestamp: '2026-08-20 12:00', detail: 'BioPharm PCD Strategic Associates' },
+                { stage: 'Converted & Supplied', timestamp: '2026-09-05 14:00', detail: 'PO cleared ₹8,40,000' },
+                { stage: 'Commission Disbursed', timestamp: '2026-09-15 11:00', detail: '20% margin ₹1,68,000 paid via UTR-SBI-778822' }
+            ]
         },
         {
-            leadId: 'PLEAD-2026-809',
+            leadId: 'PLEAD-2026-870',
             partnerId: 'PRT-2026-107',
+            partnerName: 'Nexus Global Pharma Agency',
             clientName: 'Guwahati Medical Stockists Union',
             contactPerson: 'Mr. Bipul Goswami',
             mobile: '+91 98640 55443',
@@ -421,12 +754,25 @@ const DisicurePartner = {
             city: 'Guwahati',
             state: 'Assam',
             requirement: 'Antibiotic Range Bulk Institutional Supply for NE Zone',
-            estimatedValue: '₹8,50,000',
-            commission: '₹1,27,500',
             leadStatus: '🟣 Converted',
+            businessValueNumeric: 850000,
+            businessValue: '₹8,50,000',
+            commissionRate: '15%',
+            commissionNumeric: 127500,
+            commission: '₹1,27,500',
+            paymentStatus: '🟢 Paid',
+            paidNumeric: 127500,
+            paidFormatted: '₹1,27,500',
+            paymentRef: 'UTR-AXIS-993311',
+            paymentDate: '2026-09-25',
             followUpDate: '2026-10-12',
             notes: 'Master stockist agreement executed. Dispatches in transit.',
-            createdDate: '2026-09-10'
+            createdDate: '2026-09-10',
+            lifecycleStages: [
+                { stage: 'Partner Attributed', timestamp: '2026-09-10 14:00', detail: 'Nexus Global Pharma Agency' },
+                { stage: 'Converted & Agreement Locked', timestamp: '2026-09-20 16:00', detail: 'Order value ₹8,50,000' },
+                { stage: 'Payment Disbursed', timestamp: '2026-09-25 10:30', detail: '15% master brokerage ₹1,27,500 paid' }
+            ]
         }
     ],
 
@@ -832,6 +1178,136 @@ const DisicurePartner = {
     // --- ISOLATED PARTNER DATA ENGINE (STRICT SCOPE: ONLY LOGGED-IN PARTNER) ---
     // =========================================================================
 
+    // --- PARTNER LEAD LIFECYCLE & FUNNEL TRACKING ENGINE (MODULE 11) ---
+    getLeadById: function(leadId) {
+        const leads = this.getAllLeads();
+        return leads.find(l => l.leadId === leadId);
+    },
+
+    getPartnerLeadFunnel: function(partnerId) {
+        const leads = this.getPartnerLeads(partnerId);
+        const totalLeads = leads.length;
+        
+        // Funnel stages computation:
+        // Converted: leadStatus contains 'Converted'
+        // Qualified: leadStatus contains 'Converted', 'Negotiation', or 'Qualified'
+        // Contacted: Any lead that is beyond 'New' / 'Lost' / 'Hold'
+        const convertedLeads = leads.filter(l => l.leadStatus && l.leadStatus.includes('Converted')).length;
+        const negotiationLeads = leads.filter(l => l.leadStatus && l.leadStatus.includes('Negotiation')).length;
+        const qualifiedLeads = leads.filter(l => l.leadStatus && (l.leadStatus.includes('Converted') || l.leadStatus.includes('Negotiation') || l.leadStatus.includes('Qualified'))).length;
+        const contactedLeads = leads.filter(l => l.leadStatus && !l.leadStatus.includes('New') && !l.leadStatus.includes('Lost') && !l.leadStatus.includes('Hold')).length;
+        const newLeads = leads.filter(l => l.leadStatus && l.leadStatus.includes('New')).length;
+        const lostLeads = leads.filter(l => l.leadStatus && l.leadStatus.includes('Lost')).length;
+        const onHoldLeads = leads.filter(l => l.leadStatus && l.leadStatus.includes('Hold')).length;
+
+        let businessGeneratedNumeric = 0;
+        let commissionEarnedNumeric = 0;
+        let paidNumeric = 0;
+        let pendingNumeric = 0;
+        let totalPipelineValueNumeric = 0;
+
+        leads.forEach(l => {
+            const val = parseFloat(l.businessValueNumeric) || (parseFloat(String(l.estimatedValue || '').replace(/[^0-9.]/g, '')) || 0);
+            const comm = parseFloat(l.commissionNumeric) || (parseFloat(String(l.commission || '').replace(/[^0-9.]/g, '')) || 0);
+            const paid = parseFloat(l.paidNumeric) || 0;
+            const pending = parseFloat(l.pendingNumeric) || 0;
+
+            totalPipelineValueNumeric += val;
+
+            if (l.leadStatus && l.leadStatus.includes('Converted')) {
+                businessGeneratedNumeric += val;
+                commissionEarnedNumeric += comm;
+                paidNumeric += paid;
+                pendingNumeric += pending;
+            }
+        });
+
+        // Conversion rate
+        const conversionRate = totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
+
+        return {
+            totalLeads,
+            contactedLeads,
+            qualifiedLeads,
+            negotiationLeads,
+            convertedLeads,
+            newLeads,
+            lostLeads,
+            onHoldLeads,
+            conversionRate,
+            businessGeneratedNumeric,
+            businessGeneratedFormatted: `₹${businessGeneratedNumeric.toLocaleString('en-IN')}`,
+            commissionEarnedNumeric,
+            commissionEarnedFormatted: `₹${commissionEarnedNumeric.toLocaleString('en-IN')}`,
+            paidNumeric,
+            paidFormatted: `₹${paidNumeric.toLocaleString('en-IN')}`,
+            pendingNumeric,
+            pendingFormatted: `₹${pendingNumeric.toLocaleString('en-IN')}`,
+            totalPipelineValueNumeric,
+            totalPipelineValueFormatted: `₹${totalPipelineValueNumeric.toLocaleString('en-IN')}`
+        };
+    },
+
+    updateLeadLifecycle: function(leadId, updates) {
+        let leads = this.getAllLeads();
+        const index = leads.findIndex(l => l.leadId === leadId);
+        if (index === -1) return false;
+
+        const currentLead = leads[index];
+        const updatedLead = {
+            ...currentLead,
+            ...updates
+        };
+
+        // Recalculate formatted fields if numeric values updated
+        if (updates.businessValueNumeric !== undefined) {
+            updatedLead.businessValue = `₹${parseFloat(updates.businessValueNumeric || 0).toLocaleString('en-IN')}`;
+        }
+        if (updates.commissionNumeric !== undefined) {
+            updatedLead.commission = `₹${parseFloat(updates.commissionNumeric || 0).toLocaleString('en-IN')}`;
+        }
+        if (updates.paidNumeric !== undefined) {
+            updatedLead.paidFormatted = `₹${parseFloat(updates.paidNumeric || 0).toLocaleString('en-IN')}`;
+        }
+        if (updates.pendingNumeric !== undefined) {
+            updatedLead.pendingFormatted = `₹${parseFloat(updates.pendingNumeric || 0).toLocaleString('en-IN')}`;
+        }
+
+        // Add audit stage event to lifecycle stages
+        if (updates.newStageEvent) {
+            if (!updatedLead.lifecycleStages) updatedLead.lifecycleStages = [];
+            const now = new Date();
+            const dateStr = now.toISOString().replace('T', ' ').substring(0, 16);
+            updatedLead.lifecycleStages.push({
+                stage: updates.newStageEvent.stage || 'Status Updated',
+                timestamp: dateStr,
+                detail: updates.newStageEvent.detail || `Lead updated to ${updatedLead.leadStatus}`
+            });
+        }
+
+        leads[index] = updatedLead;
+        localStorage.setItem(this.LEADS_STORAGE_KEY, JSON.stringify(leads));
+
+        // Also update partner cached aggregate metrics
+        if (updatedLead.partnerId) {
+            const funnel = this.getPartnerLeadFunnel(updatedLead.partnerId);
+            this.updatePartner(updatedLead.partnerId, {
+                leadsGeneratedCount: funnel.totalLeads,
+                leadsConvertedCount: funnel.convertedLeads,
+                businessGeneratedFormatted: funnel.businessGeneratedFormatted,
+                businessGeneratedNumeric: funnel.businessGeneratedNumeric,
+                commissionEarnedFormatted: funnel.commissionEarnedFormatted,
+                commissionEarnedNumeric: funnel.commissionEarnedNumeric,
+                paymentReceivedFormatted: funnel.paidFormatted,
+                paymentReceivedNumeric: funnel.paidNumeric,
+                pendingPaymentFormatted: funnel.pendingFormatted,
+                pendingPaymentNumeric: funnel.pendingNumeric
+            });
+        }
+
+        return updatedLead;
+    },
+
     // 1. Leads Generated & Status Tracking (Filtered strictly by partnerId)
     getAllLeads: function() {
         this.init();
@@ -850,11 +1326,24 @@ const DisicurePartner = {
     addPartnerLead: function(partnerId, leadData) {
         let leads = this.getAllLeads();
         const nextId = `PLEAD-2026-${800 + leads.length + 1}`;
-        const dateStr = new Date().toISOString().substring(0, 10);
+        const now = new Date();
+        const dateStr = now.toISOString().substring(0, 10);
+        const timeStr = now.toISOString().replace('T', ' ').substring(0, 16);
+        const partner = this.getPartnerById(partnerId);
+        const partnerName = partner ? partner.companyName : `Partner ${partnerId}`;
+
+        // Parse numerical estimated value and compute partner commission
+        const cleanVal = parseFloat(String(leadData.estimatedValue || leadData.businessValueNumeric || '0').replace(/[^0-9.]/g, '')) || 0;
+        const ratePercent = partner && partner.commercialTerms && partner.commercialTerms.includes('%') 
+            ? (parseFloat(partner.commercialTerms.match(/(\d+)%/)?.[1]) || 10) 
+            : 10;
+        
+        const commVal = Math.round((cleanVal * ratePercent) / 100);
 
         const newLead = {
             leadId: nextId,
             partnerId: partnerId,
+            partnerName: partnerName,
             clientName: leadData.clientName,
             contactPerson: leadData.contactPerson,
             mobile: leadData.mobile,
@@ -862,12 +1351,26 @@ const DisicurePartner = {
             city: leadData.city || 'India',
             state: leadData.state || '',
             requirement: leadData.requirement,
-            estimatedValue: leadData.estimatedValue || 'Under Evaluation',
-            commission: leadData.commission || 'Calculating (8-15%)',
             leadStatus: leadData.leadStatus || '🟢 New',
+            businessValueNumeric: cleanVal,
+            businessValue: cleanVal > 0 ? `₹${cleanVal.toLocaleString('en-IN')}` : 'Under Evaluation',
+            commissionRate: `${ratePercent}%`,
+            commissionNumeric: commVal,
+            commission: commVal > 0 ? `₹${commVal.toLocaleString('en-IN')} (Potential)` : 'Calculating (10%)',
+            paymentStatus: '⚪ Lead In Pipeline',
+            paidNumeric: 0,
+            paidFormatted: '₹0',
+            pendingNumeric: 0,
+            pendingFormatted: '₹0',
+            paymentRef: 'N/A (Pipeline)',
+            paymentDate: 'Pending Close',
             followUpDate: leadData.followUpDate || dateStr,
             notes: leadData.notes || 'Referred via Partner Dashboard.',
-            createdDate: dateStr
+            createdDate: dateStr,
+            lifecycleStages: [
+                { stage: 'Partner Attributed', timestamp: timeStr, detail: `${partnerName} (${partnerId})` },
+                { stage: 'Lead Registered', timestamp: timeStr, detail: `${nextId} created for ${leadData.clientName}` }
+            ]
         };
 
         leads.unshift(newLead);
@@ -884,16 +1387,17 @@ const DisicurePartner = {
                 businessType: 'Partner Referred Client',
                 requirementType: 'Commercial Requirement',
                 productOrService: leadData.requirement,
-                source: `Partner Ref: ${partnerId}`,
-                notes: `Submitted by Partner ID ${partnerId}. Contact: ${leadData.contactPerson}. Notes: ${leadData.notes || ''}`
+                source: `Partner Ref: ${partnerId} (${partnerName})`,
+                notes: `Submitted by Partner ID ${partnerId}. Contact: ${leadData.contactPerson}. Value: ₹${cleanVal.toLocaleString('en-IN')}. Notes: ${leadData.notes || ''}`
             });
         }
 
-        // Increment partner counts
-        const partner = this.getPartnerById(partnerId);
+        // Increment partner counts and recompute funnel
         if (partner) {
+            const funnel = this.getPartnerLeadFunnel(partnerId);
             this.updatePartner(partnerId, {
-                leadsGeneratedCount: (partner.leadsGeneratedCount || 0) + 1
+                leadsGeneratedCount: funnel.totalLeads,
+                leadsConvertedCount: funnel.convertedLeads
             });
         }
 
@@ -1010,17 +1514,14 @@ const DisicurePartner = {
         return newOrder;
     },
 
-    // Summary KPIs calculation for current partner
+    // Summary KPIs calculation for current partner (Dynamically computed from live funnel & data)
     getPartnerSummaryKPIs: function(partnerId) {
         const partner = this.getPartnerById(partnerId) || {};
-        const leads = this.getPartnerLeads(partnerId);
+        const funnel = this.getPartnerLeadFunnel(partnerId);
         const followups = this.getPartnerFollowups(partnerId);
         const orders = this.getPartnerOrders(partnerId);
         const docs = this.getPartnerSharedDocuments(partnerId);
 
-        const totalLeads = leads.length || partner.leadsGeneratedCount || 0;
-        const convertedLeads = leads.filter(l => l.leadStatus && l.leadStatus.includes('Converted')).length || partner.leadsConvertedCount || 0;
-        const conversionRate = totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
         const pendingFollowups = followups.filter(f => f.status && f.status.includes('Scheduled')).length;
 
         return {
@@ -1034,18 +1535,29 @@ const DisicurePartner = {
             drugLicense: partner.drugLicense || 'UP/20B/2021/8849',
             accountManager: partner.accountManager || 'Mr. Nishant Chaturvedi (Director)',
             // Required Metric 1: Leads Generated
-            leadsGenerated: totalLeads,
+            leadsGenerated: funnel.totalLeads,
             // Required Metric 2: Leads Converted
-            leadsConverted: convertedLeads,
-            conversionRate: conversionRate,
+            leadsConverted: funnel.convertedLeads,
+            conversionRate: funnel.conversionRate,
+            // Funnel Stages:
+            contactedLeads: funnel.contactedLeads,
+            qualifiedLeads: funnel.qualifiedLeads,
+            negotiationLeads: funnel.negotiationLeads,
+            newLeads: funnel.newLeads,
             // Required Metric 3: Business Generated
-            businessGenerated: partner.businessGeneratedFormatted || '₹0',
+            businessGenerated: funnel.businessGeneratedFormatted,
+            businessGeneratedNumeric: funnel.businessGeneratedNumeric,
             // Required Metric 4: Commission / Earnings
-            commissionEarned: partner.commissionEarnedFormatted || '₹0',
+            commissionEarned: funnel.commissionEarnedFormatted,
+            commissionEarnedNumeric: funnel.commissionEarnedNumeric,
             // Required Metric 5: Payment Received
-            paymentReceived: partner.paymentReceivedFormatted || '₹0',
+            paymentReceived: funnel.paidFormatted,
+            paymentReceivedNumeric: funnel.paidNumeric,
             // Required Metric 6: Pending Payment
-            pendingPayment: partner.pendingPaymentFormatted || '₹0',
+            pendingPayment: funnel.pendingFormatted,
+            pendingPaymentNumeric: funnel.pendingNumeric,
+            // Pipeline Value
+            totalPipelineValue: funnel.totalPipelineValueFormatted,
             // Required Metric 7: Follow-ups Count
             pendingFollowups: pendingFollowups,
             totalFollowups: followups.length,
