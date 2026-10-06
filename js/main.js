@@ -1131,6 +1131,8 @@ const DisicureMain = {
             this.renderAdminCommissionsTable();
         } else if (tabId === 'tab-clients') {
             this.renderClientsTable();
+        } else if (tabId === 'tab-products') {
+            this.renderAdminProductsTable();
         } else if (tabId === 'tab-financials') {
             this.renderPaymentsTable();
         } else if (tabId === 'tab-documents') {
@@ -5800,6 +5802,402 @@ const DisicureMain = {
         link.click();
         document.body.removeChild(link);
         this.showToast('success', 'Client Ledger exported as CSV!');
+    },
+
+    // =========================================================================
+    // MODULE 14: PRODUCT & CATALOG MANAGEMENT CONTROLLER (NO-CODE CMS)
+    // =========================================================================
+    productState: {
+        searchQuery: '',
+        categoryFilter: 'all',
+        statusFilter: 'all',
+        sortFilter: 'newest'
+    },
+
+    renderAdminProductsTable: function() {
+        if (!window.DisicureData) return;
+        const allProducts = window.DisicureData.getAllProducts();
+
+        // 1. Calculate KPI Metrics
+        const total = allProducts.length;
+        const active = allProducts.filter(p => !p.status || p.status.includes('Active') || p.status.includes('Stock')).length;
+        const featured = allProducts.filter(p => !!p.isFeatured).length;
+        const uniqueCategories = new Set(allProducts.map(p => p.category || 'tablets')).size;
+
+        const setElText = (id, txt) => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = txt;
+        };
+        setElText('adm-prod-kpi-total', total);
+        setElText('adm-prod-kpi-active', active);
+        setElText('adm-prod-kpi-featured', featured);
+        setElText('adm-prod-kpi-cats', uniqueCategories);
+
+        // 2. Filter & Sort Products
+        const query = (this.productState.searchQuery || '').toLowerCase().trim();
+        const catF = this.productState.categoryFilter;
+        const statusF = this.productState.statusFilter;
+        const sortF = this.productState.sortFilter;
+
+        let filtered = allProducts.filter(p => {
+            const matchesQuery = !query ||
+                (p.name && p.name.toLowerCase().includes(query)) ||
+                (p.composition && p.composition.toLowerCase().includes(query)) ||
+                (p.therapeuticCategory && p.therapeuticCategory.toLowerCase().includes(query)) ||
+                (p.packaging && p.packaging.toLowerCase().includes(query)) ||
+                (p.details && p.details.toLowerCase().includes(query)) ||
+                (p.id && p.id.toLowerCase().includes(query)) ||
+                (p.slug && p.slug.toLowerCase().includes(query));
+
+            const matchesCat = (catF === 'all') || ((p.category || '').toLowerCase() === catF.toLowerCase());
+            const matchesStatus = (statusF === 'all') || (p.status === statusF);
+
+            return matchesQuery && matchesCat && matchesStatus;
+        });
+
+        // Sorting
+        if (sortF === 'name-asc') {
+            filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        } else if (sortF === 'category') {
+            filtered.sort((a, b) => (a.category || '').localeCompare(b.category || ''));
+        } else if (sortF === 'featured') {
+            filtered.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
+        }
+
+        // Update count indicator
+        setElText('adm-prod-showing-count', `Showing ${filtered.length} of ${allProducts.length} pharmaceutical formulations`);
+
+        // Render Table Rows
+        const tbody = document.getElementById('adm-products-tbody');
+        const emptyState = document.getElementById('adm-prod-empty');
+        if (!tbody) return;
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '';
+            if (emptyState) emptyState.classList.remove('hidden');
+            return;
+        }
+
+        if (emptyState) emptyState.classList.add('hidden');
+
+        tbody.innerHTML = filtered.map(p => {
+            // Status Badge
+            let statusBadge = '';
+            const st = p.status || 'Active / In Stock';
+            if (st.includes('Low')) {
+                statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">🟡 Low Stock</span>`;
+            } else if (st.includes('Upcoming')) {
+                statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">🔵 Upcoming</span>`;
+            } else if (st.includes('Active') || st.includes('Stock')) {
+                statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">🟢 In Stock</span>`;
+            } else {
+                statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">🔴 ${st}</span>`;
+            }
+
+            // Featured Badge
+            const featuredBadge = p.isFeatured
+                ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-50 text-amber-800 border border-amber-200">⭐ Featured</span>`
+                : `<span class="text-[10px] text-gray-400">Regular</span>`;
+
+            // Image Thumbnail
+            const imgSrc = p.image || 'images/logo.jpg';
+
+            return `
+            <tr class="border-b border-gray-100 hover:bg-slate-50 text-xs transition-colors">
+                <td class="p-4 text-center">
+                    <div class="w-12 h-12 rounded-xl bg-slate-100 border border-gray-200 overflow-hidden mx-auto flex items-center justify-center group relative cursor-pointer" onclick="window.DisicureMain.openEditProductModal('${p.id}')">
+                        <img src="${imgSrc}" alt="${p.name}" class="w-full h-full object-contain p-1 group-hover:scale-110 transition-transform">
+                    </div>
+                </td>
+                <td class="p-4">
+                    <span class="font-extrabold text-navy-950 block hover:text-blue-600 cursor-pointer" onclick="window.DisicureMain.openEditProductModal('${p.id}')">
+                        ${p.name}
+                    </span>
+                    <a href="#/product/${p.slug}" class="text-[10px] text-blue-600 font-mono hover:underline block mt-0.5">
+                        #/product/${p.slug}
+                    </a>
+                </td>
+                <td class="p-4">
+                    <span class="font-bold text-blue-900 block line-clamp-1">${p.composition}</span>
+                    <span class="text-[10px] text-gray-500 block mt-0.5">${p.therapeuticCategory || 'General Healthcare'}</span>
+                </td>
+                <td class="p-4">
+                    <span class="font-semibold text-gray-800 block">${p.dosageForm || 'Tablet'} (${(p.category || 'tablets').toUpperCase()})</span>
+                    <span class="text-[10px] text-gray-500 block mt-0.5">📦 ${p.details || 'Standard'}</span>
+                </td>
+                <td class="p-4">
+                    <span class="font-medium text-gray-700 block">${p.packaging || 'PVC-Alu Blister'}</span>
+                    <span class="text-[10px] text-gray-400 font-mono">${p.id}</span>
+                </td>
+                <td class="p-4 whitespace-nowrap">
+                    <div class="space-y-1">
+                        <div>${statusBadge}</div>
+                        <div>${featuredBadge}</div>
+                    </div>
+                </td>
+                <td class="p-4 text-right whitespace-nowrap">
+                    <div class="flex items-center justify-end gap-1.5">
+                        <button onclick="window.DisicureMain.openEditProductModal('${p.id}')" title="Edit Product" class="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-lg text-xs font-bold transition-all flex items-center gap-1 border border-blue-100">
+                            <span>✏️ Edit</span>
+                        </button>
+                        <a href="#/product/${p.slug}" target="_blank" title="View Live Product Page" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-gray-700 rounded-lg text-xs font-bold transition-colors">
+                            👁️
+                        </a>
+                        <button onclick="window.DisicureMain.deleteProduct('${p.id}')" title="Delete Product" class="p-1.5 bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-600 rounded-lg text-xs font-bold transition-colors">
+                            🗑️
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            `;
+        }).join('');
+    },
+
+    filterProductsTable: function() {
+        const searchInput = document.getElementById('adm-prod-search-input');
+        const catFilter = document.getElementById('adm-prod-cat-filter');
+        const statusFilter = document.getElementById('adm-prod-status-filter');
+        const sortFilter = document.getElementById('adm-prod-sort-select');
+
+        if (searchInput) this.productState.searchQuery = searchInput.value;
+        if (catFilter) this.productState.categoryFilter = catFilter.value;
+        if (statusFilter) this.productState.statusFilter = statusFilter.value;
+        if (sortFilter) this.productState.sortFilter = sortFilter.value;
+
+        this.renderAdminProductsTable();
+    },
+
+    resetProductFilters: function() {
+        this.productState = {
+            searchQuery: '',
+            categoryFilter: 'all',
+            statusFilter: 'all',
+            sortFilter: 'newest'
+        };
+
+        const searchInput = document.getElementById('adm-prod-search-input');
+        const catFilter = document.getElementById('adm-prod-cat-filter');
+        const statusFilter = document.getElementById('adm-prod-status-filter');
+        const sortFilter = document.getElementById('adm-prod-sort-select');
+
+        if (searchInput) searchInput.value = '';
+        if (catFilter) catFilter.value = 'all';
+        if (statusFilter) statusFilter.value = 'all';
+        if (sortFilter) sortFilter.value = 'newest';
+
+        this.renderAdminProductsTable();
+    },
+
+    openCreateProductModal: function() {
+        const form = document.getElementById('adm-product-form');
+        if (form) form.reset();
+        
+        const editId = document.getElementById('prod-form-edit-id');
+        if (editId) editId.value = '';
+        
+        const imgData = document.getElementById('prod-form-image-data');
+        if (imgData) imgData.value = 'images/logo.jpg';
+
+        const previewImg = document.getElementById('prod-form-preview-img');
+        if (previewImg) previewImg.src = 'images/logo.jpg';
+
+        const previewText = document.getElementById('prod-form-preview-text');
+        if (previewText) previewText.innerText = 'Default Logo / Placeholder';
+
+        const title = document.getElementById('adm-prod-modal-title');
+        if (title) title.innerText = 'Add New Pharmaceutical Product';
+
+        const modal = document.getElementById('adm-product-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+    },
+
+    openEditProductModal: function(productId) {
+        if (!window.DisicureData) return;
+        const prod = window.DisicureData.getProductById(productId) || window.DisicureData.getProductBySlug(productId);
+        if (!prod) return;
+
+        const setVal = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.value = val !== undefined ? val : '';
+        };
+
+        setVal('prod-form-edit-id', prod.id);
+        setVal('prod-form-name', prod.name);
+        setVal('prod-form-comp', prod.composition);
+        setVal('prod-form-therap', prod.therapeuticCategory);
+        setVal('prod-form-cat', prod.category || 'tablets');
+        setVal('prod-form-dosage', prod.dosageForm);
+        setVal('prod-form-status', prod.status || 'Active / In Stock');
+        setVal('prod-form-pack', prod.packaging);
+        setVal('prod-form-details', prod.details);
+        setVal('prod-form-desc', prod.description);
+        
+        // Indications & Benefits
+        setVal('prod-form-indications', Array.isArray(prod.indications) ? prod.indications.join('\n') : (prod.indications || ''));
+        setVal('prod-form-benefits', Array.isArray(prod.benefits) ? prod.benefits.join('\n') : (prod.benefits || ''));
+
+        // Image
+        setVal('prod-form-image-data', prod.image || 'images/logo.jpg');
+        setVal('prod-form-image-url', prod.image || '');
+
+        const previewImg = document.getElementById('prod-form-preview-img');
+        if (previewImg) previewImg.src = prod.image || 'images/logo.jpg';
+
+        const previewText = document.getElementById('prod-form-preview-text');
+        if (previewText) previewText.innerText = 'Current Visual Asset';
+
+        // Featured Checkbox
+        const featuredCb = document.getElementById('prod-form-featured');
+        if (featuredCb) featuredCb.checked = !!prod.isFeatured;
+
+        const title = document.getElementById('adm-prod-modal-title');
+        if (title) title.innerText = `Edit Formulation: ${prod.name}`;
+
+        const modal = document.getElementById('adm-product-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+    },
+
+    closeProductModal: function() {
+        const modal = document.getElementById('adm-product-modal');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+    },
+
+    handleProductImageUpload: function(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const base64 = e.target.result;
+            const imgData = document.getElementById('prod-form-image-data');
+            if (imgData) imgData.value = base64;
+
+            const previewImg = document.getElementById('prod-form-preview-img');
+            if (previewImg) previewImg.src = base64;
+
+            const previewText = document.getElementById('prod-form-preview-text');
+            if (previewText) previewText.innerText = `Uploaded: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+        };
+        reader.readAsDataURL(file);
+    },
+
+    handleProductImageUrlInput: function(url) {
+        const cleanUrl = url.trim();
+        if (!cleanUrl) return;
+
+        const imgData = document.getElementById('prod-form-image-data');
+        if (imgData) imgData.value = cleanUrl;
+
+        const previewImg = document.getElementById('prod-form-preview-img');
+        if (previewImg) previewImg.src = cleanUrl;
+
+        const previewText = document.getElementById('prod-form-preview-text');
+        if (previewText) previewText.innerText = 'Custom Image URL';
+    },
+
+    saveProductForm: function(event) {
+        if (event) event.preventDefault();
+        if (!window.DisicureData) return;
+
+        const form = document.getElementById('adm-product-form');
+        if (!form) return;
+
+        const formData = new FormData(form);
+        const editId = document.getElementById('prod-form-edit-id').value;
+        const imgVal = document.getElementById('prod-form-image-data').value || formData.get('imageUrl') || 'images/logo.jpg';
+        const isFeatured = document.getElementById('prod-form-featured').checked;
+
+        const productData = {
+            name: formData.get('name'),
+            composition: formData.get('composition'),
+            therapeuticCategory: formData.get('therapeuticCategory'),
+            category: formData.get('category'),
+            dosageForm: formData.get('dosageForm'),
+            status: formData.get('status'),
+            packaging: formData.get('packaging'),
+            details: formData.get('details'),
+            description: formData.get('description'),
+            indications: (formData.get('indications') || '').split('\n').map(s => s.trim()).filter(Boolean),
+            benefits: (formData.get('benefits') || '').split('\n').map(s => s.trim()).filter(Boolean),
+            image: imgVal,
+            isFeatured: isFeatured
+        };
+
+        if (editId) {
+            window.DisicureData.updateProduct(editId, productData);
+            this.showToast('success', `Product "${productData.name}" updated successfully!`);
+        } else {
+            const created = window.DisicureData.addProduct(productData);
+            this.showToast('success', `New formulation "${created.name}" published to catalog!`);
+        }
+
+        this.closeProductModal();
+        this.renderAdminProductsTable();
+    },
+
+    deleteProduct: function(productId) {
+        if (!window.DisicureData) return;
+        const prod = window.DisicureData.getProductById(productId) || window.DisicureData.getProductBySlug(productId);
+        if (!prod) return;
+
+        if (confirm(`Are you sure you want to delete product "${prod.name}" from catalog? This will remove it from the website.`)) {
+            window.DisicureData.deleteProduct(prod.id);
+            this.showToast('info', `Product "${prod.name}" removed from catalog.`);
+            this.renderAdminProductsTable();
+        }
+    },
+
+    resetDefaultProducts: function() {
+        if (confirm('Are you sure you want to reset the product catalog to the default factory formulations? Any custom added products will be reset.')) {
+            window.DisicureData.resetProductsToDefault();
+            this.showToast('success', 'Product catalog restored to factory default list.');
+            this.renderAdminProductsTable();
+        }
+    },
+
+    exportProductsCSV: function() {
+        if (!window.DisicureData) return;
+        const products = window.DisicureData.getAllProducts();
+        if (!products || products.length === 0) {
+            this.showToast('error', 'No products available to export.');
+            return;
+        }
+
+        const headers = ['Product ID', 'Product Name', 'URL Slug', 'Molecule Composition', 'Therapeutic Category', 'Dosage Category', 'Dosage Form', 'Packaging Specs', 'Pack Details', 'Status', 'Featured on Home', 'Description'];
+        
+        const rows = products.map(p => [
+            `"${p.id}"`,
+            `"${(p.name || '').replace(/"/g, '""')}"`,
+            `"${p.slug || ''}"`,
+            `"${(p.composition || '').replace(/"/g, '""')}"`,
+            `"${(p.therapeuticCategory || '').replace(/"/g, '""')}"`,
+            `"${p.category || ''}"`,
+            `"${p.dosageForm || ''}"`,
+            `"${(p.packaging || '').replace(/"/g, '""')}"`,
+            `"${(p.details || '').replace(/"/g, '""')}"`,
+            `"${p.status || 'Active'}"`,
+            `"${p.isFeatured ? 'Yes' : 'No'}"`,
+            `"${(p.description || '').replace(/"/g, '""')}"`
+        ].join(','));
+
+        const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows].join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', `Disicure_Product_Catalog_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        this.showToast('success', 'Product catalog exported as CSV!');
     }
 };
 

@@ -440,5 +440,147 @@ const DisicureData = {
     ]
 };
 
+// =========================================================================
+// MODULE 14: DYNAMIC PRODUCT CATALOG STORE & MANAGEMENT ENGINE
+// =========================================================================
+(function() {
+    const PRODUCT_STORAGE_KEY = 'disicure_products_catalog_store_v1';
+    const DEFAULT_PRODUCTS_LIST = JSON.parse(JSON.stringify(DisicureData.products));
+
+    DisicureData._initProductsStore = function() {
+        try {
+            const stored = localStorage.getItem(PRODUCT_STORAGE_KEY);
+            if (!stored) {
+                localStorage.setItem(PRODUCT_STORAGE_KEY, JSON.stringify(DEFAULT_PRODUCTS_LIST));
+                return DEFAULT_PRODUCTS_LIST;
+            }
+            return JSON.parse(stored);
+        } catch (e) {
+            console.error('[DisicureData] Error loading products store:', e);
+            return DEFAULT_PRODUCTS_LIST;
+        }
+    };
+
+    DisicureData._saveProductsStore = function(prods) {
+        try {
+            localStorage.setItem(PRODUCT_STORAGE_KEY, JSON.stringify(prods));
+        } catch (e) {
+            console.error('[DisicureData] Error saving products store:', e);
+        }
+    };
+
+    DisicureData.getAllProducts = function() {
+        return this._initProductsStore();
+    };
+
+    DisicureData.getProductById = function(id) {
+        const prods = this.getAllProducts();
+        return prods.find(p => p.id === id) || null;
+    };
+
+    DisicureData.getProductBySlug = function(slug) {
+        const prods = this.getAllProducts();
+        return prods.find(p => p.slug === slug || p.id === slug) || null;
+    };
+
+    DisicureData.addProduct = function(prodData) {
+        const prods = this.getAllProducts();
+        const baseSlug = (prodData.name || 'product')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        
+        const uniqueId = prodData.id || ('prod-' + Date.now().toString().slice(-6));
+        let finalSlug = baseSlug || uniqueId;
+        
+        // Ensure slug uniqueness
+        let counter = 1;
+        while (prods.some(p => p.slug === finalSlug)) {
+            finalSlug = `${baseSlug}-${counter}`;
+            counter++;
+        }
+
+        const newProd = {
+            id: uniqueId,
+            slug: finalSlug,
+            name: prodData.name || 'New Pharmaceutical Product',
+            composition: prodData.composition || 'Active Pharmaceutical Ingredient (API)',
+            dosageForm: prodData.dosageForm || 'Tablet',
+            therapeuticCategory: prodData.therapeuticCategory || 'General Healthcare',
+            packaging: prodData.packaging || 'PVC-Aluminium Foil Blister Pack',
+            details: prodData.details || '10x10 Pack',
+            description: prodData.description || 'High-grade pharmaceutical formulation manufactured under strict cGMP standards.',
+            indications: Array.isArray(prodData.indications) ? prodData.indications : (typeof prodData.indications === 'string' ? prodData.indications.split('\n').map(s => s.trim()).filter(Boolean) : []),
+            benefits: Array.isArray(prodData.benefits) ? prodData.benefits : (typeof prodData.benefits === 'string' ? prodData.benefits.split('\n').map(s => s.trim()).filter(Boolean) : []),
+            image: prodData.image || 'images/logo.jpg',
+            category: (prodData.category || 'tablets').toLowerCase(),
+            status: prodData.status || 'Active / In Stock',
+            isFeatured: !!prodData.isFeatured,
+            createdAt: new Date().toISOString()
+        };
+
+        prods.unshift(newProd);
+        this._saveProductsStore(prods);
+        return newProd;
+    };
+
+    DisicureData.updateProduct = function(id, updatedFields) {
+        const prods = this.getAllProducts();
+        const idx = prods.findIndex(p => p.id === id || p.slug === id);
+        if (idx === -1) return null;
+
+        const existing = prods[idx];
+        const updated = {
+            ...existing,
+            ...updatedFields,
+            id: existing.id, // Preserve ID
+            slug: existing.slug, // Preserve slug for SEO consistency
+            category: (updatedFields.category || existing.category || 'tablets').toLowerCase(),
+            isFeatured: updatedFields.isFeatured !== undefined ? !!updatedFields.isFeatured : existing.isFeatured,
+            updatedAt: new Date().toISOString()
+        };
+
+        if (updatedFields.indications !== undefined) {
+            updated.indications = Array.isArray(updatedFields.indications)
+                ? updatedFields.indications
+                : (typeof updatedFields.indications === 'string' ? updatedFields.indications.split('\n').map(s => s.trim()).filter(Boolean) : existing.indications);
+        }
+
+        if (updatedFields.benefits !== undefined) {
+            updated.benefits = Array.isArray(updatedFields.benefits)
+                ? updatedFields.benefits
+                : (typeof updatedFields.benefits === 'string' ? updatedFields.benefits.split('\n').map(s => s.trim()).filter(Boolean) : existing.benefits);
+        }
+
+        prods[idx] = updated;
+        this._saveProductsStore(prods);
+        return updated;
+    };
+
+    DisicureData.deleteProduct = function(id) {
+        let prods = this.getAllProducts();
+        const idx = prods.findIndex(p => p.id === id || p.slug === id);
+        if (idx === -1) return false;
+
+        prods.splice(idx, 1);
+        this._saveProductsStore(prods);
+        return true;
+    };
+
+    DisicureData.resetProductsToDefault = function() {
+        this._saveProductsStore(DEFAULT_PRODUCTS_LIST);
+        return DEFAULT_PRODUCTS_LIST;
+    };
+
+    // Ensure DisicureData.products dynamically resolves to live catalog
+    Object.defineProperty(DisicureData, 'products', {
+        get: function() {
+            return DisicureData.getAllProducts();
+        },
+        configurable: true,
+        enumerable: true
+    });
+})();
+
 // Make data globally accessible for non-module scripts
 window.DisicureData = DisicureData;

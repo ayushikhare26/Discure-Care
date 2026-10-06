@@ -106,9 +106,9 @@ const DisicureRouter = {
             return this.templates.adminLeads();
         }
 
-        if (hash.startsWith('#/products/')) {
-            const slug = hash.replace('#/products/', '');
-            const product = window.DisicureData.products.find(p => p.slug === slug);
+        if (hash.startsWith('#/products/') || hash.startsWith('#/product/')) {
+            const slug = hash.replace(/^#\/products?\//, '');
+            const product = (window.DisicureData.getProductBySlug && window.DisicureData.getProductBySlug(slug)) || window.DisicureData.products.find(p => p.slug === slug || p.id === slug);
             if (product) {
                 return this.templates.productDetail(product);
             }
@@ -1815,6 +1815,9 @@ const DisicureRouter = {
                         <button onclick="window.DisicureMain.switchAdminTab('tab-clients')" id="btn-tab-clients" class="admin-tab-btn px-4 py-2 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-blue-200 transition-all whitespace-nowrap flex items-center gap-2">
                             <span>🏢 Client & Customer Management</span>
                         </button>
+                        <button onclick="window.DisicureMain.switchAdminTab('tab-products')" id="btn-tab-products" class="admin-tab-btn px-4 py-2 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-blue-200 transition-all whitespace-nowrap flex items-center gap-2">
+                            <span>💊 Product Catalog Management</span>
+                        </button>
                         <button onclick="window.DisicureMain.switchAdminTab('tab-team')" id="btn-tab-team" class="admin-tab-btn px-4 py-2 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-blue-200 transition-all whitespace-nowrap flex items-center gap-2">
                             <span>👥 Team & Assignees</span>
                         </button>
@@ -3427,6 +3430,294 @@ const DisicureRouter = {
                         <div class="pt-2 flex justify-end gap-2">
                             <button type="button" onclick="window.DisicureMain.closeClientSubModal('cli-add-comm-modal')" class="px-3 py-1.5 bg-gray-100 text-xs font-bold rounded">Cancel</button>
                             <button type="submit" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded">Save Communication Log</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ================================================================= -->
+            <!-- TAB 8: PRODUCT & CATALOG MANAGEMENT (MODULE 14 - NO-CODE CMS)    -->
+            <!-- ================================================================= -->
+            <div id="tab-products" class="admin-tab-content hidden">
+                <section class="py-8 bg-white min-h-[75vh]">
+                    <div class="max-w-7xl mx-auto px-4 lg:px-8 space-y-6">
+                        
+                        <!-- Header & Actions Bar -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+                            <div>
+                                <h2 class="text-xl font-extrabold text-navy-950 flex items-center gap-2">
+                                    <span>💊 Pharmaceutical Formulation & Catalog Management</span>
+                                    <span class="text-[10px] font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">Live No-Code CMS</span>
+                                </h2>
+                                <p class="text-xs text-gray-500 font-normal mt-0.5">Add, edit, delete, update compositions, packaging specs, upload packaging images, and manage live product statuses directly from Admin without coding.</p>
+                            </div>
+                            <div class="flex items-center gap-2.5 flex-wrap">
+                                <button onclick="window.DisicureMain.resetDefaultProducts()" class="px-3 py-2.5 bg-slate-100 hover:bg-slate-200 text-gray-700 text-xs font-bold rounded-lg transition-all flex items-center gap-1 border border-gray-200" title="Restore factory catalog dataset">
+                                    <span>🔄 Reset Defaults</span>
+                                </button>
+                                <button onclick="window.DisicureMain.exportProductsCSV()" class="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-gray-700 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 border border-gray-200">
+                                    <span>📥 Export CSV</span>
+                                </button>
+                                <button onclick="window.DisicureMain.openCreateProductModal()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-2 transform hover:-translate-y-0.5">
+                                    <span>+ Add New Product</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 4 Summary KPI Metric Cards -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="bg-blue-50/40 border border-blue-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-blue-700 uppercase tracking-wider block">💊 Total Formulations</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-navy-950 mt-1.5" id="adm-prod-kpi-total">0</div>
+                                <p class="text-[11px] text-gray-500 mt-1">Live in catalog database</p>
+                            </div>
+                            <div class="bg-emerald-50/40 border border-emerald-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-emerald-700 uppercase tracking-wider block">🟢 Active / In Stock</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-emerald-600 mt-1.5" id="adm-prod-kpi-active">0</div>
+                                <p class="text-[11px] text-emerald-700 font-medium mt-1">Ready for supply & ordering</p>
+                            </div>
+                            <div class="bg-amber-50/40 border border-amber-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-amber-700 uppercase tracking-wider block">⭐ Featured on Home</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-amber-600 mt-1.5" id="adm-prod-kpi-featured">0</div>
+                                <p class="text-[11px] text-amber-700 font-medium mt-1">Showcased on main landing page</p>
+                            </div>
+                            <div class="bg-purple-50/40 border border-purple-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-purple-700 uppercase tracking-wider block">🏷️ Therapeutic Categories</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-purple-600 mt-1.5" id="adm-prod-kpi-cats">0</div>
+                                <p class="text-[11px] text-purple-700 font-medium mt-1">Diverse medical specialties</p>
+                            </div>
+                        </div>
+
+                        <!-- Search, Filter & View Controls -->
+                        <div class="bg-slate-50 border border-gray-200 p-4 rounded-xl shadow-sm space-y-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                                <!-- Search Input -->
+                                <div class="lg:col-span-2 relative">
+                                    <input type="text" id="adm-prod-search-input" oninput="window.DisicureMain.filterProductsTable()" placeholder="Search by Product Name, Molecule, Composition, Category..." class="w-full bg-white border border-gray-200 rounded-lg p-2.5 pl-9 text-xs font-medium focus:outline-none focus:border-blue-500 shadow-sm">
+                                    <span class="absolute left-3 top-3 text-gray-400">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                    </span>
+                                </div>
+
+                                <!-- Category Filter -->
+                                <div>
+                                    <select id="adm-prod-cat-filter" onchange="window.DisicureMain.filterProductsTable()" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-bold text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
+                                        <option value="all">All Dosage Categories</option>
+                                        <option value="tablets">💊 Tablets & Capsules</option>
+                                        <option value="syrups">🍯 Syrups & Liquids</option>
+                                        <option value="injectables">💉 Injectables & Infusions</option>
+                                        <option value="nutraceuticals">🥗 Nutraceuticals</option>
+                                        <option value="ointments">🧴 Ointments & Topicals</option>
+                                        <option value="sachets">📦 Sachets & Powders</option>
+                                    </select>
+                                </div>
+
+                                <!-- Status Filter -->
+                                <div>
+                                    <select id="adm-prod-status-filter" onchange="window.DisicureMain.filterProductsTable()" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-bold text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
+                                        <option value="all">All Product Statuses</option>
+                                        <option value="Active / In Stock">🟢 Active / In Stock</option>
+                                        <option value="Low Stock">🟡 Low Stock</option>
+                                        <option value="Upcoming Formulation">🔵 Upcoming Formulation</option>
+                                        <option value="Out of Stock">🔴 Out of Stock</option>
+                                        <option value="Discontinued">⚪ Discontinued</option>
+                                    </select>
+                                </div>
+
+                                <!-- Sort Filter -->
+                                <div>
+                                    <select id="adm-prod-sort-select" onchange="window.DisicureMain.filterProductsTable()" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-medium text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
+                                        <option value="newest">Sort: Recently Added</option>
+                                        <option value="name-asc">Product Name (A-Z)</option>
+                                        <option value="category">Category (A-Z)</option>
+                                        <option value="featured">Featured First</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Count Indicator & Reset -->
+                            <div class="flex items-center justify-between pt-1 text-xs">
+                                <span class="font-bold text-gray-600" id="adm-prod-showing-count">Loading product catalog...</span>
+                                <button onclick="window.DisicureMain.resetProductFilters()" class="text-blue-600 hover:text-blue-800 font-bold hover:underline">
+                                    Reset Filters
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Products Data Table -->
+                        <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse" id="adm-products-table">
+                                    <thead>
+                                        <tr class="bg-slate-50 text-[11px] font-extrabold text-navy-950 uppercase tracking-wider border-b border-gray-200">
+                                            <th class="p-4 w-16 text-center">Visual</th>
+                                            <th class="p-4">Product Name & URL Slug</th>
+                                            <th class="p-4">Active Molecule / Composition</th>
+                                            <th class="p-4">Therapeutic & Dosage Form</th>
+                                            <th class="p-4">Packaging Specs</th>
+                                            <th class="p-4">Catalog Status</th>
+                                            <th class="p-4 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adm-products-tbody" class="divide-y divide-gray-100 text-xs font-medium">
+                                        <!-- Populated dynamically via window.DisicureMain.renderAdminProductsTable() -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Empty Search Results Placeholder -->
+                            <div id="adm-prod-empty" class="hidden py-16 text-center">
+                                <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                                </div>
+                                <h3 class="text-base font-extrabold text-navy-950">No Products Found</h3>
+                                <p class="text-xs text-gray-500 max-w-sm mx-auto mt-1 font-normal leading-relaxed">
+                                    No formulations match your search query or selected category filters.
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+            </div>
+
+            <!-- ================================================================= -->
+            <!-- PRODUCT ADD / EDIT MODAL (MODULE 14)                              -->
+            <!-- ================================================================= -->
+            <div id="adm-product-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <div class="absolute inset-0 bg-navy-950/70 backdrop-blur-sm" onclick="window.DisicureMain.closeProductModal()"></div>
+                <div class="relative bg-white rounded-2xl p-6 md:p-8 max-w-3xl w-full mx-4 shadow-2xl z-10 max-h-[92vh] overflow-y-auto">
+                    <button class="absolute top-4 right-4 text-gray-400 hover:text-navy-950 focus:outline-none" onclick="window.DisicureMain.closeProductModal()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                    
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-lg">💊</span>
+                        <h3 class="text-xl font-extrabold text-navy-950" id="adm-prod-modal-title">Add New Pharmaceutical Product</h3>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-6 font-normal">Define molecule composition, therapeutic segment, packaging configurations, upload packaging visuals, and manage live availability.</p>
+                    
+                    <form id="adm-product-form" onsubmit="window.DisicureMain.saveProductForm(event)" class="space-y-4">
+                        <input type="hidden" id="prod-form-edit-id" name="id" value="">
+                        <input type="hidden" id="prod-form-image-data" name="image" value="">
+
+                        <!-- Name & Composition -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Product Brand Name *</label>
+                                <input type="text" id="prod-form-name" name="name" required placeholder="e.g. DISIMOL-SP Tablets" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-extrabold text-navy-950 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Therapeutic Category *</label>
+                                <input type="text" id="prod-form-therap" name="therapeuticCategory" required placeholder="e.g. Analgesic, Anti-inflammatory & Anti-edema" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-medium focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Active Molecule Composition (APIs & Strengths) *</label>
+                            <input type="text" id="prod-form-comp" name="composition" required placeholder="e.g. Aceclofenac 100 mg + Paracetamol 325 mg + Serratiopeptidase 15 mg" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold text-blue-900 focus:border-blue-500">
+                        </div>
+
+                        <!-- Dosage Form, Category & Status -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Dosage Form Category *</label>
+                                <select id="prod-form-cat" name="category" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold text-gray-700 focus:border-blue-500">
+                                    <option value="tablets">💊 Tablets</option>
+                                    <option value="capsules">💊 Capsules & Softgels</option>
+                                    <option value="syrups">🍯 Syrups & Oral Liquids</option>
+                                    <option value="injectables">💉 Injectables & Infusions</option>
+                                    <option value="nutraceuticals">🥗 Nutraceuticals & Supplements</option>
+                                    <option value="ointments">🧴 Ointments & Topicals</option>
+                                    <option value="sachets">📦 Sachets & Powders</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Form Type *</label>
+                                <input type="text" id="prod-form-dosage" name="dosageForm" required placeholder="e.g. Tablet / Softgel / Vial" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-medium focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Catalog Status *</label>
+                                <select id="prod-form-status" name="status" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold text-gray-700 focus:border-blue-500">
+                                    <option value="Active / In Stock">🟢 Active / In Stock</option>
+                                    <option value="Low Stock">🟡 Low Stock</option>
+                                    <option value="Upcoming Formulation">🔵 Upcoming Formulation</option>
+                                    <option value="Out of Stock">🔴 Out of Stock</option>
+                                    <option value="Discontinued">⚪ Discontinued</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Packaging Specifications -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Packaging Specification (Material / Blister) *</label>
+                                <input type="text" id="prod-form-pack" name="packaging" required placeholder="e.g. Attractive Alu-Alu Pack / PVC Blister" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-medium focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Pack Size / Configuration Details *</label>
+                                <input type="text" id="prod-form-details" name="details" required placeholder="e.g. 10x10 Tablets / 200ml Bottle" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-medium focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Pharmacological / Product Description *</label>
+                            <textarea id="prod-form-desc" name="description" rows="3" required placeholder="Enter comprehensive product overview, therapeutic mechanism, and pharmaceutical features..." class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-normal focus:border-blue-500 leading-relaxed"></textarea>
+                        </div>
+
+                        <!-- Clinical Indications & Benefits -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Indications / Uses (1 per line)</label>
+                                <textarea id="prod-form-indications" name="indications" rows="3" placeholder="Acute painful inflammatory conditions&#10;Joint pain and swelling&#10;Post-traumatic recovery" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-normal focus:border-blue-500"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Key Benefits / USPs (1 per line)</label>
+                                <textarea id="prod-form-benefits" name="benefits" rows="3" placeholder="Synergistic combination for comprehensive relief&#10;Addresses pain, inflammation and swelling together&#10;Rapid clinical onset" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-normal focus:border-blue-500"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Product Image Upload & Preview -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-gray-200 space-y-3">
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider">Product Visual / Packaging Image</label>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+                                <!-- Upload Input -->
+                                <div class="sm:col-span-2 space-y-2">
+                                    <div class="flex items-center gap-2">
+                                        <input type="file" id="prod-form-file-input" accept="image/*" onchange="window.DisicureMain.handleProductImageUpload(event)" class="text-xs file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:cursor-pointer">
+                                    </div>
+                                    <div class="text-[11px] text-gray-400">OR specify image file path / URL:</div>
+                                    <input type="text" id="prod-form-image-url" name="imageUrl" oninput="window.DisicureMain.handleProductImageUrlInput(this.value)" placeholder="e.g. images/disimol_sp.jpg or https://..." class="w-full bg-white border border-gray-200 rounded p-2 text-xs font-mono">
+                                </div>
+
+                                <!-- Image Preview Container -->
+                                <div class="flex flex-col items-center justify-center p-2 bg-white rounded-xl border border-gray-200">
+                                    <div class="w-20 h-20 rounded-lg bg-slate-100 overflow-hidden flex items-center justify-center border border-gray-100">
+                                        <img id="prod-form-preview-img" src="images/logo.jpg" alt="Preview" class="w-full h-full object-contain">
+                                    </div>
+                                    <span class="text-[10px] text-gray-500 mt-1 font-medium" id="prod-form-preview-text">Live Preview</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Featured Checkbox -->
+                        <div class="flex items-center gap-3 pt-1">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="prod-form-featured" name="isFeatured" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                                <span class="text-xs font-extrabold text-navy-950">⭐ Feature on Website Homepage (Featured Products Grid)</span>
+                            </label>
+                        </div>
+
+                        <!-- Form Action Buttons -->
+                        <div class="pt-4 flex items-center justify-end gap-3 border-t border-gray-100">
+                            <button type="button" onclick="window.DisicureMain.closeProductModal()" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded transition-colors">
+                                Cancel
+                            </button>
+                            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow-sm transition-all flex items-center gap-2">
+                                <span>Save Product Formulation</span>
+                            </button>
                         </div>
                     </form>
                 </div>
