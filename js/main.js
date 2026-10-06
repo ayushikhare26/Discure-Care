@@ -919,7 +919,7 @@ const DisicureMain = {
         });
     },
 
-    // --- 11. LEAD MANAGEMENT & PAYMENT MANAGEMENT ADMIN PANEL CONTROLLER ---
+    // --- 11. LEAD MANAGEMENT, PMS, DMS & TMS ADMIN PANEL CONTROLLER ---
     lmsState: {
         searchQuery: '',
         statusFilter: 'all',
@@ -940,8 +940,13 @@ const DisicureMain = {
         sortBy: 'newest'
     },
 
+    tmsState: {
+        searchQuery: '',
+        roleFilter: 'all'
+    },
+
     initAdminPanel: function() {
-        if (!window.DisicureLeads && !window.DisicurePayments && !window.DisicureDocuments) return;
+        if (!window.DisicureLeads && !window.DisicurePayments && !window.DisicureDocuments && !window.DisicureTeam) return;
 
         // LMS Search Input
         const searchInput = document.getElementById('lms-search-input');
@@ -1038,10 +1043,28 @@ const DisicureMain = {
             });
         }
 
+        // TMS (Team Management) Listeners
+        const tmsSearch = document.getElementById('tms-search-input');
+        if (tmsSearch) {
+            tmsSearch.addEventListener('input', (e) => {
+                this.tmsState.searchQuery = e.target.value.toLowerCase().trim();
+                this.renderTeamTable();
+            });
+        }
+
+        const tmsRoleSelect = document.getElementById('tms-role-select');
+        if (tmsRoleSelect) {
+            tmsRoleSelect.addEventListener('change', (e) => {
+                this.tmsState.roleFilter = e.target.value;
+                this.renderTeamTable();
+            });
+        }
+
         // Initial Full Render
         this.renderAdminLeads();
         this.renderPaymentsTable();
         this.renderDocumentsTable();
+        this.renderTeamTable();
     },
 
     // Tab Switching Functionality
@@ -1079,6 +1102,8 @@ const DisicureMain = {
             this.renderPaymentsTable();
         } else if (tabId === 'tab-documents') {
             this.renderDocumentsTable();
+        } else if (tabId === 'tab-team') {
+            this.renderTeamTable();
         }
     },
 
@@ -2783,6 +2808,544 @@ const DisicureMain = {
             modal.classList.add('hidden');
             document.body.classList.remove('overflow-hidden');
         }
+    },
+
+    // =========================================================================
+    // --- 14. TEAM MANAGEMENT & RBAC GOVERNANCE (TMS) CONTROLLER METHODS ---
+    // =========================================================================
+    renderTeamTable: function() {
+        if (!window.DisicureTeam) return;
+        const allMembers = window.DisicureTeam.getAllMembers();
+        const summary = window.DisicureTeam.getSummary();
+
+        // Update Summary KPI Cards
+        const setElText = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = val;
+        };
+
+        setElText('tms-total-members', summary.totalMembers);
+        setElText('tms-total-admins', (summary.countSuperAdmin + summary.countAdmin));
+        setElText('tms-total-sales', summary.countSales);
+        setElText('tms-total-partners', summary.countPartner);
+
+        // Render Role Pills
+        this.renderTeamRolePills(summary);
+
+        // Filter Team Members
+        const query = this.tmsState.searchQuery;
+        let filtered = allMembers.filter(m => {
+            const matchesQuery = !query ||
+                (m.name && m.name.toLowerCase().includes(query)) ||
+                (m.email && m.email.toLowerCase().includes(query)) ||
+                (m.mobile && m.mobile.toLowerCase().includes(query)) ||
+                (m.username && m.username.toLowerCase().includes(query)) ||
+                (m.dept && m.dept.toLowerCase().includes(query)) ||
+                (m.designation && m.designation.toLowerCase().includes(query)) ||
+                (m.role && m.role.toLowerCase().includes(query));
+
+            const matchesRole = this.tmsState.roleFilter === 'all' || m.role.includes(this.tmsState.roleFilter);
+
+            return matchesQuery && matchesRole;
+        });
+
+        const tbody = document.getElementById('tms-team-tbody');
+        const emptyState = document.getElementById('tms-empty-state');
+        const countDisplay = document.getElementById('tms-showing-count');
+
+        if (countDisplay) {
+            countDisplay.innerText = `Showing ${filtered.length} of ${allMembers.length} Team Members`;
+        }
+
+        if (!tbody) return;
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '';
+            if (emptyState) emptyState.classList.remove('hidden');
+            return;
+        }
+
+        if (emptyState) emptyState.classList.add('hidden');
+
+        let rowsHtml = '';
+        filtered.forEach(m => {
+            const roleBadgeClass = m.role.includes('Super Admin') ? 'bg-amber-100 text-amber-900 border-amber-300' :
+                                   m.role.includes('Admin') ? 'bg-blue-100 text-blue-900 border-blue-300' :
+                                   m.role.includes('Sales') ? 'bg-emerald-100 text-emerald-900 border-emerald-300' :
+                                   m.role.includes('Partner') ? 'bg-purple-100 text-purple-900 border-purple-300' :
+                                   'bg-indigo-100 text-indigo-900 border-indigo-300';
+
+            const statusBadgeClass = m.accountStatus && m.accountStatus.includes('Active') ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                     m.accountStatus && m.accountStatus.includes('Leave') ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                     'bg-rose-50 text-rose-700 border-rose-200';
+
+            rowsHtml += `
+            <tr class="border-b border-gray-100 hover:bg-indigo-50/20 transition-colors text-xs">
+                <!-- Member Profile / Name -->
+                <td class="p-3.5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-full ${m.avatarBg || 'bg-blue-600'} text-white font-extrabold flex items-center justify-center text-sm shadow-sm shrink-0">
+                            ${m.avatar || m.name.charAt(0)}
+                        </div>
+                        <div>
+                            <button onclick="window.DisicureMain.openTeamMemberDrawer('${m.memberId}')" class="font-extrabold text-navy-950 hover:text-blue-600 text-left transition-colors">
+                                ${m.name}
+                            </button>
+                            <span class="text-[11px] text-gray-500 block font-normal">${m.designation || 'Specialist'} • <span class="text-gray-400 font-mono">${m.memberId}</span></span>
+                        </div>
+                    </div>
+                </td>
+
+                <!-- Role Badge -->
+                <td class="p-3.5 whitespace-nowrap">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border ${roleBadgeClass}">
+                        ${m.role}
+                    </span>
+                    <span class="text-[10px] text-gray-400 block mt-1">${m.dept}</span>
+                </td>
+
+                <!-- Contact Details -->
+                <td class="p-3.5 whitespace-nowrap">
+                    <a href="tel:${m.mobile}" class="font-mono text-gray-700 hover:text-blue-600 block">${m.mobile}</a>
+                    <a href="mailto:${m.email}" class="text-[11px] text-gray-500 hover:underline block">${m.email}</a>
+                </td>
+
+                <!-- Portal Credentials -->
+                <td class="p-3.5 whitespace-nowrap font-mono text-xs">
+                    <div class="flex items-center gap-1.5 text-navy-950 font-bold">
+                        <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        <span>${m.username}</span>
+                    </div>
+                    <span class="text-[10px] text-gray-400 block mt-0.5">Hash: ${m.passwordHash || '••••••••'}</span>
+                </td>
+
+                <!-- Assigned Leads & Pipeline -->
+                <td class="p-3.5 whitespace-nowrap">
+                    <div class="flex items-center gap-2">
+                        <span class="font-extrabold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 text-xs">${m.assignedLeadsCount || 0} Leads</span>
+                    </div>
+                    <div class="text-[10px] text-gray-400 mt-1 flex items-center gap-1">
+                        <span>Win: <strong>${m.performance ? m.performance.winRate : 75}%</strong></span>
+                        <span>•</span>
+                        <span>Rev: <strong>${m.performance ? m.performance.revenueGenerated : '₹0'}</strong></span>
+                    </div>
+                </td>
+
+                <!-- Account Status -->
+                <td class="p-3.5 whitespace-nowrap">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${statusBadgeClass}">
+                        ${m.accountStatus || '🟢 Active'}
+                    </span>
+                    <span class="text-[10px] text-gray-400 block mt-0.5">Last: ${m.lastLoginDate ? m.lastLoginDate.split(' ')[0] : 'Today'}</span>
+                </td>
+
+                <!-- Actions -->
+                <td class="p-3.5 whitespace-nowrap text-right">
+                    <div class="flex items-center justify-end gap-1.5">
+                        <!-- View Profile Drawer -->
+                        <button onclick="window.DisicureMain.openTeamMemberDrawer('${m.memberId}')" class="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-md transition-colors" title="View Full Profile & Activity Audit">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        </button>
+                        
+                        <!-- Edit Profile Modal -->
+                        <button onclick="window.DisicureMain.openEditTeamModal('${m.memberId}')" class="p-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-md transition-colors" title="Edit Role & Permissions">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        </button>
+
+                        <!-- Delete Member -->
+                        <button onclick="window.DisicureMain.deleteTeamMember('${m.memberId}')" class="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-md transition-colors" title="Delete Account">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            `;
+        });
+
+        tbody.innerHTML = rowsHtml;
+    },
+
+    renderTeamRolePills: function(summary) {
+        const container = document.getElementById('tms-role-pills');
+        if (!container) return;
+
+        const roles = [
+            { key: 'all', label: 'All Roles', count: summary ? summary.totalMembers : 0, icon: '👥' },
+            { key: 'Super Admin', label: 'Super Admins', count: summary ? summary.countSuperAdmin : 0, icon: '👑' },
+            { key: 'Admin', label: 'Admins', count: summary ? summary.countAdmin : 0, icon: '🧑‍💼' },
+            { key: 'Sales', label: 'Sales Execs', count: summary ? summary.countSales : 0, icon: '📞' },
+            { key: 'Team Member', label: 'Team Members', count: summary ? summary.countTeam : 0, icon: '👨‍💻' },
+            { key: 'Partner', label: 'Partners', count: summary ? summary.countPartner : 0, icon: '🤝' }
+        ];
+
+        let html = '';
+        roles.forEach(r => {
+            const isActive = (r.key === 'all' && this.tmsState.roleFilter === 'all') || (r.key !== 'all' && this.tmsState.roleFilter === r.key);
+            const activeClass = isActive 
+                ? 'bg-indigo-600 text-white shadow-sm font-extrabold border-indigo-600' 
+                : 'bg-white text-gray-700 hover:bg-indigo-50 border-gray-200 font-medium';
+
+            html += `
+                <button onclick="window.DisicureMain.filterTeamRole('${r.key}')" class="px-3.5 py-1.5 rounded-lg border text-xs whitespace-nowrap transition-all duration-200 flex items-center gap-1.5 ${activeClass}">
+                    <span>${r.icon}</span>
+                    <span>${r.label}</span>
+                    <span class="text-[10px] px-1.5 py-0.2 rounded-full ${isActive ? 'bg-indigo-700 text-indigo-100' : 'bg-gray-100 text-gray-600'} font-bold">${r.count}</span>
+                </button>
+            `;
+        });
+
+        container.innerHTML = html;
+    },
+
+    filterTeamRole: function(roleKey) {
+        this.tmsState.roleFilter = roleKey;
+        const select = document.getElementById('tms-role-select');
+        if (select) {
+            select.value = roleKey;
+        }
+        this.renderTeamTable();
+    },
+
+    openAddTeamModal: function() {
+        const modal = document.getElementById('tms-add-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+    },
+
+    closeAddTeamModal: function() {
+        const modal = document.getElementById('tms-add-modal');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            const form = document.getElementById('tms-new-member-form');
+            if (form) form.reset();
+        }
+    },
+
+    saveNewTeamMember: function(event) {
+        event.preventDefault();
+        const form = document.getElementById('tms-new-member-form');
+        if (!form || !window.DisicureTeam) return;
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        window.DisicureTeam.addMember({
+            name: data.name,
+            role: data.role,
+            dept: data.dept,
+            designation: data.designation,
+            mobile: data.mobile,
+            email: data.email,
+            username: data.username,
+            accountStatus: data.accountStatus,
+            assignedLeadsCount: parseInt(data.assignedLeadsCount) || 0
+        });
+
+        this.closeAddTeamModal();
+        this.renderTeamTable();
+    },
+
+    openTeamMemberDrawer: function(memberId) {
+        if (!window.DisicureTeam) return;
+        const members = window.DisicureTeam.getAllMembers();
+        const member = members.find(m => m.memberId === memberId);
+        if (!member) return;
+
+        const drawer = document.getElementById('tms-profile-drawer');
+        const container = document.getElementById('tms-drawer-content');
+        if (!drawer || !container) return;
+
+        const roleBadgeClass = member.role.includes('Super Admin') ? 'bg-amber-100 text-amber-900 border-amber-300' :
+                               member.role.includes('Admin') ? 'bg-blue-100 text-blue-900 border-blue-300' :
+                               member.role.includes('Sales') ? 'bg-emerald-100 text-emerald-900 border-emerald-300' :
+                               member.role.includes('Partner') ? 'bg-purple-100 text-purple-900 border-purple-300' :
+                               'bg-indigo-100 text-indigo-900 border-indigo-300';
+
+        const historyHtml = (member.activityHistory && member.activityHistory.length > 0)
+            ? member.activityHistory.map(act => `
+                <div class="relative pl-6 pb-4 border-l-2 border-indigo-200 last:border-l-0 last:pb-0">
+                    <span class="absolute -left-1.5 top-0 w-3 h-3 rounded-full bg-indigo-600 ring-4 ring-indigo-50"></span>
+                    <div class="flex items-center justify-between text-[11px] mb-0.5">
+                        <strong class="text-navy-950 font-extrabold">${act.action}</strong>
+                        <span class="text-gray-400 font-mono text-[10px]">${act.date}</span>
+                    </div>
+                    <p class="text-xs text-gray-600 font-normal leading-relaxed">${act.detail}</p>
+                </div>
+            `).join('')
+            : '<p class="text-xs text-gray-400 font-normal">No activity logs recorded yet.</p>';
+
+        container.innerHTML = `
+        <div class="space-y-6">
+            <!-- Header Card with Profile -->
+            <div class="flex items-start justify-between border-b border-gray-100 pb-5">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-2xl ${member.avatarBg || 'bg-blue-600'} text-white font-extrabold text-2xl flex items-center justify-center shadow-md">
+                        ${member.avatar || member.name.charAt(0)}
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-xl font-extrabold text-navy-950">${member.name}</h3>
+                            <span class="text-xs px-2.5 py-0.5 rounded-full font-bold border ${roleBadgeClass}">${member.role}</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-0.5 font-medium">${member.designation || 'Corporate Specialist'} • <span class="text-indigo-600 font-bold">${member.dept}</span></p>
+                        <span class="text-[11px] text-gray-400 font-mono">Member ID: ${member.memberId}</span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="inline-block px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 mb-1">
+                        ${member.accountStatus || '🟢 Active'}
+                    </span>
+                    <span class="text-[10px] text-gray-400 block font-mono">Joined: ${member.createdDate ? member.createdDate.split(' ')[0] : '2026-01-10'}</span>
+                </div>
+            </div>
+
+            <!-- Credentials & Quick Info Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl border border-gray-200 text-xs">
+                <div>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Official Mobile</span>
+                    <span class="font-extrabold text-navy-950 font-mono">${member.mobile}</span>
+                </div>
+                <div>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Official Email</span>
+                    <span class="font-medium text-navy-950 truncate block">${member.email}</span>
+                </div>
+                <div>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Portal Username</span>
+                    <span class="font-extrabold text-indigo-700 font-mono">${member.username}</span>
+                </div>
+            </div>
+
+            <!-- Performance & Pipeline Metrics Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                <div class="p-3 bg-blue-50/50 rounded-xl border border-blue-100">
+                    <span class="text-[10px] font-bold text-blue-900 uppercase tracking-wider block">Assigned Leads</span>
+                    <span class="text-xl font-extrabold text-blue-700">${member.assignedLeadsCount || 0}</span>
+                </div>
+                <div class="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100">
+                    <span class="text-[10px] font-bold text-emerald-900 uppercase tracking-wider block">Win / Conversion</span>
+                    <span class="text-xl font-extrabold text-emerald-700">${member.performance ? member.performance.winRate : 75}%</span>
+                </div>
+                <div class="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100">
+                    <span class="text-[10px] font-bold text-indigo-900 uppercase tracking-wider block">Revenue Won</span>
+                    <span class="text-base font-extrabold text-indigo-900 mt-1 block">${member.performance ? member.performance.revenueGenerated : '₹0'}</span>
+                </div>
+                <div class="p-3 bg-amber-50/50 rounded-xl border border-amber-100">
+                    <span class="text-[10px] font-bold text-amber-900 uppercase tracking-wider block">Batches Handled</span>
+                    <span class="text-xl font-extrabold text-amber-800">${member.performance ? member.performance.completedBatches : 0}</span>
+                </div>
+            </div>
+
+            <!-- Activity Audit Trail Timeline -->
+            <div class="space-y-3 bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                    <h4 class="text-xs font-extrabold text-navy-950 uppercase tracking-wider flex items-center gap-2">
+                        <span>📜 Activity History & Audit Trail</span>
+                    </h4>
+                    <span class="text-[10px] text-gray-400">Enterprise Compliance Log</span>
+                </div>
+                <div class="space-y-2 pt-2">
+                    ${historyHtml}
+                </div>
+            </div>
+
+            <!-- Action Controls -->
+            <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                <button type="button" onclick="window.DisicureMain.deleteTeamMember('${member.memberId}')" class="px-4 py-2 bg-rose-50 text-rose-700 hover:bg-rose-600 hover:text-white text-xs font-bold rounded transition-colors">
+                    Delete Member
+                </button>
+                <div class="flex gap-2">
+                    <button type="button" onclick="window.DisicureMain.closeTeamMemberDrawer()" class="px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded">
+                        Close
+                    </button>
+                    <button type="button" onclick="window.DisicureMain.closeTeamMemberDrawer(); window.DisicureMain.openEditTeamModal('${member.memberId}')" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded shadow">
+                        Edit Profile & Role
+                    </button>
+                </div>
+            </div>
+        </div>
+        `;
+
+        drawer.classList.remove('hidden');
+        drawer.classList.add('flex');
+        document.body.classList.add('overflow-hidden');
+    },
+
+    closeTeamMemberDrawer: function() {
+        const drawer = document.getElementById('tms-profile-drawer');
+        if (drawer) {
+            drawer.classList.remove('flex');
+            drawer.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    },
+
+    openEditTeamModal: function(memberId) {
+        if (!window.DisicureTeam) return;
+        const members = window.DisicureTeam.getAllMembers();
+        const member = members.find(m => m.memberId === memberId);
+        if (!member) return;
+
+        const modal = document.getElementById('tms-edit-modal');
+        const idInput = document.getElementById('tms-edit-id');
+        const nameInput = document.getElementById('tms-edit-name');
+        const roleSelect = document.getElementById('tms-edit-role');
+        const mobileInput = document.getElementById('tms-edit-mobile');
+        const emailInput = document.getElementById('tms-edit-email');
+        const deptInput = document.getElementById('tms-edit-dept');
+        const desigInput = document.getElementById('tms-edit-designation');
+        const statusSelect = document.getElementById('tms-edit-status');
+
+        if (idInput) idInput.value = member.memberId;
+        if (nameInput) nameInput.value = member.name;
+        if (roleSelect) roleSelect.value = member.role;
+        if (mobileInput) mobileInput.value = member.mobile;
+        if (emailInput) emailInput.value = member.email;
+        if (deptInput) deptInput.value = member.dept || '';
+        if (desigInput) desigInput.value = member.designation || '';
+        if (statusSelect) statusSelect.value = member.accountStatus || '🟢 Active';
+
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+    },
+
+    closeEditTeamModal: function() {
+        const modal = document.getElementById('tms-edit-modal');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    },
+
+    saveEditTeamMember: function(event) {
+        event.preventDefault();
+        const form = document.getElementById('tms-edit-member-form');
+        if (!form || !window.DisicureTeam) return;
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        const updatePayload = {
+            name: data.name,
+            role: data.role,
+            mobile: data.mobile,
+            email: data.email,
+            dept: data.dept,
+            designation: data.designation,
+            accountStatus: data.accountStatus
+        };
+
+        if (data.newPassword && data.newPassword.trim()) {
+            updatePayload.passwordHash = '••••••••••••';
+            window.DisicureTeam.logActivity(data.memberId, 'Password Reset', 'Portal login credential updated by Super Admin.');
+        }
+
+        window.DisicureTeam.updateMember(data.memberId, updatePayload);
+        this.closeEditTeamModal();
+        this.renderTeamTable();
+    },
+
+    deleteTeamMember: function(memberId) {
+        if (confirm(`Are you sure you want to delete team member ${memberId}?`)) {
+            if (window.DisicureTeam) {
+                window.DisicureTeam.deleteMember(memberId);
+            }
+            this.closeTeamMemberDrawer();
+            this.renderTeamTable();
+        }
+    },
+
+    // Role-Based Access Control (RBAC) Permissions Matrix
+    openRBACModal: function() {
+        this.renderRBACMatrix();
+        const modal = document.getElementById('tms-rbac-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+    },
+
+    closeRBACModal: function() {
+        const modal = document.getElementById('tms-rbac-modal');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    },
+
+    renderRBACMatrix: function() {
+        if (!window.DisicureTeam) return;
+        const permissions = window.DisicureTeam.getRBACPermissions();
+        const tbody = document.getElementById('tms-rbac-tbody');
+        if (!tbody) return;
+
+        const roles = ['👑 Super Admin', '🧑‍💼 Admin', '📞 Sales Executive', '👨‍💻 Team Member', '🤝 Partner'];
+        let html = '';
+
+        roles.forEach(role => {
+            const perm = permissions[role] || {};
+            const isSuperAdmin = role.includes('Super Admin');
+
+            html += `
+            <tr class="border-b border-gray-100 hover:bg-slate-50 text-xs">
+                <td class="p-3.5 font-extrabold text-navy-950">
+                    <span class="block">${role}</span>
+                    <span class="text-[10px] text-gray-400 font-normal">Governance Level</span>
+                </td>
+                <td class="p-3.5 text-center">
+                    <input type="checkbox" name="${role}_dashboard" ${perm.dashboard ? 'checked' : ''} ${isSuperAdmin ? 'disabled checked' : ''} class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer">
+                </td>
+                <td class="p-3.5 text-center">
+                    <input type="checkbox" name="${role}_leads" ${perm.leads_view ? 'checked' : ''} ${isSuperAdmin ? 'disabled checked' : ''} class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer">
+                </td>
+                <td class="p-3.5 text-center">
+                    <input type="checkbox" name="${role}_payments" ${perm.payments_view ? 'checked' : ''} ${isSuperAdmin ? 'disabled checked' : ''} class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer">
+                </td>
+                <td class="p-3.5 text-center">
+                    <input type="checkbox" name="${role}_documents" ${perm.documents_view ? 'checked' : ''} ${isSuperAdmin ? 'disabled checked' : ''} class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer">
+                </td>
+                <td class="p-3.5 text-center">
+                    <input type="checkbox" name="${role}_team" ${perm.team_manage ? 'checked' : ''} ${isSuperAdmin ? 'disabled checked' : ''} class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer">
+                </td>
+            </tr>
+            `;
+        });
+
+        tbody.innerHTML = html;
+    },
+
+    saveRBACMatrix: function(event) {
+        event.preventDefault();
+        const form = document.getElementById('tms-rbac-form');
+        if (!form || !window.DisicureTeam) return;
+
+        const roles = ['👑 Super Admin', '🧑‍💼 Admin', '📞 Sales Executive', '👨‍💻 Team Member', '🤝 Partner'];
+        const currentPerms = window.DisicureTeam.getRBACPermissions();
+
+        roles.forEach(role => {
+            if (role.includes('Super Admin')) return; // Super admin always full
+            if (!currentPerms[role]) currentPerms[role] = {};
+
+            currentPerms[role].dashboard = !!form[`${role}_dashboard`]?.checked;
+            currentPerms[role].leads_view = !!form[`${role}_leads`]?.checked;
+            currentPerms[role].payments_view = !!form[`${role}_payments`]?.checked;
+            currentPerms[role].documents_view = !!form[`${role}_documents`]?.checked;
+            currentPerms[role].team_manage = !!form[`${role}_team`]?.checked;
+        });
+
+        window.DisicureTeam.saveRBACPermissions(currentPerms);
+        this.closeRBACModal();
+        alert('Role permissions successfully updated and enforced.');
     }
 };
 

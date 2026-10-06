@@ -2169,21 +2169,126 @@ const DisicureRouter = {
             </div>
 
             <!-- ================================================================= -->
-            <!-- TAB 4: TEAM & ASSIGNEES DIRECTORY                                 -->
+            <!-- TAB 4: ENTERPRISE TEAM & ROLE MANAGEMENT SUITE (TMS / RBAC)       -->
             <!-- ================================================================= -->
             <div id="tab-team" class="admin-tab-content hidden">
                 <section class="py-8 bg-white min-h-[70vh]">
                     <div class="max-w-7xl mx-auto px-4 lg:px-8 space-y-6">
-                        <div class="flex items-center justify-between border-b border-gray-100 pb-4">
+                        
+                        <!-- Header & Top Action Buttons -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
                             <div>
-                                <h2 class="text-xl font-extrabold text-navy-950">👥 Disicure Team & Representative Directory</h2>
-                                <p class="text-xs text-gray-500 font-normal">Internal executive team, licensing desk officers, and commercial sales leads.</p>
+                                <h2 class="text-xl font-extrabold text-navy-950 flex items-center gap-2">
+                                    <span>👥 Enterprise Team & Role Access Governance</span>
+                                    <span class="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-100">TMS & RBAC</span>
+                                </h2>
+                                <p class="text-xs text-gray-500 font-normal mt-0.5">Provision user accounts, configure credentials, track sales conversion performance, view activity audit logs, and govern role access permissions.</p>
                             </div>
-                            <span class="text-xs font-bold text-cyan-800 bg-cyan-50 px-3 py-1 rounded-full border border-cyan-100">8 Active Representatives</span>
+                            <div class="flex items-center gap-2">
+                                <button onclick="window.DisicureMain.openRBACModal()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-gray-700 text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
+                                    <svg class="w-3.5 h-3.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                    <span>🔒 Role Permissions (RBAC)</span>
+                                </button>
+                                <button onclick="window.DisicureMain.openAddTeamModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 transform hover:-translate-y-0.5">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+                                    <span>+ Add Team Member</span>
+                                </button>
+                            </div>
                         </div>
-                        <div id="lms-team-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <!-- Populated dynamically via main.js -->
+
+                        <!-- 4 Summary KPI Metric Cards -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="bg-blue-50/40 border border-blue-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-blue-700 uppercase tracking-wider block">👥 Total Personnel</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-navy-950 mt-1.5" id="tms-total-members">0</div>
+                                <p class="text-[11px] text-gray-500 mt-1">Across all enterprise roles</p>
+                            </div>
+                            <div class="bg-amber-50/40 border border-amber-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-amber-700 uppercase tracking-wider block">👑 Admins & Super Admins</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-amber-600 mt-1.5" id="tms-total-admins">0</div>
+                                <p class="text-[11px] text-amber-700 font-medium mt-1">Executive governance access</p>
+                            </div>
+                            <div class="bg-emerald-50/40 border border-emerald-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-emerald-700 uppercase tracking-wider block">📞 Sales Executives</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-emerald-600 mt-1.5" id="tms-total-sales">0</div>
+                                <p class="text-[11px] text-emerald-700 font-medium mt-1">Active pipeline reps</p>
+                            </div>
+                            <div class="bg-purple-50/40 border border-purple-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-purple-700 uppercase tracking-wider block">🤝 Authorized Partners</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-purple-600 mt-1.5" id="tms-total-partners">0</div>
+                                <p class="text-[11px] text-purple-700 font-medium mt-1">Distributors & PCD accounts</p>
+                            </div>
                         </div>
+
+                        <!-- Role Filter Pills Bar -->
+                        <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs" id="tms-role-pills">
+                            <!-- Populated dynamically via window.DisicureMain.renderTeamRolePills() -->
+                        </div>
+
+                        <!-- Search & Role Filter Toolbar -->
+                        <div class="bg-slate-50 border border-gray-200 p-4 rounded-xl shadow-sm space-y-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                <!-- Search Input -->
+                                <div class="lg:col-span-2 relative">
+                                    <input type="text" id="tms-search-input" placeholder="Search by Name, Email, Username, Designation, or Role..." class="w-full bg-white border border-gray-200 rounded-lg p-2.5 pl-10 text-xs font-medium focus:outline-none focus:border-blue-500 shadow-sm">
+                                    <span class="absolute left-3.5 top-3 text-gray-400">
+                                        ${DisicureRouter.icons.search}
+                                    </span>
+                                </div>
+
+                                <!-- Role Filter Dropdown -->
+                                <div>
+                                    <select id="tms-role-select" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-bold text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
+                                        <option value="all">All Roles & Permissions</option>
+                                        <option value="👑 Super Admin">👑 Super Admin</option>
+                                        <option value="🧑‍💼 Admin">🧑‍💼 Admin</option>
+                                        <option value="📞 Sales Executive">📞 Sales Executive</option>
+                                        <option value="👨‍💻 Team Member">👨‍💻 Team Member</option>
+                                        <option value="🤝 Partner">🤝 Partner</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Count Indicator -->
+                            <div class="flex items-center justify-between pt-1 text-xs">
+                                <span class="font-bold text-gray-600" id="tms-showing-count">Loading team directory...</span>
+                                <span class="text-gray-400 text-[11px]">Real-time role access & activity audit sync</span>
+                            </div>
+                        </div>
+
+                        <!-- Team Data Table Card -->
+                        <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse" id="tms-team-table">
+                                    <thead>
+                                        <tr class="bg-slate-100/80 border-b border-gray-200 text-[11px] font-extrabold text-gray-600 uppercase tracking-wider">
+                                            <th class="p-3.5">Member & Designation</th>
+                                            <th class="p-3.5">Role & Access Level</th>
+                                            <th class="p-3.5">Contact (Mobile & Email)</th>
+                                            <th class="p-3.5">Login Credentials & Status</th>
+                                            <th class="p-3.5 text-center">Assigned Pipeline</th>
+                                            <th class="p-3.5 text-center">Performance (Win Rate & Revenue)</th>
+                                            <th class="p-3.5 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tms-team-tbody">
+                                        <!-- Populated dynamically via window.DisicureMain.renderTeamTable() -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Empty State Notice -->
+                            <div id="tms-empty-state" class="hidden py-16 text-center">
+                                <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    ${DisicureRouter.icons.search}
+                                </div>
+                                <h3 class="text-base font-extrabold text-navy-950">No Team Members Found</h3>
+                                <p class="text-xs text-gray-500 max-w-sm mx-auto mt-1 font-normal leading-relaxed">
+                                    No personnel match your search term or selected role. Add a new team member or adjust filters.
+                                </p>
+                            </div>
+                        </div>
+
                     </div>
                 </section>
             </div>
@@ -2904,6 +3009,246 @@ const DisicureRouter = {
                     <div id="dms-preview-body" class="flex-1 min-h-[300px] overflow-auto rounded-xl border border-gray-200 bg-slate-50 p-4">
                         <!-- Populated dynamically -->
                     </div>
+                </div>
+            <!-- Add Team Member Modal -->
+            <div id="tms-add-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <!-- Backdrop -->
+                <div class="absolute inset-0 bg-navy-950/60 backdrop-blur-sm" onclick="window.DisicureMain.closeAddTeamModal()"></div>
+                
+                <!-- Modal Card -->
+                <div class="relative bg-white rounded-2xl p-6 md:p-8 max-w-2xl w-full mx-4 shadow-2xl z-10 max-h-[90vh] overflow-y-auto">
+                    <button class="absolute top-4 right-4 text-gray-400 hover:text-navy-950 focus:outline-none" onclick="window.DisicureMain.closeAddTeamModal()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                    
+                    <h3 class="text-xl font-extrabold text-navy-950 mb-1">👥 Provision New Team Member</h3>
+                    <p class="text-xs text-gray-500 mb-6 font-normal">Create an internal staff profile or authorized partner portal user with role-based access.</p>
+                    
+                    <form id="tms-new-member-form" onsubmit="window.DisicureMain.saveNewTeamMember(event)" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Full Name *</label>
+                                <input type="text" name="name" required placeholder="e.g. Rahul Sharma" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Assigned Role *</label>
+                                <select name="role" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold focus:border-blue-500">
+                                    <option value="👑 Super Admin">👑 Super Admin (Full Control)</option>
+                                    <option value="🧑‍💼 Admin">🧑‍💼 Admin (Operational)</option>
+                                    <option value="📞 Sales Executive" selected>📞 Sales Executive (Pipeline & Leads)</option>
+                                    <option value="👨‍💻 Team Member">👨‍💻 Team Member (Ops & QA)</option>
+                                    <option value="🤝 Partner">🤝 Partner (Distributor Portal)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Department</label>
+                                <input type="text" name="dept" placeholder="e.g. Commercial Distribution" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Designation / Title</label>
+                                <input type="text" name="designation" placeholder="e.g. Area Sales Manager" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Official Mobile *</label>
+                                <input type="tel" name="mobile" required placeholder="+91 98765 43210" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-mono focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Official Email *</label>
+                                <input type="email" name="email" required placeholder="name@disicurecare.com" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <!-- Login Credentials Block -->
+                        <div class="bg-blue-50/40 p-4 rounded-xl border border-blue-100 space-y-3">
+                            <span class="text-[10px] font-extrabold text-blue-900 uppercase tracking-wider block">🔑 Portal Login Credentials</span>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Username *</label>
+                                    <input type="text" name="username" required placeholder="username" class="w-full bg-white border border-gray-200 rounded p-2 text-xs font-mono focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Password *</label>
+                                    <input type="password" name="password" required placeholder="Set secure password" class="w-full bg-white border border-gray-200 rounded p-2 text-xs font-mono focus:border-blue-500">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Account Status</label>
+                                <select name="accountStatus" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold focus:border-blue-500">
+                                    <option value="🟢 Active">🟢 Active</option>
+                                    <option value="🟡 On Leave">🟡 On Leave</option>
+                                    <option value="🔴 Suspended">🔴 Suspended</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Initial Assigned Leads Count</label>
+                                <input type="number" name="assignedLeadsCount" value="0" min="0" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <div class="pt-2 flex justify-end gap-3 border-t border-gray-100">
+                            <button type="button" onclick="window.DisicureMain.closeAddTeamModal()" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded transition-colors">
+                                Cancel
+                            </button>
+                            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow transition-colors">
+                                Provision User
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Team Member Profile & Activity History Drawer -->
+            <div id="tms-profile-drawer" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <div class="absolute inset-0 bg-navy-950/60 backdrop-blur-sm" onclick="window.DisicureMain.closeTeamMemberDrawer()"></div>
+                <div class="relative bg-white rounded-2xl p-6 md:p-8 max-w-2xl w-full mx-4 shadow-2xl z-10 max-h-[92vh] overflow-y-auto transform transition-all duration-300">
+                    <button class="absolute top-4 right-4 text-gray-400 hover:text-navy-950 focus:outline-none" onclick="window.DisicureMain.closeTeamMemberDrawer()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                    <div id="tms-drawer-content">
+                        <!-- Populated dynamically via window.DisicureMain.openTeamMemberDrawer(memberId) -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Team Member Modal -->
+            <div id="tms-edit-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <div class="absolute inset-0 bg-navy-950/60 backdrop-blur-sm" onclick="window.DisicureMain.closeEditTeamModal()"></div>
+                <div class="relative bg-white rounded-2xl p-6 md:p-8 max-w-xl w-full mx-4 shadow-2xl z-10 max-h-[90vh] overflow-y-auto">
+                    <button class="absolute top-4 right-4 text-gray-400 hover:text-navy-950 focus:outline-none" onclick="window.DisicureMain.closeEditTeamModal()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                    <h3 class="text-xl font-extrabold text-navy-950 mb-1">✏️ Edit Team Profile & Role</h3>
+                    <p class="text-xs text-gray-500 mb-5 font-normal">Update role, contact details, department, or reset access password.</p>
+                    
+                    <form id="tms-edit-member-form" onsubmit="window.DisicureMain.saveEditTeamMember(event)" class="space-y-4">
+                        <input type="hidden" id="tms-edit-id" name="memberId">
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Full Name *</label>
+                                <input type="text" id="tms-edit-name" name="name" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Role *</label>
+                                <select id="tms-edit-role" name="role" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold focus:border-blue-500">
+                                    <option value="👑 Super Admin">👑 Super Admin</option>
+                                    <option value="🧑‍💼 Admin">🧑‍💼 Admin</option>
+                                    <option value="📞 Sales Executive">📞 Sales Executive</option>
+                                    <option value="👨‍💻 Team Member">👨‍💻 Team Member</option>
+                                    <option value="🤝 Partner">🤝 Partner</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Mobile *</label>
+                                <input type="tel" id="tms-edit-mobile" name="mobile" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-mono focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Email *</label>
+                                <input type="email" id="tms-edit-email" name="email" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Department</label>
+                                <input type="text" id="tms-edit-dept" name="dept" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Designation</label>
+                                <input type="text" id="tms-edit-designation" name="designation" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-3 rounded-lg border border-gray-200">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Account Status</label>
+                                <select id="tms-edit-status" name="accountStatus" class="w-full bg-white border border-gray-200 rounded p-2 text-xs font-bold focus:border-blue-500">
+                                    <option value="🟢 Active">🟢 Active</option>
+                                    <option value="🟡 On Leave">🟡 On Leave</option>
+                                    <option value="🔴 Suspended">🔴 Suspended</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Reset Password (Optional)</label>
+                                <input type="password" name="newPassword" placeholder="Leave blank to keep current" class="w-full bg-white border border-gray-200 rounded p-2 text-xs font-mono focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <div class="pt-2 flex justify-end gap-3 border-t border-gray-100">
+                            <button type="button" onclick="window.DisicureMain.closeEditTeamModal()" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded">
+                                Cancel
+                            </button>
+                            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow">
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Role-Based Access Control (RBAC) Permissions Matrix Modal -->
+            <div id="tms-rbac-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <div class="absolute inset-0 bg-navy-950/70 backdrop-blur-sm" onclick="window.DisicureMain.closeRBACModal()"></div>
+                <div class="relative bg-white rounded-2xl p-6 md:p-8 max-w-3xl w-full mx-4 shadow-2xl z-10 max-h-[92vh] overflow-y-auto">
+                    <button class="absolute top-4 right-4 text-gray-400 hover:text-navy-950 focus:outline-none" onclick="window.DisicureMain.closeRBACModal()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                    
+                    <div class="flex items-center gap-3 border-b border-gray-100 pb-4 mb-4">
+                        <div class="w-10 h-10 bg-indigo-50 text-indigo-700 rounded-lg flex items-center justify-center font-extrabold text-lg">
+                            🔒
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-extrabold text-navy-950">Role-Based Access Control (RBAC) Governance</h3>
+                            <p class="text-xs text-gray-500">Configure exact module visibility and actions permitted for each user role.</p>
+                        </div>
+                    </div>
+
+                    <form id="tms-rbac-form" onsubmit="window.DisicureMain.saveRBACMatrix(event)" class="space-y-4">
+                        <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-100 border-b border-gray-200 text-[10px] font-extrabold text-navy-950 uppercase tracking-wider">
+                                        <th class="p-3">Role Designation</th>
+                                        <th class="p-3 text-center">Executive Dashboard</th>
+                                        <th class="p-3 text-center">Lead Pipeline (LMS)</th>
+                                        <th class="p-3 text-center">Payment Ledger (PMS)</th>
+                                        <th class="p-3 text-center">Document Vault (DMS)</th>
+                                        <th class="p-3 text-center">Team Governance (TMS)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tms-rbac-tbody">
+                                    <!-- Populated dynamically via window.DisicureMain.renderRBACMatrix() -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="p-4 bg-blue-50 text-blue-900 rounded-xl text-xs font-normal border border-blue-100 flex items-start gap-2.5">
+                            <svg class="w-5 h-5 text-blue-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <span><strong>Admin Security Note:</strong> Super Admins retain master overrides across all modules. Changes saved here instantly update navigation and access controls across the platform.</span>
+                        </div>
+
+                        <div class="pt-2 flex justify-end gap-3 border-t border-gray-100">
+                            <button type="button" onclick="window.DisicureMain.closeRBACModal()" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded">
+                                Cancel
+                            </button>
+                            <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded shadow">
+                                Save Role Permissions
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
             `;
