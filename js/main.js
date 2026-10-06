@@ -322,12 +322,16 @@ const DisicureMain = {
     },
 
     // --- 7. DYNAMIC B2B ENQUIRY MODAL SYSTEM ---
-    openEnquiryModal: function(productOrServiceName) {
+    openEnquiryModal: function(productOrServiceName, requirementType) {
         const modal = document.getElementById('enquiry-modal');
         const field = document.getElementById('modal-subject');
+        const reqSelect = document.getElementById('modal-requirement-type');
         
         if (modal && field) {
-            field.value = productOrServiceName;
+            field.value = productOrServiceName || 'General B2B Enquiry';
+            if (reqSelect && requirementType) {
+                reqSelect.value = requirementType;
+            }
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             document.body.classList.add('overflow-hidden');

@@ -256,36 +256,157 @@ const DisicureRouter = {
             });
 
             return `
-            <!-- Premium Corporate Presentation Hero Section -->
-            <section class="relative w-full bg-[#f4f9ff] border-b border-blue-100 flex items-center justify-center py-8 lg:py-8 md:py-12 overflow-hidden">
-                <!-- Ambient background glow -->
-                <div class="absolute inset-0 z-0 pointer-events-none opacity-40">
-                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-200/50 rounded-full filter blur-3xl"></div>
+            <!-- Premium Pharmaceutical Corporate Hero Section -->
+            <section class="relative w-full bg-gradient-to-br from-[#06142a] via-[#0a1e3f] to-[#07162c] text-white border-b border-blue-900/50 py-12 lg:py-16 overflow-hidden">
+                <!-- Ambient scientific background glow & grid elements -->
+                <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+                    <div class="absolute -top-24 -right-24 w-96 h-96 bg-blue-500/15 rounded-full filter blur-3xl"></div>
+                    <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-teal-500/10 rounded-full filter blur-3xl"></div>
+                    <div class="absolute inset-0 bg-[radial-gradient(#3b82f615_1px,transparent_1px)] [background-size:24px_24px] opacity-40"></div>
                 </div>
                 
-                <div class="max-w-7xl mx-auto px-4 lg:px-8 w-full relative z-10 flex flex-col items-center">
-                    
-                    <!-- Premium Visual Frame Container -->
-                    <div class="w-full max-w-5xl rounded-2xl overflow-hidden border-4 border-white shadow-2xl bg-white relative group">
-                        <!-- Glassmorphism border stroke decoration -->
-                        <div class="absolute inset-0 border border-blue-200/50 rounded-2xl pointer-events-none z-20"></div>
+                <div class="max-w-7xl mx-auto px-4 lg:px-8 w-full relative z-10">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
                         
-                        <!-- The Deployed Banner Image -->
-                        <img src="images/welcome_banner.jpg" alt="Welcome to Disicure Care Pvt. Ltd. - We Cure With Care" class="w-full h-auto object-cover select-none">
-                    </div>
-                    
-                    <!-- B2B Quick Actions Strip -->
-                    <div class="w-full max-w-5xl mt-8 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white/85 backdrop-blur border border-blue-50/50 p-5 rounded-xl shadow-md">
-                        <div class="flex items-center gap-3">
-                            <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-ping"></span>
-                            <span class="text-xs font-bold text-navy-950 uppercase tracking-wider">B2B Manufacturing & Distribution Channels Open</span>
+                        <!-- Left Column: Authority Corporate Proposition & Lead CTAs -->
+                        <div class="lg:col-span-7 space-y-6 scroll-reveal">
+                            <!-- Live Enterprise Badge -->
+                            <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-blue-950/90 border border-blue-500/30 text-blue-200 text-xs font-semibold backdrop-blur-md shadow-sm">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                                <span class="tracking-wider uppercase text-[11px] font-bold text-cyan-300">Trusted B2B Pharmaceutical Partner & Manufacturer</span>
+                            </div>
+                            
+                            <!-- Master Authority Headline -->
+                            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-[1.18]">
+                                Quality-Driven <span class="bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-300 bg-clip-text text-transparent">Pharmaceutical Manufacturing</span> & Strategic B2B Solutions
+                            </h1>
+                            
+                            <!-- Corporate Narrative & Value Proposition -->
+                            <p class="text-sm sm:text-base text-blue-100/85 leading-relaxed font-normal max-w-2xl">
+                                Disicure Care Pvt. Ltd. provides scalable, WHO/GMP-compliant Contract Manufacturing, PCD Pharma Franchise distribution networks, Formulation R&D, and Bulk Institutional Supplies. We empower distributors, hospitals, and pharma enterprises with dependable quality and pan-India supply capability.
+                            </p>
+                            
+                            <!-- Core Focus Area Badges (5 Strategic Pillars) -->
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1 max-w-xl">
+                                <div class="flex items-center gap-2 bg-blue-900/40 border border-blue-600/30 px-3 py-2 rounded-lg text-xs text-blue-100 backdrop-blur-sm">
+                                    <span class="text-cyan-400 shrink-0">${DisicureRouter.icons.factory}</span>
+                                    <span class="font-semibold text-[11px]">Contract / Third-Party Mfg</span>
+                                </div>
+                                <div class="flex items-center gap-2 bg-blue-900/40 border border-blue-600/30 px-3 py-2 rounded-lg text-xs text-blue-100 backdrop-blur-sm">
+                                    <span class="text-cyan-400 shrink-0">${DisicureRouter.icons.tag}</span>
+                                    <span class="font-semibold text-[11px]">PCD Pharma Marketing</span>
+                                </div>
+                                <div class="flex items-center gap-2 bg-blue-900/40 border border-blue-600/30 px-3 py-2 rounded-lg text-xs text-blue-100 backdrop-blur-sm">
+                                    <span class="text-cyan-400 shrink-0">${DisicureRouter.icons.beaker}</span>
+                                    <span class="font-semibold text-[11px]">Formulation R&D</span>
+                                </div>
+                                <div class="flex items-center gap-2 bg-blue-900/40 border border-blue-600/30 px-3 py-2 rounded-lg text-xs text-blue-100 backdrop-blur-sm">
+                                    <span class="text-cyan-400 shrink-0">${DisicureRouter.icons.box}</span>
+                                    <span class="font-semibold text-[11px]">Institutional & Bulk Supply</span>
+                                </div>
+                                <div class="flex items-center gap-2 bg-blue-900/40 border border-blue-600/30 px-3 py-2 rounded-lg text-xs text-blue-100 backdrop-blur-sm sm:col-span-2">
+                                    <span class="text-cyan-400 shrink-0">${DisicureRouter.icons.shield}</span>
+                                    <span class="font-semibold text-[11px]">Private Label & Packaging Solutions</span>
+                                </div>
+                            </div>
+                            
+                            <!-- High-Impact 4-Button Corporate CTA Action Strip -->
+                            <div class="pt-3 flex flex-wrap items-center gap-3">
+                                <!-- CTA 1: Enquire Now -->
+                                <button onclick="window.DisicureMain.openEnquiryModal('General Hero B2B Enquiry', 'Product Enquiry')" class="px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg shadow-lg hover:shadow-blue-500/30 uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 transform hover:-translate-y-0.5">
+                                    <span>Enquire Now</span>
+                                    ${DisicureRouter.icons.arrowRight}
+                                </button>
+                                
+                                <!-- CTA 2: Become a Partner -->
+                                <button onclick="window.DisicureMain.openEnquiryModal('PCD Franchise & Distribution Partnership', 'PCD Franchise')" class="px-5 py-3 bg-navy-950/90 hover:bg-navy-900 border border-blue-400/40 text-blue-100 hover:text-white text-xs font-bold rounded-lg shadow-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 transform hover:-translate-y-0.5">
+                                    <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                    <span>Become a Partner</span>
+                                </button>
+
+                                <!-- CTA 3: Generate Business Lead -->
+                                <button onclick="window.DisicureMain.openEnquiryModal('Contract Manufacturing Business Lead', 'Third-Party Manufacturing')" class="px-5 py-3 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-white text-xs font-bold rounded-lg shadow-lg hover:shadow-teal-500/30 uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 transform hover:-translate-y-0.5">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                    <span>Generate Business Lead</span>
+                                </button>
+                                
+                                <!-- CTA 4: WhatsApp Us -->
+                                <a href="https://wa.me/919005874417?text=Hello%20Disicure%20Care%20Team%2C%20I%20am%20interested%20in%20your%20pharmaceutical%20business%20solutions.%20Please%20share%20details%20and%20quotation." target="_blank" rel="noopener noreferrer" class="px-5 py-3 bg-[#25D366] hover:bg-[#20ba59] text-white text-xs font-bold rounded-lg shadow-md hover:shadow-green-500/30 uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 transform hover:-translate-y-0.5">
+                                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                                    <span>WhatsApp Us</span>
+                                </a>
+                            </div>
                         </div>
-                        <div class="flex gap-3">
-                            <a href="#/products" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow transition-all uppercase tracking-wider">Explore Products</a>
-                            <button onclick="window.DisicureMain.openEnquiryModal('General Hero B2B Enquiry')" class="px-5 py-2.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 text-xs font-bold rounded transition-all uppercase tracking-wider">Enquire Now</button>
+                        
+                        <!-- Right Column: Corporate Pharmaceutical Solutions Hub & Dashboard -->
+                        <div class="lg:col-span-5 scroll-reveal">
+                            <div class="relative w-full max-w-lg mx-auto">
+                                <!-- Ambient glow border -->
+                                <div class="absolute -inset-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl blur-lg opacity-25"></div>
+                                
+                                <div class="relative bg-[#0d2246]/95 border border-blue-400/30 rounded-2xl p-6 sm:p-7 backdrop-blur-xl shadow-2xl space-y-5">
+                                    <!-- Panel Top Indicator -->
+                                    <div class="flex items-center justify-between border-b border-blue-800/60 pb-3.5">
+                                        <div>
+                                            <span class="text-[10px] font-bold text-cyan-400 uppercase tracking-widest block">Operational Capabilities</span>
+                                            <h3 class="text-base font-extrabold text-white">B2B Pharmaceutical Solutions Hub</h3>
+                                        </div>
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-bold uppercase tracking-wider">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                                            Active Capacity
+                                        </span>
+                                    </div>
+
+                                    <!-- 4 Division Cards -->
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                        <!-- Division 1 -->
+                                        <div onclick="window.DisicureMain.openEnquiryModal('Contract Manufacturing Enquiry', 'Third-Party Manufacturing')" class="p-3.5 rounded-xl bg-blue-950/70 border border-blue-700/40 hover:border-cyan-400/60 transition-all duration-200 cursor-pointer group">
+                                            <div class="w-8 h-8 rounded-lg bg-blue-600/20 text-cyan-300 flex items-center justify-center mb-2.5 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                                ${DisicureRouter.icons.factory}
+                                            </div>
+                                            <h4 class="font-bold text-white text-xs mb-1">Contract Manufacturing</h4>
+                                            <p class="text-[10px] text-blue-200/75 leading-relaxed">High-volume tablet, capsule & liquid oral production.</p>
+                                        </div>
+
+                                        <!-- Division 2 -->
+                                        <div onclick="window.DisicureMain.openEnquiryModal('PCD Pharma Franchise Enquiry', 'PCD Franchise')" class="p-3.5 rounded-xl bg-blue-950/70 border border-blue-700/40 hover:border-cyan-400/60 transition-all duration-200 cursor-pointer group">
+                                            <div class="w-8 h-8 rounded-lg bg-blue-600/20 text-cyan-300 flex items-center justify-center mb-2.5 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                                ${DisicureRouter.icons.tag}
+                                            </div>
+                                            <h4 class="font-bold text-white text-xs mb-1">PCD Pharma Franchise</h4>
+                                            <p class="text-[10px] text-blue-200/75 leading-relaxed">Monopoly distribution rights & marketing materials.</p>
+                                        </div>
+
+                                        <!-- Division 3 -->
+                                        <div onclick="window.DisicureMain.openEnquiryModal('Custom Formulation R&D Enquiry', 'Custom Formulation')" class="p-3.5 rounded-xl bg-blue-950/70 border border-blue-700/40 hover:border-cyan-400/60 transition-all duration-200 cursor-pointer group">
+                                            <div class="w-8 h-8 rounded-lg bg-blue-600/20 text-cyan-300 flex items-center justify-center mb-2.5 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                                ${DisicureRouter.icons.beaker}
+                                            </div>
+                                            <h4 class="font-bold text-white text-xs mb-1">Product Development</h4>
+                                            <p class="text-[10px] text-blue-200/75 leading-relaxed">Custom molecule combinations & stability profiling.</p>
+                                        </div>
+
+                                        <!-- Division 4 -->
+                                        <div onclick="window.DisicureMain.openEnquiryModal('Hospital & Institutional Supply Enquiry', 'Hospital Supply')" class="p-3.5 rounded-xl bg-blue-950/70 border border-blue-700/40 hover:border-cyan-400/60 transition-all duration-200 cursor-pointer group">
+                                            <div class="w-8 h-8 rounded-lg bg-blue-600/20 text-cyan-300 flex items-center justify-center mb-2.5 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                                ${DisicureRouter.icons.box}
+                                            </div>
+                                            <h4 class="font-bold text-white text-xs mb-1">Institutional Supply</h4>
+                                            <p class="text-[10px] text-blue-200/75 leading-relaxed">Direct hospital procurement, clinic chains & bulk supply.</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Bottom Live Trust Strip -->
+                                    <div class="pt-2.5 border-t border-blue-800/60 flex items-center justify-between text-[11px] text-blue-200/90 font-medium">
+                                        <span class="flex items-center gap-1"><span class="text-teal-400">✓</span> Pan-India Delivery</span>
+                                        <span class="flex items-center gap-1"><span class="text-teal-400">✓</span> Stringent QA/QC</span>
+                                        <span class="flex items-center gap-1"><span class="text-teal-400">✓</span> Fast Quotes</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
                     </div>
-                    
                 </div>
             </section>
 
