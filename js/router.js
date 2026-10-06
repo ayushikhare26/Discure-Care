@@ -96,6 +96,9 @@ const DisicureRouter = {
         if (hash === '#/disclaimer') {
             return this.templates.disclaimer();
         }
+        if (hash === '#/admin' || hash === '#/admin/leads' || hash === '#/leads') {
+            return this.templates.adminLeads();
+        }
 
         if (hash.startsWith('#/products/')) {
             const slug = hash.replace('#/products/', '');
@@ -163,6 +166,10 @@ const DisicureRouter = {
         } else if (hash.startsWith('#/products/')) {
             if (window.DisicureMain) {
                 window.DisicureMain.initEnquiryForms();
+            }
+        } else if (hash === '#/admin' || hash === '#/admin/leads' || hash === '#/leads') {
+            if (window.DisicureMain && typeof window.DisicureMain.initAdminPanel === 'function') {
+                window.DisicureMain.initAdminPanel();
             }
         }
     },
@@ -1742,7 +1749,356 @@ const DisicureRouter = {
             `;
         },
 
-        // --- 12. 404 NOT FOUND TEMPLATE ---
+        // --- 12. LEAD MANAGEMENT SYSTEM (LMS) ADMIN PANEL TEMPLATE ---
+        adminLeads: function() {
+            return `
+            <!-- Admin Top Navigation Bar -->
+            <section class="bg-[#07162c] text-white border-b border-blue-900/60 py-6 md:py-8 relative overflow-hidden">
+                <div class="absolute inset-0 opacity-15 bg-[radial-gradient(#3b82f630_1px,transparent_1px)] [background-size:20px_20px]"></div>
+                <div class="max-w-7xl mx-auto px-4 lg:px-8 relative z-10">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="space-y-1">
+                            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-950 border border-blue-500/30 text-cyan-300 text-[10px] font-bold uppercase tracking-wider">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                Live Lead Management System (LMS)
+                            </div>
+                            <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                                B2B Lead Management & CRM
+                            </h1>
+                            <p class="text-xs text-blue-200/80 font-normal">
+                                Centralized tracking for pharmaceutical enquiries from website forms, WhatsApp CTAs, product pages, and partner requests.
+                            </p>
+                        </div>
+                        
+                        <!-- Top Action Buttons -->
+                        <div class="flex flex-wrap items-center gap-2.5">
+                            <button onclick="window.DisicureMain.openAddLeadModal()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 uppercase tracking-wider">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                <span>Add New Lead</span>
+                            </button>
+                            <button onclick="window.DisicureMain.exportLeadsCSV()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 uppercase tracking-wider">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                <span>Export CSV</span>
+                            </button>
+                            <button onclick="window.DisicureMain.resetLeadsData()" class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-gray-300 text-xs font-bold rounded-lg border border-slate-700 transition-all flex items-center gap-1.5" title="Reset Demo Data">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                <span class="hidden sm:inline">Reset</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- KPI Summary Metric Cards -->
+            <section class="py-6 bg-slate-50 border-b border-gray-200">
+                <div class="max-w-7xl mx-auto px-4 lg:px-8">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+                        <!-- Total Leads -->
+                        <div class="bg-white p-3.5 rounded-xl border border-gray-200 shadow-sm">
+                            <span class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider block">Total Leads</span>
+                            <div class="text-2xl font-extrabold text-navy-950 mt-1" id="kpi-total-leads">0</div>
+                        </div>
+
+                        <!-- 🟢 New -->
+                        <div class="bg-white p-3.5 rounded-xl border border-emerald-200 shadow-sm bg-emerald-50/20">
+                            <span class="text-[10px] font-extrabold text-emerald-700 uppercase tracking-wider block">🟢 New</span>
+                            <div class="text-2xl font-extrabold text-emerald-600 mt-1" id="kpi-new-leads">0</div>
+                        </div>
+
+                        <!-- 🔵 Contacted -->
+                        <div class="bg-white p-3.5 rounded-xl border border-blue-200 shadow-sm bg-blue-50/20">
+                            <span class="text-[10px] font-extrabold text-blue-700 uppercase tracking-wider block">🔵 Contacted</span>
+                            <div class="text-2xl font-extrabold text-blue-600 mt-1" id="kpi-contacted-leads">0</div>
+                        </div>
+
+                        <!-- 🟡 Follow-up -->
+                        <div class="bg-white p-3.5 rounded-xl border border-amber-200 shadow-sm bg-amber-50/20">
+                            <span class="text-[10px] font-extrabold text-amber-700 uppercase tracking-wider block">🟡 Follow-up</span>
+                            <div class="text-2xl font-extrabold text-amber-600 mt-1" id="kpi-followup-leads">0</div>
+                        </div>
+
+                        <!-- 🟠 Negotiation -->
+                        <div class="bg-white p-3.5 rounded-xl border border-orange-200 shadow-sm bg-orange-50/20">
+                            <span class="text-[10px] font-extrabold text-orange-700 uppercase tracking-wider block">🟠 Negotiation</span>
+                            <div class="text-2xl font-extrabold text-orange-600 mt-1" id="kpi-negotiation-leads">0</div>
+                        </div>
+
+                        <!-- 🟣 Converted -->
+                        <div class="bg-white p-3.5 rounded-xl border border-purple-200 shadow-sm bg-purple-50/20">
+                            <span class="text-[10px] font-extrabold text-purple-700 uppercase tracking-wider block">🟣 Converted</span>
+                            <div class="text-2xl font-extrabold text-purple-600 mt-1" id="kpi-converted-leads">0</div>
+                        </div>
+
+                        <!-- 🔴 Lost -->
+                        <div class="bg-white p-3.5 rounded-xl border border-rose-200 shadow-sm bg-rose-50/20">
+                            <span class="text-[10px] font-extrabold text-rose-700 uppercase tracking-wider block">🔴 Lost</span>
+                            <div class="text-2xl font-extrabold text-rose-600 mt-1" id="kpi-lost-leads">0</div>
+                        </div>
+
+                        <!-- ⚫ On Hold -->
+                        <div class="bg-white p-3.5 rounded-xl border border-gray-300 shadow-sm bg-gray-50/50">
+                            <span class="text-[10px] font-extrabold text-gray-600 uppercase tracking-wider block">⚫ On Hold</span>
+                            <div class="text-2xl font-extrabold text-gray-700 mt-1" id="kpi-onhold-leads">0</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main Lead Database Management Area -->
+            <section class="py-8 bg-white min-h-[70vh]">
+                <div class="max-w-7xl mx-auto px-4 lg:px-8 space-y-6">
+                    
+                    <!-- Search & Filter Controls Toolbar -->
+                    <div class="bg-slate-50 border border-gray-200 p-4 rounded-xl shadow-sm space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                            <!-- Live Search Input -->
+                            <div class="lg:col-span-2 relative">
+                                <input type="text" id="lms-search-input" placeholder="Search by name, ID, phone, city, or product..." class="w-full bg-white border border-gray-200 rounded-lg p-2.5 pl-10 text-xs font-medium focus:outline-none focus:border-blue-500 shadow-sm">
+                                <span class="absolute left-3.5 top-3 text-gray-400">
+                                    ${DisicureRouter.icons.search}
+                                </span>
+                            </div>
+
+                            <!-- Status Filter -->
+                            <div>
+                                <select id="lms-status-filter" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-bold text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
+                                    <option value="all">All Lead Statuses</option>
+                                    <option value="🟢 New">🟢 New</option>
+                                    <option value="🔵 Contacted">🔵 Contacted</option>
+                                    <option value="🟡 Follow-up">🟡 Follow-up</option>
+                                    <option value="🟠 Negotiation">🟠 Negotiation</option>
+                                    <option value="🟣 Converted">🟣 Converted</option>
+                                    <option value="🔴 Lost">🔴 Lost</option>
+                                    <option value="⚫ On Hold">⚫ On Hold</option>
+                                </select>
+                            </div>
+
+                            <!-- Business Type Filter -->
+                            <div>
+                                <select id="lms-business-filter" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-medium text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
+                                    <option value="all">All Business Types</option>
+                                    <option value="Distributor">Distributor</option>
+                                    <option value="Stockist">Stockist</option>
+                                    <option value="Hospital">Hospital</option>
+                                    <option value="Pharmacy">Pharmacy / Chain</option>
+                                    <option value="Clinic">Clinic</option>
+                                    <option value="PCD Partner">PCD Partner</option>
+                                    <option value="Pharma Company">Pharma Company</option>
+                                    <option value="Institutional Buyer">Institutional Buyer</option>
+                                </select>
+                            </div>
+
+                            <!-- Source Filter -->
+                            <div>
+                                <select id="lms-source-filter" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-medium text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
+                                    <option value="all">All Lead Sources</option>
+                                    <option value="Website">Website Forms</option>
+                                    <option value="WhatsApp">WhatsApp CTA</option>
+                                    <option value="Product">Product Enquiries</option>
+                                    <option value="Hero">Hero B2B CTAs</option>
+                                    <option value="Contact">Contact Page</option>
+                                    <option value="Admin">Manual Entry</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Secondary Bar: Count & Sort -->
+                        <div class="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-gray-200 text-xs">
+                            <div class="font-bold text-gray-600" id="lms-showing-count">
+                                Loading lead registry...
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-gray-400 font-semibold">Sort By:</span>
+                                <select id="lms-sort-filter" class="bg-white border border-gray-200 rounded p-1.5 text-xs font-semibold text-gray-700 focus:outline-none focus:border-blue-500">
+                                    <option value="newest">Newest First</option>
+                                    <option value="oldest">Oldest First</option>
+                                    <option value="followup">Follow-up Due Date</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Leads Data Table Card -->
+                    <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse" id="lms-leads-table">
+                                <thead>
+                                    <tr class="bg-slate-100/80 border-b border-gray-200 text-[11px] font-extrabold text-gray-600 uppercase tracking-wider">
+                                        <th class="p-3.5">Lead ID & Date</th>
+                                        <th class="p-3.5">Lead Info & Contact</th>
+                                        <th class="p-3.5">Business & Requirement</th>
+                                        <th class="p-3.5">Source</th>
+                                        <th class="p-3.5">Lead Status</th>
+                                        <th class="p-3.5">Assigned & Follow-up</th>
+                                        <th class="p-3.5 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lms-leads-tbody">
+                                    <!-- Populated dynamically by window.DisicureMain.renderAdminLeads() -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Empty State Notice -->
+                        <div id="lms-empty-state" class="hidden py-16 text-center">
+                            <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                                ${DisicureRouter.icons.search}
+                            </div>
+                            <h3 class="text-base font-extrabold text-navy-950">No Leads Found</h3>
+                            <p class="text-xs text-gray-500 max-w-sm mx-auto mt-1 font-normal leading-relaxed">
+                                No leads match your selected search term or filters. Try resetting the filters or add a new manual lead.
+                            </p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </section>
+
+            <!-- Edit/View Lead Details Drawer/Modal -->
+            <div id="lms-lead-drawer" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <!-- Backdrop -->
+                <div class="absolute inset-0 bg-navy-950/60 backdrop-blur-sm" onclick="window.DisicureMain.closeLeadDrawer()"></div>
+                
+                <!-- Drawer Box -->
+                <div class="relative bg-white rounded-2xl p-6 md:p-8 max-w-3xl w-full mx-4 shadow-2xl z-10 max-h-[92vh] overflow-y-auto transform transition-all duration-300">
+                    <button class="absolute top-4 right-4 text-gray-400 hover:text-navy-950 focus:outline-none" onclick="window.DisicureMain.closeLeadDrawer()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                    <div id="lms-drawer-content">
+                        <!-- Populated dynamically by window.DisicureMain.openLeadDrawer(leadId) -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add New Manual Lead Modal -->
+            <div id="lms-add-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <!-- Backdrop -->
+                <div class="absolute inset-0 bg-navy-950/60 backdrop-blur-sm" onclick="window.DisicureMain.closeAddLeadModal()"></div>
+                
+                <!-- Modal Card -->
+                <div class="relative bg-white rounded-2xl p-6 md:p-8 max-w-2xl w-full mx-4 shadow-2xl z-10 max-h-[90vh] overflow-y-auto">
+                    <button class="absolute top-4 right-4 text-gray-400 hover:text-navy-950 focus:outline-none" onclick="window.DisicureMain.closeAddLeadModal()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                    
+                    <h3 class="text-xl font-extrabold text-navy-950 mb-1">Add New Pharmaceutical Lead</h3>
+                    <p class="text-xs text-gray-500 mb-6 font-normal">Manually record an enquiry from phone calls, exhibition meetings, or direct emails.</p>
+                    
+                    <form id="lms-new-lead-form" onsubmit="window.DisicureMain.saveNewLead(event)" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Full Name *</label>
+                                <input type="text" name="name" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Email Address</label>
+                                <input type="email" name="email" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Mobile Number *</label>
+                                <input type="tel" name="mobile" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">WhatsApp Number</label>
+                                <input type="tel" name="whatsapp" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">City *</label>
+                                <input type="text" name="city" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">State *</label>
+                                <input type="text" name="state" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Business Type *</label>
+                                <select name="businessType" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                                    <option value="Distributor">Distributor</option>
+                                    <option value="Stockist">Stockist</option>
+                                    <option value="Hospital">Hospital</option>
+                                    <option value="Pharmacy">Pharmacy / Chain</option>
+                                    <option value="Clinic">Clinic</option>
+                                    <option value="PCD Partner">PCD Partner</option>
+                                    <option value="Pharma Company">Pharma Company</option>
+                                    <option value="Institutional Buyer">Institutional Buyer</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Requirement Type *</label>
+                                <select name="requirementType" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                                    <option value="Third-Party Manufacturing">Third-Party Manufacturing</option>
+                                    <option value="PCD Franchise">PCD Franchise</option>
+                                    <option value="Bulk Purchase">Bulk Purchase</option>
+                                    <option value="Hospital Supply">Hospital Supply</option>
+                                    <option value="Custom Formulation">Custom Formulation</option>
+                                    <option value="Product Enquiry">Product Enquiry</option>
+                                    <option value="General Enquiry">General Enquiry</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Product / Molecule / Service</label>
+                                <input type="text" name="productOrService" placeholder="e.g. Disimol-SP, Capsules" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Assigned Person</label>
+                                <select name="assignedPerson" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                                    ${window.DisicureLeads ? window.DisicureLeads.TEAM_MEMBERS.map(m => `<option value="${m}">${m}</option>`).join('') : '<option value="Nishant Chaturvedi (Director)">Nishant Chaturvedi (Director)</option>'}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Initial Status</label>
+                                <select name="leadStatus" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold focus:border-blue-500">
+                                    <option value="🟢 New">🟢 New</option>
+                                    <option value="🔵 Contacted">🔵 Contacted</option>
+                                    <option value="🟡 Follow-up">🟡 Follow-up</option>
+                                    <option value="🟠 Negotiation">🟠 Negotiation</option>
+                                    <option value="🟣 Converted">🟣 Converted</option>
+                                    <option value="🔴 Lost">🔴 Lost</option>
+                                    <option value="⚫ On Hold">⚫ On Hold</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Follow-up Date</label>
+                                <input type="date" name="followUpDate" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Enquiry Details / Notes</label>
+                            <textarea name="notes" rows="3" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500 font-normal" placeholder="Add specific client requirement details or notes..."></textarea>
+                        </div>
+
+                        <div class="pt-2 flex justify-end gap-3">
+                            <button type="button" onclick="window.DisicureMain.closeAddLeadModal()" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded">
+                                Cancel
+                            </button>
+                            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow">
+                                Create Lead
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            `;
+        },
+
+        // --- 13. 404 NOT FOUND TEMPLATE ---
         notFound: function() {
             return `
             <section class="py-12 md:py-8 md:py-12 bg-white text-center min-h-[60vh] flex flex-col justify-center items-center">
