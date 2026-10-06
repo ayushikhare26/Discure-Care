@@ -934,8 +934,14 @@ const DisicureMain = {
         modeFilter: 'all'
     },
 
+    dmsState: {
+        searchQuery: '',
+        categoryFilter: 'all',
+        sortBy: 'newest'
+    },
+
     initAdminPanel: function() {
-        if (!window.DisicureLeads && !window.DisicurePayments) return;
+        if (!window.DisicureLeads && !window.DisicurePayments && !window.DisicureDocuments) return;
 
         // LMS Search Input
         const searchInput = document.getElementById('lms-search-input');
@@ -1007,9 +1013,35 @@ const DisicureMain = {
             });
         }
 
+        // DMS (Document Management) Listeners
+        const dmsSearch = document.getElementById('dms-search-input');
+        if (dmsSearch) {
+            dmsSearch.addEventListener('input', (e) => {
+                this.dmsState.searchQuery = e.target.value.toLowerCase().trim();
+                this.renderDocumentsTable();
+            });
+        }
+
+        const dmsCatSelect = document.getElementById('dms-category-select');
+        if (dmsCatSelect) {
+            dmsCatSelect.addEventListener('change', (e) => {
+                this.dmsState.categoryFilter = e.target.value;
+                this.renderDocumentsTable();
+            });
+        }
+
+        const dmsSort = document.getElementById('dms-sort-select');
+        if (dmsSort) {
+            dmsSort.addEventListener('change', (e) => {
+                this.dmsState.sortBy = e.target.value;
+                this.renderDocumentsTable();
+            });
+        }
+
         // Initial Full Render
         this.renderAdminLeads();
         this.renderPaymentsTable();
+        this.renderDocumentsTable();
     },
 
     // Tab Switching Functionality
@@ -1045,6 +1077,8 @@ const DisicureMain = {
             this.renderAdminLeads();
         } else if (tabId === 'tab-financials') {
             this.renderPaymentsTable();
+        } else if (tabId === 'tab-documents') {
+            this.renderDocumentsTable();
         }
     },
 
@@ -2292,6 +2326,462 @@ const DisicureMain = {
     exportPaymentsCSV: function() {
         if (window.DisicurePayments) {
             window.DisicurePayments.exportToCSV();
+        }
+    },
+
+    // =========================================================================
+    // --- 13. DOCUMENT & EXCEL MANAGEMENT SYSTEM (DMS) CONTROLLER METHODS ---
+    // =========================================================================
+    renderDocumentsTable: function() {
+        if (!window.DisicureDocuments) return;
+        const allDocs = window.DisicureDocuments.getAllDocuments();
+        const summary = window.DisicureDocuments.getSummary();
+
+        // Update Summary KPI Cards
+        const setElText = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = val;
+        };
+
+        setElText('dms-total-docs', summary.totalDocs);
+        setElText('dms-total-excel', summary.countExcel);
+        setElText('dms-total-pdf', summary.countPdf);
+        setElText('dms-total-other', summary.countWord + summary.countImages + summary.countProducts + summary.countInvoices);
+
+        // Render Category Filter Pills
+        this.renderDocCategoryPills(allDocs);
+
+        // Filter Documents
+        const query = this.dmsState.searchQuery;
+        let filtered = allDocs.filter(doc => {
+            const matchesQuery = !query ||
+                (doc.title && doc.title.toLowerCase().includes(query)) ||
+                (doc.category && doc.category.toLowerCase().includes(query)) ||
+                (doc.tags && doc.tags.toLowerCase().includes(query)) ||
+                (doc.notes && doc.notes.toLowerCase().includes(query));
+
+            const matchesCategory = this.dmsState.categoryFilter === 'all' || doc.category === this.dmsState.categoryFilter;
+
+            return matchesQuery && matchesCategory;
+        });
+
+        // Date-wise and Name Sorting
+        if (this.dmsState.sortBy === 'newest') {
+            filtered.sort((a, b) => new Date(b.uploadDate || 0) - new Date(a.uploadDate || 0));
+        } else if (this.dmsState.sortBy === 'oldest') {
+            filtered.sort((a, b) => new Date(a.uploadDate || 0) - new Date(b.uploadDate || 0));
+        } else if (this.dmsState.sortBy === 'name-asc') {
+            filtered.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+        } else if (this.dmsState.sortBy === 'name-desc') {
+            filtered.sort((a, b) => (b.title || '').localeCompare(a.title || ''));
+        }
+
+        const tbody = document.getElementById('dms-docs-tbody');
+        const emptyState = document.getElementById('dms-empty-state');
+        const countDisplay = document.getElementById('dms-showing-count');
+
+        if (countDisplay) {
+            countDisplay.innerText = `Showing ${filtered.length} of ${allDocs.length} Business Documents`;
+        }
+
+        if (!tbody) return;
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '';
+            if (emptyState) emptyState.classList.remove('hidden');
+            return;
+        }
+
+        if (emptyState) emptyState.classList.add('hidden');
+
+        // File Format Badge Style Helper
+        const getFormatBadge = (type) => {
+            const ext = (type || 'file').toLowerCase();
+            if (ext.includes('xls') || ext.includes('csv')) {
+                return '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded text-[10px] font-extrabold uppercase tracking-wider">XLSX</span>';
+            } else if (ext.includes('pdf')) {
+                return '<span class="px-2 py-0.5 bg-rose-100 text-rose-800 rounded text-[10px] font-extrabold uppercase tracking-wider">PDF</span>';
+            } else if (ext.includes('doc')) {
+                return '<span class="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-[10px] font-extrabold uppercase tracking-wider">DOCX</span>';
+            } else if (ext.includes('png') || ext.includes('jpg') || ext.includes('jpeg')) {
+                return '<span class="px-2 py-0.5 bg-purple-100 text-purple-800 rounded text-[10px] font-extrabold uppercase tracking-wider">IMG</span>';
+            }
+            return '<span class="px-2 py-0.5 bg-gray-100 text-gray-800 rounded text-[10px] font-extrabold uppercase tracking-wider">DOC</span>';
+        };
+
+        let rowsHtml = '';
+        filtered.forEach(doc => {
+            rowsHtml += `
+            <tr class="border-b border-gray-100 hover:bg-blue-50/30 transition-colors text-xs">
+                <!-- Title & Format -->
+                <td class="p-3.5">
+                    <div class="flex items-center gap-2.5">
+                        ${getFormatBadge(doc.fileType)}
+                        <div>
+                            <button onclick="window.DisicureMain.openPreviewDocModal('${doc.docId}')" class="font-extrabold text-navy-950 hover:text-blue-600 transition-colors text-left block text-sm">
+                                ${doc.title}
+                            </button>
+                            <span class="text-[10px] text-gray-400 font-mono block mt-0.5">${doc.docId}</span>
+                        </div>
+                    </div>
+                </td>
+
+                <!-- Category -->
+                <td class="p-3.5 whitespace-nowrap">
+                    <span class="inline-block px-2.5 py-1 bg-slate-100 text-slate-700 rounded text-[11px] font-bold">
+                        ${doc.category}
+                    </span>
+                </td>
+
+                <!-- File Size -->
+                <td class="p-3.5 whitespace-nowrap font-mono text-gray-600 font-medium">
+                    ${doc.fileSize}
+                </td>
+
+                <!-- Upload Date -->
+                <td class="p-3.5 whitespace-nowrap text-gray-600 font-medium">
+                    ${doc.uploadDate}
+                </td>
+
+                <!-- Tags / Description -->
+                <td class="p-3.5 max-w-xs">
+                    <div class="text-[11px] text-blue-700 font-medium line-clamp-1">${doc.tags}</div>
+                    <div class="text-[10px] text-gray-400 font-normal line-clamp-1 mt-0.5">${doc.notes || 'Business Document'}</div>
+                </td>
+
+                <!-- Actions -->
+                <td class="p-3.5 whitespace-nowrap text-right">
+                    <div class="flex items-center justify-end gap-1.5">
+                        <!-- Preview -->
+                        <button onclick="window.DisicureMain.openPreviewDocModal('${doc.docId}')" class="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-md transition-colors" title="Preview Document">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        </button>
+
+                        <!-- Download -->
+                        <button onclick="window.DisicureMain.downloadDoc('${doc.docId}')" class="p-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-md transition-colors" title="Download Document">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        </button>
+
+                        <!-- Rename -->
+                        <button onclick="window.DisicureMain.openRenameDocModal('${doc.docId}')" class="p-1.5 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white rounded-md transition-colors" title="Rename / Edit Tags">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        </button>
+
+                        <!-- Delete -->
+                        <button onclick="window.DisicureMain.deleteDoc('${doc.docId}')" class="p-1.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-md transition-colors" title="Delete Document">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            `;
+        });
+
+        tbody.innerHTML = rowsHtml;
+    },
+
+    renderDocCategoryPills: function(docs) {
+        const container = document.getElementById('dms-category-pills');
+        if (!container || !window.DisicureDocuments) return;
+
+        const cats = window.DisicureDocuments.CATEGORIES;
+        let pillsHtml = '';
+
+        cats.forEach(cat => {
+            const isAll = cat.id === 'all';
+            const count = isAll ? docs.length : docs.filter(d => d.category.includes(cat.label.replace(/^[^\s]+\s/, ''))).length;
+            const isActive = (isAll && this.dmsState.categoryFilter === 'all') || (!isAll && this.dmsState.categoryFilter.includes(cat.label.replace(/^[^\s]+\s/, '')));
+
+            pillsHtml += `
+                <button onclick="window.DisicureMain.filterDocCategory('${isAll ? 'all' : cat.label}')" class="px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${isActive ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 hover:bg-slate-200 text-gray-700'}">
+                    <span>${cat.label}</span>
+                    <span class="text-[10px] px-1.5 py-0.2 rounded-full ${isActive ? 'bg-white/20 text-white' : 'bg-white text-gray-600 border border-gray-200'}">${count}</span>
+                </button>
+            `;
+        });
+
+        container.innerHTML = pillsHtml;
+    },
+
+    filterDocCategory: function(catLabel) {
+        this.dmsState.categoryFilter = catLabel;
+        const select = document.getElementById('dms-category-select');
+        if (select) {
+            select.value = catLabel;
+        }
+        this.renderDocumentsTable();
+    },
+
+    openUploadDocModal: function() {
+        const modal = document.getElementById('dms-upload-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+    },
+
+    closeUploadDocModal: function() {
+        const modal = document.getElementById('dms-upload-modal');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            const form = document.getElementById('dms-upload-form');
+            if (form) form.reset();
+            const fnLabel = document.getElementById('dms-selected-filename');
+            if (fnLabel) fnLabel.innerText = 'Click to Select Excel, PDF, Word, Image, or Contract';
+        }
+    },
+
+    handleDocFileSelected: function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const fnLabel = document.getElementById('dms-selected-filename');
+        const fsLabel = document.getElementById('dms-selected-filesize');
+        const titleInput = document.getElementById('dms-doc-title');
+        const catSelect = document.getElementById('dms-doc-category');
+        const sizeHidden = document.getElementById('dms-doc-filesize');
+        const typeHidden = document.getElementById('dms-doc-filetype');
+        const dataHidden = document.getElementById('dms-doc-filedata');
+
+        if (fnLabel) fnLabel.innerText = file.name;
+
+        const sizeFormatted = file.size > 1024 * 1024 ? (file.size / (1024 * 1024)).toFixed(1) + ' MB' : (file.size / 1024).toFixed(0) + ' KB';
+        if (fsLabel) fsLabel.innerText = `File Size: ${sizeFormatted}`;
+        if (sizeHidden) sizeHidden.value = sizeFormatted;
+
+        const ext = (file.name.split('.').pop() || '').toLowerCase();
+        if (typeHidden) typeHidden.value = ext;
+
+        if (titleInput && !titleInput.value) {
+            titleInput.value = file.name;
+        }
+
+        // Auto categorizer
+        if (catSelect) {
+            if (['xlsx', 'xls', 'csv'].includes(ext)) catSelect.value = '📊 Excel & Spreadsheets';
+            else if (['pdf'].includes(ext)) catSelect.value = '📄 PDF Documents';
+            else if (['docx', 'doc', 'rtf'].includes(ext)) catSelect.value = '📝 Word Documents';
+            else if (['png', 'jpg', 'jpeg', 'webp', 'svg'].includes(ext)) catSelect.value = '🖼️ Images & Visuals';
+        }
+
+        // Read File as Data URL for download & preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            if (dataHidden) {
+                dataHidden.value = e.target.result;
+            }
+        };
+        reader.readAsDataURL(file);
+    },
+
+    saveNewDocument: function(event) {
+        event.preventDefault();
+        const form = document.getElementById('dms-upload-form');
+        if (!form) return;
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        const ext = (data.title.split('.').pop() || 'file').toLowerCase();
+        let previewType = 'text';
+        if (['png', 'jpg', 'jpeg', 'webp', 'svg'].includes(ext)) {
+            previewType = 'image';
+        } else if (['xlsx', 'xls', 'csv'].includes(ext)) {
+            previewType = 'table';
+        } else if (['pdf'].includes(ext)) {
+            previewType = 'pdf_summary';
+        }
+
+        window.DisicureDocuments.addDocument({
+            ...data,
+            previewType: previewType,
+            previewUrl: data.fileData || null,
+            previewContent: `Document Title: ${data.title}\nCategory: ${data.category}\nTags: ${data.tags || 'General'}\nNotes: ${data.notes || 'Recorded via Disicure DMS.'}`
+        });
+
+        this.closeUploadDocModal();
+        this.renderDocumentsTable();
+    },
+
+    openRenameDocModal: function(docId) {
+        const docs = window.DisicureDocuments.getAllDocuments();
+        const doc = docs.find(d => d.docId === docId);
+        if (!doc) return;
+
+        const modal = document.getElementById('dms-rename-modal');
+        const idInput = document.getElementById('dms-rename-doc-id');
+        const titleInput = document.getElementById('dms-rename-title');
+        const catSelect = document.getElementById('dms-rename-category');
+        const tagsInput = document.getElementById('dms-rename-tags');
+        const notesInput = document.getElementById('dms-rename-notes');
+
+        if (idInput) idInput.value = doc.docId;
+        if (titleInput) titleInput.value = doc.title;
+        if (catSelect) catSelect.value = doc.category;
+        if (tagsInput) tagsInput.value = doc.tags || '';
+        if (notesInput) notesInput.value = doc.notes || '';
+
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+    },
+
+    closeRenameDocModal: function() {
+        const modal = document.getElementById('dms-rename-modal');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    },
+
+    saveRenameDoc: function(event) {
+        event.preventDefault();
+        const form = document.getElementById('dms-rename-form');
+        if (!form) return;
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        window.DisicureDocuments.updateDocument(data.docId, {
+            title: data.title,
+            category: data.category,
+            tags: data.tags,
+            notes: data.notes
+        });
+
+        this.closeRenameDocModal();
+        this.renderDocumentsTable();
+    },
+
+    deleteDoc: function(docId) {
+        if (confirm(`Are you sure you want to delete document ${docId}?`)) {
+            window.DisicureDocuments.deleteDocument(docId);
+            this.renderDocumentsTable();
+        }
+    },
+
+    downloadDoc: function(docId) {
+        if (window.DisicureDocuments) {
+            window.DisicureDocuments.downloadDocument(docId);
+        }
+    },
+
+    openPreviewDocModal: function(docId) {
+        const docs = window.DisicureDocuments.getAllDocuments();
+        const doc = docs.find(d => d.docId === docId);
+        if (!doc) return;
+
+        const modal = document.getElementById('dms-preview-modal');
+        const badgeEl = document.getElementById('dms-preview-badge');
+        const titleEl = document.getElementById('dms-preview-title');
+        const metaEl = document.getElementById('dms-preview-meta');
+        const bodyEl = document.getElementById('dms-preview-body');
+        const dlBtn = document.getElementById('dms-preview-download-btn');
+
+        if (badgeEl) badgeEl.innerText = (doc.fileType || 'DOC').toUpperCase();
+        if (titleEl) titleEl.innerText = doc.title;
+        if (metaEl) metaEl.innerText = `${doc.category} • ${doc.fileSize} • Uploaded ${doc.uploadDate}`;
+        if (dlBtn) dlBtn.onclick = () => this.downloadDoc(doc.docId);
+
+        if (!bodyEl) return;
+
+        // Render preview according to document type
+        if (doc.previewType === 'table' && doc.previewData) {
+            // Interactive Spreadsheet Table Preview
+            let tableHtml = `
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between pb-2 border-b border-gray-200">
+                        <span class="text-xs font-bold text-emerald-800 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            Excel / Spreadsheet Data Grid Preview (${doc.previewData.length - 1} Records)
+                        </span>
+                        <span class="text-[11px] text-gray-400">Live Structured View</span>
+                    </div>
+                    <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 border-b border-gray-200 text-[11px] font-extrabold text-navy-950">
+                                    ${doc.previewData[0].map(h => `<th class="p-3 border-r border-gray-200">${h}</th>`).join('')}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${doc.previewData.slice(1).map(row => `
+                                    <tr class="border-b border-gray-100 hover:bg-emerald-50/20">
+                                        ${row.map(cell => `<td class="p-3 border-r border-gray-100 font-medium text-gray-700">${cell}</td>`).join('')}
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            bodyEl.innerHTML = tableHtml;
+        } else if (doc.previewType === 'image' || (doc.fileData && doc.fileData.startsWith('data:image')) || doc.previewUrl) {
+            // Image Preview
+            const imgSrc = doc.previewUrl || doc.fileData || 'images/service_07_pkg.jpg';
+            bodyEl.innerHTML = `
+                <div class="flex flex-col items-center justify-center p-4">
+                    <img src="${imgSrc}" alt="${doc.title}" class="max-h-[500px] w-auto object-contain rounded-lg shadow-md border border-gray-200">
+                    <p class="text-xs text-gray-500 mt-3 font-mono">${doc.title} (${doc.fileSize})</p>
+                </div>
+            `;
+        } else if (doc.previewType === 'pdf_summary' || doc.category.includes('PDF')) {
+            // PDF Document Reader
+            bodyEl.innerHTML = `
+                <div class="space-y-4 max-w-2xl mx-auto bg-white p-6 rounded-xl border border-gray-200 shadow-sm text-xs">
+                    <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+                            <span class="font-extrabold text-navy-950 uppercase tracking-wider">PDF Document Preview</span>
+                        </div>
+                        <span class="font-mono text-gray-400 text-[11px]">Disicure Vault Certified</span>
+                    </div>
+                    <div class="bg-rose-50/40 p-4 rounded-lg border border-rose-100">
+                        <h4 class="font-extrabold text-rose-950 text-sm mb-1">${doc.title}</h4>
+                        <p class="text-gray-600 font-normal leading-relaxed whitespace-pre-line">${doc.previewContent || doc.notes || 'PDF Document archived in Disicure Enterprise Vault.'}</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 pt-2 text-[11px] text-gray-500">
+                        <div><strong class="text-gray-700">Classification:</strong> ${doc.category}</div>
+                        <div><strong class="text-gray-700">File Size:</strong> ${doc.fileSize}</div>
+                        <div><strong class="text-gray-700">Search Tags:</strong> ${doc.tags}</div>
+                        <div><strong class="text-gray-700">Archived Date:</strong> ${doc.uploadDate}</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Formatted Text / Word Document View
+            bodyEl.innerHTML = `
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm max-w-2xl mx-auto space-y-4 text-xs">
+                    <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                        <span class="font-extrabold text-navy-950 uppercase tracking-wider">Word Document Content</span>
+                        <span class="font-mono text-gray-400 text-[11px]">${doc.fileType.toUpperCase()} Format</span>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-lg border border-gray-100 font-mono text-gray-700 leading-relaxed whitespace-pre-line">
+                        ${doc.previewContent || doc.notes || 'Document content archived.'}
+                    </div>
+                </div>
+            `;
+        }
+
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+    },
+
+    closePreviewDocModal: function() {
+        const modal = document.getElementById('dms-preview-modal');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
         }
     }
 };

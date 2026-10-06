@@ -1802,7 +1802,10 @@ const DisicureRouter = {
                             <span>👥 Team & Assignees</span>
                         </button>
                         <button onclick="window.DisicureMain.switchAdminTab('tab-financials')" id="btn-tab-financials" class="admin-tab-btn px-4 py-2 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-blue-200 transition-all whitespace-nowrap flex items-center gap-2">
-                            <span>💳 Financials & Ledger</span>
+                            <span>💳 Payments & Ledger</span>
+                        </button>
+                        <button onclick="window.DisicureMain.switchAdminTab('tab-documents')" id="btn-tab-documents" class="admin-tab-btn px-4 py-2 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-blue-200 transition-all whitespace-nowrap flex items-center gap-2">
+                            <span>📁 Document & Excel Vault</span>
                         </button>
                     </div>
                 </div>
@@ -2332,6 +2335,149 @@ const DisicureRouter = {
                 </section>
             </div>
 
+            <!-- ================================================================= -->
+            <!-- TAB 6: DOCUMENT & EXCEL MANAGEMENT VAULT (DMS)                   -->
+            <!-- ================================================================= -->
+            <div id="tab-documents" class="admin-tab-content hidden">
+                <section class="py-8 bg-white min-h-[70vh]">
+                    <div class="max-w-7xl mx-auto px-4 lg:px-8 space-y-6">
+                        
+                        <!-- Header & Upload Trigger -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+                            <div>
+                                <h2 class="text-xl font-extrabold text-navy-950 flex items-center gap-2">
+                                    <span>📁 Enterprise Document & Excel Management Vault</span>
+                                    <span class="text-[10px] font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">Live DMS</span>
+                                </h2>
+                                <p class="text-xs text-gray-500 font-normal mt-0.5">Upload, categorize, preview, download, rename, and manage all your spreadsheets, product brochures, contracts, and COAs without developer dependency.</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="window.DisicureMain.openUploadDocModal()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-2 transform hover:-translate-y-0.5">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                                    <span>+ Upload Document</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 4 Summary KPI Metric Cards -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="bg-blue-50/40 border border-blue-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-blue-700 uppercase tracking-wider block">📁 Total Documents</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-navy-950 mt-1.5" id="dms-total-docs">0</div>
+                                <p class="text-[11px] text-gray-500 mt-1">Across all categories & formats</p>
+                            </div>
+                            <div class="bg-emerald-50/40 border border-emerald-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-emerald-700 uppercase tracking-wider block">📊 Excel & Spreadsheets</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-emerald-600 mt-1.5" id="dms-total-excel">0</div>
+                                <p class="text-[11px] text-emerald-700 font-medium mt-1">Price lists, rate cards & ledgers</p>
+                            </div>
+                            <div class="bg-purple-50/40 border border-purple-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-purple-700 uppercase tracking-wider block">📄 PDFs & Contracts</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-purple-600 mt-1.5" id="dms-total-pdf">0</div>
+                                <p class="text-[11px] text-purple-700 font-medium mt-1">Brochures, agreements & licenses</p>
+                            </div>
+                            <div class="bg-amber-50/40 border border-amber-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-amber-700 uppercase tracking-wider block">📦 Specs, Invoices & Images</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-amber-600 mt-1.5" id="dms-total-other">0</div>
+                                <p class="text-[11px] text-amber-700 font-medium mt-1">COAs, packshots & tax invoices</p>
+                            </div>
+                        </div>
+
+                        <!-- Drag & Drop Fast Upload Box -->
+                        <div class="border-2 border-dashed border-blue-200 hover:border-blue-400 bg-blue-50/20 hover:bg-blue-50/50 rounded-2xl p-6 text-center transition-all cursor-pointer group" onclick="window.DisicureMain.openUploadDocModal()">
+                            <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                            </div>
+                            <h3 class="text-sm font-extrabold text-navy-950">Click to Upload or Drag & Drop Business Documents Here</h3>
+                            <p class="text-xs text-gray-500 mt-1">Supports Excel (.xlsx, .xls, .csv), PDF, Word (.docx, .doc), Images (.png, .jpg), Product Specs, Invoices & Agreements</p>
+                        </div>
+
+                        <!-- Category Filter Pills Bar -->
+                        <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs" id="dms-category-pills">
+                            <!-- Populated dynamically via window.DisicureMain.renderDocCategoryPills() -->
+                        </div>
+
+                        <!-- Search, Filter & Date-Wise Sort Controls -->
+                        <div class="bg-slate-50 border border-gray-200 p-4 rounded-xl shadow-sm space-y-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                <!-- Search Input -->
+                                <div class="lg:col-span-2 relative">
+                                    <input type="text" id="dms-search-input" placeholder="Search by Document Title, Category, Tag, or Note..." class="w-full bg-white border border-gray-200 rounded-lg p-2.5 pl-10 text-xs font-medium focus:outline-none focus:border-blue-500 shadow-sm">
+                                    <span class="absolute left-3.5 top-3 text-gray-400">
+                                        ${DisicureRouter.icons.search}
+                                    </span>
+                                </div>
+
+                                <!-- Category Dropdown Filter -->
+                                <div>
+                                    <select id="dms-category-select" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-bold text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
+                                        <option value="all">All Document Categories</option>
+                                        <option value="📊 Excel & Spreadsheets">📊 Excel & Spreadsheets</option>
+                                        <option value="📄 PDF Documents">📄 PDF Documents</option>
+                                        <option value="📝 Word Documents">📝 Word Documents</option>
+                                        <option value="🖼️ Images & Visuals">🖼️ Images & Visuals</option>
+                                        <option value="📦 Product Specs & COA">📦 Product Specs & COA</option>
+                                        <option value="📑 Agreements & Contracts">📑 Agreements & Contracts</option>
+                                        <option value="📈 Reports & Audits">📈 Reports & Audits</option>
+                                        <option value="🧾 Invoices & Billing">🧾 Invoices & Billing</option>
+                                        <option value="📋 Licenses & Compliance">📋 Licenses & Compliance</option>
+                                    </select>
+                                </div>
+
+                                <!-- Date-wise Sort Filter -->
+                                <div>
+                                    <select id="dms-sort-select" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-medium text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
+                                        <option value="newest">Upload Date (Newest First)</option>
+                                        <option value="oldest">Upload Date (Oldest First)</option>
+                                        <option value="name-asc">Document Name (A-Z)</option>
+                                        <option value="name-desc">Document Name (Z-A)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Count Indicator -->
+                            <div class="flex items-center justify-between pt-1 text-xs">
+                                <span class="font-bold text-gray-600" id="dms-showing-count">Loading document vault...</span>
+                                <span class="text-gray-400 text-[11px]">Instant client-side indexing & search</span>
+                            </div>
+                        </div>
+
+                        <!-- Documents Data Table Card -->
+                        <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden" id="dms-docs-table-container">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse" id="dms-docs-table">
+                                    <thead>
+                                        <tr class="bg-slate-100/80 border-b border-gray-200 text-[11px] font-extrabold text-gray-600 uppercase tracking-wider">
+                                            <th class="p-3.5">Document Title & Format</th>
+                                            <th class="p-3.5">Category</th>
+                                            <th class="p-3.5">File Size</th>
+                                            <th class="p-3.5">Upload Date</th>
+                                            <th class="p-3.5">Tags & Description</th>
+                                            <th class="p-3.5 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dms-docs-tbody">
+                                        <!-- Populated dynamically via window.DisicureMain.renderDocumentsTable() -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Empty State Notice -->
+                            <div id="dms-empty-state" class="hidden py-16 text-center">
+                                <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    ${DisicureRouter.icons.search}
+                                </div>
+                                <h3 class="text-base font-extrabold text-navy-950">No Documents Found</h3>
+                                <p class="text-xs text-gray-500 max-w-sm mx-auto mt-1 font-normal leading-relaxed">
+                                    No files match your search query or selected category. Upload a new document or reset your filters.
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+            </div>
+
             <!-- Edit/View Lead Details Drawer/Modal -->
             <div id="lms-lead-drawer" class="fixed inset-0 z-50 items-center justify-center hidden">
                 <!-- Backdrop -->
@@ -2602,10 +2748,161 @@ const DisicureRouter = {
                         <svg class="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
                         <span>Document verified & securely archived in Disicure PMS Vault</span>
                     </div>
-                    <div class="pt-2">
-                        <button onclick="window.DisicureMain.closeProofModal()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded transition-colors">
-                            Close Viewer
-                        </button>
+            <!-- Document Upload Modal -->
+            <div id="dms-upload-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <!-- Backdrop -->
+                <div class="absolute inset-0 bg-navy-950/60 backdrop-blur-sm" onclick="window.DisicureMain.closeUploadDocModal()"></div>
+                
+                <!-- Modal Card -->
+                <div class="relative bg-white rounded-2xl p-6 md:p-8 max-w-2xl w-full mx-4 shadow-2xl z-10 max-h-[90vh] overflow-y-auto">
+                    <button class="absolute top-4 right-4 text-gray-400 hover:text-navy-950 focus:outline-none" onclick="window.DisicureMain.closeUploadDocModal()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                    
+                    <h3 class="text-xl font-extrabold text-navy-950 mb-1">📁 Upload Business Document / Excel</h3>
+                    <p class="text-xs text-gray-500 mb-6 font-normal">Add product catalogs, pricing sheets, batch COAs, customer contracts, or GST invoices.</p>
+                    
+                    <form id="dms-upload-form" onsubmit="window.DisicureMain.saveNewDocument(event)" class="space-y-4">
+                        <!-- File Selector Dropzone -->
+                        <div class="border-2 border-dashed border-blue-300 bg-blue-50/30 rounded-xl p-5 text-center cursor-pointer hover:bg-blue-50/70 transition-colors" onclick="document.getElementById('dms-file-input').click()">
+                            <input type="file" id="dms-file-input" required class="hidden" onchange="window.DisicureMain.handleDocFileSelected(event)">
+                            <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                            </div>
+                            <span class="text-xs font-bold text-blue-700 block" id="dms-selected-filename">Click to Select Excel, PDF, Word, Image, or Contract</span>
+                            <span class="text-[10px] text-gray-400 block mt-0.5" id="dms-selected-filesize">Accepts .xlsx, .xls, .csv, .pdf, .docx, .doc, .png, .jpg up to 50MB</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Document Title / Display Name *</label>
+                                <input type="text" id="dms-doc-title" name="title" required placeholder="e.g. Master_PriceList_2026.xlsx" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Category Classification *</label>
+                                <select id="dms-doc-category" name="category" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold focus:border-blue-500">
+                                    <option value="📊 Excel & Spreadsheets">📊 Excel & Spreadsheets</option>
+                                    <option value="📄 PDF Documents">📄 PDF Documents</option>
+                                    <option value="📝 Word Documents">📝 Word Documents</option>
+                                    <option value="🖼️ Images & Visuals">🖼️ Images & Visuals</option>
+                                    <option value="📦 Product Specs & COA">📦 Product Specs & COA</option>
+                                    <option value="📑 Agreements & Contracts">📑 Agreements & Contracts</option>
+                                    <option value="📈 Reports & Audits">📈 Reports & Audits</option>
+                                    <option value="🧾 Invoices & Billing">🧾 Invoices & Billing</option>
+                                    <option value="📋 Licenses & Compliance">📋 Licenses & Compliance</option>
+                                    <option value="📁 General Business Documents">📁 General Business Documents</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Search Tags (Comma separated)</label>
+                            <input type="text" name="tags" placeholder="e.g. Rate Card, Formulation, 2026, Wholesale, Batch" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500 font-medium">
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Notes / Description</label>
+                            <textarea name="notes" rows="2" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500 font-normal" placeholder="Add specific description or distributor instructions..."></textarea>
+                        </div>
+
+                        <input type="hidden" id="dms-doc-filesize" name="fileSize" value="1.2 MB">
+                        <input type="hidden" id="dms-doc-filetype" name="fileType" value="xlsx">
+                        <input type="hidden" id="dms-doc-filedata" name="fileData" value="">
+
+                        <div class="pt-2 flex justify-end gap-3 border-t border-gray-100">
+                            <button type="button" onclick="window.DisicureMain.closeUploadDocModal()" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded transition-colors">
+                                Cancel
+                            </button>
+                            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow transition-colors">
+                                Upload to Vault
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Rename / Edit Document Modal -->
+            <div id="dms-rename-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <div class="absolute inset-0 bg-navy-950/60 backdrop-blur-sm" onclick="window.DisicureMain.closeRenameDocModal()"></div>
+                <div class="relative bg-white rounded-2xl p-6 md:p-8 max-w-lg w-full mx-4 shadow-2xl z-10">
+                    <button class="absolute top-4 right-4 text-gray-400 hover:text-navy-950 focus:outline-none" onclick="window.DisicureMain.closeRenameDocModal()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                    <h3 class="text-xl font-extrabold text-navy-950 mb-1">✏️ Rename & Edit Document</h3>
+                    <p class="text-xs text-gray-500 mb-5 font-normal">Update title, category, tags, or descriptive notes.</p>
+                    
+                    <form id="dms-rename-form" onsubmit="window.DisicureMain.saveRenameDoc(event)" class="space-y-4">
+                        <input type="hidden" id="dms-rename-doc-id" name="docId">
+                        
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Document Title *</label>
+                            <input type="text" id="dms-rename-title" name="title" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold focus:border-blue-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Category *</label>
+                            <select id="dms-rename-category" name="category" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold focus:border-blue-500">
+                                <option value="📊 Excel & Spreadsheets">📊 Excel & Spreadsheets</option>
+                                <option value="📄 PDF Documents">📄 PDF Documents</option>
+                                <option value="📝 Word Documents">📝 Word Documents</option>
+                                <option value="🖼️ Images & Visuals">🖼️ Images & Visuals</option>
+                                <option value="📦 Product Specs & COA">📦 Product Specs & COA</option>
+                                <option value="📑 Agreements & Contracts">📑 Agreements & Contracts</option>
+                                <option value="📈 Reports & Audits">📈 Reports & Audits</option>
+                                <option value="🧾 Invoices & Billing">🧾 Invoices & Billing</option>
+                                <option value="📋 Licenses & Compliance">📋 Licenses & Compliance</option>
+                                <option value="📁 General Business Documents">📁 General Business Documents</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Search Tags</label>
+                            <input type="text" id="dms-rename-tags" name="tags" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500 font-medium">
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Notes / Description</label>
+                            <textarea id="dms-rename-notes" name="notes" rows="2" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500 font-normal"></textarea>
+                        </div>
+
+                        <div class="pt-2 flex justify-end gap-3 border-t border-gray-100">
+                            <button type="button" onclick="window.DisicureMain.closeRenameDocModal()" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded">
+                                Cancel
+                            </button>
+                            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow">
+                                Update Document
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Rich Multi-Format Document Previewer Modal -->
+            <div id="dms-preview-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <div class="absolute inset-0 bg-navy-950/75 backdrop-blur-sm" onclick="window.DisicureMain.closePreviewDocModal()"></div>
+                <div class="relative bg-white rounded-2xl p-6 md:p-8 max-w-4xl w-full mx-4 shadow-2xl z-10 max-h-[92vh] overflow-y-auto flex flex-col">
+                    <div class="flex items-center justify-between border-b border-gray-100 pb-4 mb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-extrabold text-sm" id="dms-preview-badge">DOC</span>
+                            <div>
+                                <h3 class="text-base font-extrabold text-navy-950" id="dms-preview-title">Document Preview</h3>
+                                <p class="text-xs text-gray-400 font-normal" id="dms-preview-meta">PDF • 1.4 MB • Uploaded 2026-10-06</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button id="dms-preview-download-btn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm transition-colors flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                <span>Download File</span>
+                            </button>
+                            <button onclick="window.DisicureMain.closePreviewDocModal()" class="p-2 text-gray-400 hover:text-navy-950 focus:outline-none">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Body Container -->
+                    <div id="dms-preview-body" class="flex-1 min-h-[300px] overflow-auto rounded-xl border border-gray-200 bg-slate-50 p-4">
+                        <!-- Populated dynamically -->
                     </div>
                 </div>
             </div>
