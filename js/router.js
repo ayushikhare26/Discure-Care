@@ -1812,6 +1812,9 @@ const DisicureRouter = {
                         <button onclick="window.DisicureMain.switchAdminTab('tab-partners')" id="btn-tab-partners" class="admin-tab-btn px-4 py-2 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-blue-200 transition-all whitespace-nowrap flex items-center gap-2">
                             <span>🤝 Active Partners Directory</span>
                         </button>
+                        <button onclick="window.DisicureMain.switchAdminTab('tab-clients')" id="btn-tab-clients" class="admin-tab-btn px-4 py-2 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-blue-200 transition-all whitespace-nowrap flex items-center gap-2">
+                            <span>🏢 Client & Customer Management</span>
+                        </button>
                         <button onclick="window.DisicureMain.switchAdminTab('tab-team')" id="btn-tab-team" class="admin-tab-btn px-4 py-2 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-blue-200 transition-all whitespace-nowrap flex items-center gap-2">
                             <span>👥 Team & Assignees</span>
                         </button>
@@ -2786,6 +2789,647 @@ const DisicureRouter = {
 
                     </div>
                 </section>
+            </div>
+
+            <!-- ================================================================= -->
+            <!-- TAB 7: CLIENT & CUSTOMER MANAGEMENT (MODULE 13 - 360° CRM)        -->
+            <!-- ================================================================= -->
+            <div id="tab-clients" class="admin-tab-content hidden">
+                <section class="py-8 bg-white min-h-[75vh]">
+                    <div class="max-w-7xl mx-auto px-4 lg:px-8 space-y-6">
+                        
+                        <!-- Header & Actions Bar -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+                            <div>
+                                <h2 class="text-xl font-extrabold text-navy-950 flex items-center gap-2">
+                                    <span>🏢 Enterprise Client & Customer Management</span>
+                                    <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">360° Account CRM</span>
+                                </h2>
+                                <p class="text-xs text-gray-500 font-normal mt-0.5">Manage hospital networks, PCD franchises, retail chains, govt tenders, contracts, orders, payments, documents, and communication logs.</p>
+                            </div>
+                            <div class="flex items-center gap-2.5">
+                                <button onclick="window.DisicureMain.exportClientsCSV()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-gray-700 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 border border-gray-200">
+                                    <span>📥 Export CSV</span>
+                                </button>
+                                <button onclick="window.DisicureMain.openCreateClientModal()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-2 transform hover:-translate-y-0.5">
+                                    <span>+ Add New Client</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 4 Summary KPI Metric Cards -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="bg-blue-50/40 border border-blue-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-blue-700 uppercase tracking-wider block">🏢 Total Client Accounts</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-navy-950 mt-1.5" id="cli-kpi-total">0</div>
+                                <p class="text-[11px] text-gray-500 mt-1">Across all pharma verticals</p>
+                            </div>
+                            <div class="bg-emerald-50/40 border border-emerald-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-emerald-700 uppercase tracking-wider block">🟢 Active & Key Accounts</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-emerald-600 mt-1.5" id="cli-kpi-active">0</div>
+                                <p class="text-[11px] text-emerald-700 font-medium mt-1">Under active supply contracts</p>
+                            </div>
+                            <div class="bg-purple-50/40 border border-purple-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-purple-700 uppercase tracking-wider block">💼 Total Orders / Business</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-purple-600 mt-1.5" id="cli-kpi-orders">₹0</div>
+                                <p class="text-[11px] text-purple-700 font-medium mt-1">Cumulative contract volume</p>
+                            </div>
+                            <div class="bg-amber-50/40 border border-amber-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-amber-700 uppercase tracking-wider block">⏳ Outstanding Balance Due</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-amber-600 mt-1.5" id="cli-kpi-dues">₹0</div>
+                                <p class="text-[11px] text-amber-700 font-medium mt-1">Pending invoice settlements</p>
+                            </div>
+                        </div>
+
+                        <!-- Search, Filter & View Controls -->
+                        <div class="bg-slate-50 border border-gray-200 p-4 rounded-xl shadow-sm space-y-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                <!-- Search Input -->
+                                <div class="relative">
+                                    <input type="text" id="cli-search-input" oninput="window.DisicureMain.filterClientsTable()" placeholder="Search Company, Contact, City, Mobile, Email..." class="w-full bg-white border border-gray-200 rounded-lg p-2.5 pl-9 text-xs font-medium focus:outline-none focus:border-blue-500 shadow-sm">
+                                    <span class="absolute left-3 top-3 text-gray-400">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                    </span>
+                                </div>
+
+                                <!-- Business Type Filter -->
+                                <div>
+                                    <select id="cli-type-filter" onchange="window.DisicureMain.filterClientsTable()" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-bold text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
+                                        <option value="all">All Business Types</option>
+                                        <option value="Hospital & Healthcare Network">🏥 Hospital & Healthcare Network</option>
+                                        <option value="PCD Pharma Franchise">🤝 PCD Pharma Franchise</option>
+                                        <option value="Retail & Chain Pharmacy">💊 Retail & Chain Pharmacy</option>
+                                        <option value="Government & Institutional Healthcare">🏛️ Government & Institutional</option>
+                                        <option value="Contract Pharma Manufacturing & Tech Transfer">🏭 Contract Manufacturing</option>
+                                        <option value="Healthcare Distributor">📦 Healthcare Distributor</option>
+                                    </select>
+                                </div>
+
+                                <!-- Account Status Filter -->
+                                <div>
+                                    <select id="cli-status-filter" onchange="window.DisicureMain.filterClientsTable()" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-bold text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
+                                        <option value="all">All Account Statuses</option>
+                                        <option value="Key Enterprise Account">⭐ Key Enterprise Account</option>
+                                        <option value="Active Account">🟢 Active Account</option>
+                                        <option value="Onboarding">🟡 Onboarding</option>
+                                        <option value="Inactive">⚪ Inactive</option>
+                                    </select>
+                                </div>
+
+                                <!-- Sort Filter -->
+                                <div>
+                                    <select id="cli-sort-select" onchange="window.DisicureMain.filterClientsTable()" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-medium text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
+                                        <option value="newest">Sort: Recently Added</option>
+                                        <option value="name-asc">Company Name (A-Z)</option>
+                                        <option value="value-desc">Highest Business Value</option>
+                                        <option value="due-desc">Highest Balance Due</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Count Indicator -->
+                            <div class="flex items-center justify-between pt-1 text-xs">
+                                <span class="font-bold text-gray-600" id="cli-showing-count">Loading clients directory...</span>
+                                <button onclick="window.DisicureMain.resetClientFilters()" class="text-blue-600 hover:text-blue-800 font-bold hover:underline">
+                                    Reset Filters
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Clients Data Table -->
+                        <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse" id="adm-clients-table">
+                                    <thead>
+                                        <tr class="bg-slate-50 text-[11px] font-extrabold text-navy-950 uppercase tracking-wider border-b border-gray-200">
+                                            <th class="p-4">Company & Contact</th>
+                                            <th class="p-4">Business Type & Location</th>
+                                            <th class="p-4">Active Requirements / Formulations</th>
+                                            <th class="p-4">Orders & Financials</th>
+                                            <th class="p-4">Account Status</th>
+                                            <th class="p-4 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adm-clients-tbody" class="divide-y divide-gray-100 text-xs font-medium">
+                                        <!-- Populated dynamically via window.DisicureMain.renderClientsTable() -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Empty Search Results Placeholder -->
+                            <div id="adm-clients-empty" class="hidden py-16 text-center">
+                                <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                                </div>
+                                <h3 class="text-base font-extrabold text-navy-950">No Clients Found</h3>
+                                <p class="text-xs text-gray-500 max-w-sm mx-auto mt-1 font-normal leading-relaxed">
+                                    No client profiles match your current search keywords or category filters.
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+            </div>
+
+            <!-- ================================================================= -->
+            <!-- CLIENT 360° PROFILE MODAL (ALL 14 REQUIRED PROFILE SECTIONS)       -->
+            <!-- ================================================================= -->
+            <div id="adm-client-360-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <!-- Backdrop -->
+                <div class="absolute inset-0 bg-navy-950/75 backdrop-blur-sm" onclick="window.DisicureMain.closeClient360Modal()"></div>
+                
+                <!-- Large Modal Box -->
+                <div class="relative bg-white rounded-2xl max-w-5xl w-full mx-4 shadow-2xl z-10 max-h-[92vh] flex flex-col overflow-hidden">
+                    
+                    <!-- Modal Header (Client Banner & Quick Actions) -->
+                    <div class="bg-gradient-to-r from-navy-950 via-slate-900 to-blue-950 text-white p-6 border-b border-blue-900/50 flex-shrink-0 relative">
+                        <button class="absolute top-5 right-5 text-gray-400 hover:text-white bg-slate-800/60 hover:bg-slate-800 p-2 rounded-lg transition-colors focus:outline-none" onclick="window.DisicureMain.closeClient360Modal()">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pr-10">
+                            <div>
+                                <div class="flex items-center gap-2.5 flex-wrap">
+                                    <h3 class="text-xl font-extrabold text-white tracking-wide" id="cli360-company-name">Loading Client...</h3>
+                                    <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full" id="cli360-status-badge">Active</span>
+                                    <span class="text-[10px] font-semibold bg-blue-900/60 text-blue-200 border border-blue-700/50 px-2 py-0.5 rounded-full" id="cli360-type-badge">Hospital</span>
+                                </div>
+                                <div class="flex items-center gap-4 text-xs text-blue-200/80 mt-2 flex-wrap">
+                                    <span class="flex items-center gap-1 font-medium">👤 <strong class="text-white" id="cli360-contact-person">-</strong> (<span id="cli360-designation">-</span>)</span>
+                                    <span class="flex items-center gap-1">📍 <span id="cli360-location-summary">-</span></span>
+                                    <span class="flex items-center gap-1">💼 Manager: <strong class="text-white" id="cli360-mgr">-</strong></span>
+                                </div>
+                            </div>
+                            
+                            <!-- Quick Communication Actions -->
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <a id="cli360-call-btn" href="#" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1">
+                                    <span>📞 Call</span>
+                                </a>
+                                <a id="cli360-wa-btn" href="#" target="_blank" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1">
+                                    <span>💬 WhatsApp</span>
+                                </a>
+                                <a id="cli360-email-btn" href="#" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1">
+                                    <span>✉️ Email</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- 360 Navigation Sub-Tabs -->
+                        <div class="flex items-center gap-1.5 overflow-x-auto pt-4 mt-4 border-t border-slate-800 text-xs font-bold">
+                            <button onclick="window.DisicureMain.switchClient360Tab('cli-tab-overview')" id="btn-cli-tab-overview" class="cli360-tab-btn active px-3.5 py-1.5 rounded-lg bg-blue-600 text-white whitespace-nowrap transition-all">
+                                📋 Overview & KYC
+                            </button>
+                            <button onclick="window.DisicureMain.switchClient360Tab('cli-tab-requirements')" id="btn-cli-tab-requirements" class="cli360-tab-btn px-3.5 py-1.5 rounded-lg bg-slate-800 text-blue-200 hover:text-white whitespace-nowrap transition-all">
+                                📑 Requirements (<span id="cli360-count-req">0</span>)
+                            </button>
+                            <button onclick="window.DisicureMain.switchClient360Tab('cli-tab-products')" id="btn-cli-tab-products" class="cli360-tab-btn px-3.5 py-1.5 rounded-lg bg-slate-800 text-blue-200 hover:text-white whitespace-nowrap transition-all">
+                                💊 Products & Services (<span id="cli360-count-prod">0</span>)
+                            </button>
+                            <button onclick="window.DisicureMain.switchClient360Tab('cli-tab-leads')" id="btn-cli-tab-leads" class="cli360-tab-btn px-3.5 py-1.5 rounded-lg bg-slate-800 text-blue-200 hover:text-white whitespace-nowrap transition-all">
+                                🎯 Leads History (<span id="cli360-count-leads">0</span>)
+                            </button>
+                            <button onclick="window.DisicureMain.switchClient360Tab('cli-tab-orders')" id="btn-cli-tab-orders" class="cli360-tab-btn px-3.5 py-1.5 rounded-lg bg-slate-800 text-blue-200 hover:text-white whitespace-nowrap transition-all">
+                                📦 Orders & Business (<span id="cli360-count-orders">0</span>)
+                            </button>
+                            <button onclick="window.DisicureMain.switchClient360Tab('cli-tab-payments')" id="btn-cli-tab-payments" class="cli360-tab-btn px-3.5 py-1.5 rounded-lg bg-slate-800 text-blue-200 hover:text-white whitespace-nowrap transition-all">
+                                💳 Invoices & Payments (<span id="cli360-count-payments">0</span>)
+                            </button>
+                            <button onclick="window.DisicureMain.switchClient360Tab('cli-tab-docs')" id="btn-cli-tab-docs" class="cli360-tab-btn px-3.5 py-1.5 rounded-lg bg-slate-800 text-blue-200 hover:text-white whitespace-nowrap transition-all">
+                                📁 Documents (<span id="cli360-count-docs">0</span>)
+                            </button>
+                            <button onclick="window.DisicureMain.switchClient360Tab('cli-tab-notes')" id="btn-cli-tab-notes" class="cli360-tab-btn px-3.5 py-1.5 rounded-lg bg-slate-800 text-blue-200 hover:text-white whitespace-nowrap transition-all">
+                                📝 Notes (<span id="cli360-count-notes">0</span>)
+                            </button>
+                            <button onclick="window.DisicureMain.switchClient360Tab('cli-tab-comms')" id="btn-cli-tab-comms" class="cli360-tab-btn px-3.5 py-1.5 rounded-lg bg-slate-800 text-blue-200 hover:text-white whitespace-nowrap transition-all">
+                                📞 Communication History (<span id="cli360-count-comms">0</span>)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Modal Body (Scrollable Sub-Tab Content Panes) -->
+                    <div class="p-6 overflow-y-auto flex-1 bg-slate-50 space-y-6" id="cli360-modal-body">
+                        <!-- Sub-tab contents will be populated dynamically by window.DisicureMain.renderClient360Details() -->
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div class="bg-white border-t border-gray-200 px-6 py-3.5 flex items-center justify-between flex-shrink-0">
+                        <div class="text-xs text-gray-500 font-medium">
+                            Client ID: <span id="cli360-footer-id" class="font-bold text-navy-950">-</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="window.DisicureMain.openEditClientModal(window.DisicureMain.activeClientId)" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-gray-700 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 border border-gray-200">
+                                <span>✏️ Edit Profile Info</span>
+                            </button>
+                            <button onclick="window.DisicureMain.closeClient360Modal()" class="px-4 py-2 bg-navy-950 hover:bg-slate-900 text-white text-xs font-bold rounded-lg transition-all">
+                                Close Window
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================================================================= -->
+            <!-- CREATE / EDIT CLIENT MODAL                                        -->
+            <!-- ================================================================= -->
+            <div id="adm-client-form-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <div class="absolute inset-0 bg-navy-950/70 backdrop-blur-sm" onclick="window.DisicureMain.closeClientFormModal()"></div>
+                <div class="relative bg-white rounded-2xl p-6 md:p-8 max-w-3xl w-full mx-4 shadow-2xl z-10 max-h-[90vh] overflow-y-auto">
+                    <button class="absolute top-4 right-4 text-gray-400 hover:text-navy-950 focus:outline-none" onclick="window.DisicureMain.closeClientFormModal()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                    
+                    <h3 class="text-xl font-extrabold text-navy-950 mb-1" id="client-form-modal-title">Register New Pharma Client Account</h3>
+                    <p class="text-xs text-gray-500 mb-6 font-normal">Add hospital networks, PCD franchises, institutional buyers, or distributors into Disicure Enterprise CRM.</p>
+                    
+                    <form id="adm-client-form" onsubmit="window.DisicureMain.saveClientForm(event)" class="space-y-4">
+                        <input type="hidden" id="cli-form-edit-id" name="clientId" value="">
+
+                        <!-- Basic Information -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Company / Organization Name *</label>
+                                <input type="text" id="cli-form-company" name="companyName" required placeholder="e.g. Maxcare Hospitals Ltd." class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-medium focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Business Type *</label>
+                                <select id="cli-form-type" name="businessType" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold text-gray-700 focus:border-blue-500">
+                                    <option value="Hospital & Healthcare Network">🏥 Hospital & Healthcare Network</option>
+                                    <option value="PCD Pharma Franchise">🤝 PCD Pharma Franchise</option>
+                                    <option value="Retail & Chain Pharmacy">💊 Retail & Chain Pharmacy</option>
+                                    <option value="Government & Institutional Healthcare">🏛️ Government & Institutional Healthcare</option>
+                                    <option value="Contract Pharma Manufacturing & Tech Transfer">🏭 Contract Pharma Manufacturing</option>
+                                    <option value="Healthcare Distributor">📦 Healthcare Distributor</option>
+                                    <option value="Pharma Marketing Agency">📢 Pharma Marketing Agency</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Contact Details -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Contact Person Name *</label>
+                                <input type="text" id="cli-form-contact" name="contactPerson" required placeholder="e.g. Dr. Arvind Swaminathan" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-medium focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Designation / Role</label>
+                                <input type="text" id="cli-form-designation" name="designation" placeholder="e.g. Director of Procurement" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-medium focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Account Manager</label>
+                                <input type="text" id="cli-form-manager" name="accountManager" placeholder="e.g. Ayushi Khare" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-medium focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Mobile Phone *</label>
+                                <input type="tel" id="cli-form-mobile" name="mobile" required placeholder="+91 98201 44521" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-medium focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">WhatsApp Number</label>
+                                <input type="tel" id="cli-form-whatsapp" name="whatsapp" placeholder="+91 98201 44521" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-medium focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Email Address *</label>
+                                <input type="email" id="cli-form-email" name="email" required placeholder="procure@maxcare.com" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-medium focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <!-- Location & Address -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="sm:col-span-3">
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Office / Facility Address</label>
+                                <input type="text" id="cli-form-address" name="address" placeholder="e.g. Maxcare Tower, Bandra Kurla Complex" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-medium focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">City *</label>
+                                <input type="text" id="cli-form-city" name="city" required placeholder="e.g. Mumbai" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-medium focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">State *</label>
+                                <input type="text" id="cli-form-state" name="state" required placeholder="e.g. Maharashtra" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-medium focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Pincode</label>
+                                <input type="text" id="cli-form-pincode" name="pincode" placeholder="400051" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-medium focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <!-- Compliance & Credit Terms -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">GSTIN Number</label>
+                                <input type="text" id="cli-form-gstin" name="gstin" placeholder="27AAACM1234F1Z8" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-medium focus:border-blue-500 uppercase">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Drug License (20B/21B)</label>
+                                <input type="text" id="cli-form-druglicense" name="drugLicense" placeholder="DL-MH-20B-789456" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-medium focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Account Status</label>
+                                <select id="cli-form-status" name="accountStatus" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold text-gray-700 focus:border-blue-500">
+                                    <option value="Active Account">🟢 Active Account</option>
+                                    <option value="Key Enterprise Account">⭐ Key Enterprise Account</option>
+                                    <option value="Onboarding">🟡 Onboarding</option>
+                                    <option value="Inactive">⚪ Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Credit Limit</label>
+                                <input type="text" id="cli-form-creditlimit" name="creditLimit" placeholder="₹10,00,000" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-medium focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Credit Payment Days</label>
+                                <input type="number" id="cli-form-creditdays" name="creditDays" placeholder="30" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-medium focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <div class="pt-4 flex items-center justify-end gap-3 border-t border-gray-100">
+                            <button type="button" onclick="window.DisicureMain.closeClientFormModal()" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded transition-colors">
+                                Cancel
+                            </button>
+                            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow-sm transition-all">
+                                Save Client Account
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- SUB-ITEM MODAL: ADD CLIENT REQUIREMENT -->
+            <div id="cli-add-req-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <div class="absolute inset-0 bg-navy-950/70 backdrop-blur-sm" onclick="window.DisicureMain.closeClientSubModal('cli-add-req-modal')"></div>
+                <div class="relative bg-white rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl z-10">
+                    <h4 class="text-base font-extrabold text-navy-950 mb-3">Add Pharmaceutical Requirement</h4>
+                    <form onsubmit="window.DisicureMain.saveClientRequirement(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Requirement Title *</label>
+                            <input type="text" name="title" required placeholder="e.g. ICU Antibiotics Annual Supply" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Category</label>
+                            <input type="text" name="category" placeholder="e.g. Injectables & Infusions" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Formulation Specifications</label>
+                            <textarea name="specifications" rows="2" placeholder="e.g. Ceftriaxone 1000mg vials with sterile WFI" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs"></textarea>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Batch / Volume Size</label>
+                                <input type="text" name="batchSize" placeholder="e.g. 25,000 vials/month" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Estimated Budget</label>
+                                <input type="text" name="budget" placeholder="₹15,00,000" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                            </div>
+                        </div>
+                        <div class="pt-2 flex justify-end gap-2">
+                            <button type="button" onclick="window.DisicureMain.closeClientSubModal('cli-add-req-modal')" class="px-3 py-1.5 bg-gray-100 text-xs font-bold rounded">Cancel</button>
+                            <button type="submit" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded">Save Requirement</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- SUB-ITEM MODAL: ADD PRODUCT / SERVICE -->
+            <div id="cli-add-prod-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <div class="absolute inset-0 bg-navy-950/70 backdrop-blur-sm" onclick="window.DisicureMain.closeClientSubModal('cli-add-prod-modal')"></div>
+                <div class="relative bg-white rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl z-10">
+                    <h4 class="text-base font-extrabold text-navy-950 mb-3">Add Contracted Product / Service</h4>
+                    <form onsubmit="window.DisicureMain.saveClientProduct(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Product / Service Name *</label>
+                            <input type="text" name="name" required placeholder="e.g. Disicef-1000 Injection" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Category</label>
+                                <input type="text" name="category" placeholder="e.g. Injectables" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Dosage Form / Packaging</label>
+                                <input type="text" name="form" placeholder="e.g. Vial + WFI Box" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Unit Price / Rate</label>
+                                <input type="text" name="unitPrice" placeholder="e.g. ₹84.50 / vial" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Monthly Contract Volume</label>
+                                <input type="text" name="monthlyVolume" placeholder="e.g. 20,000 Vials" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                            </div>
+                        </div>
+                        <div class="pt-2 flex justify-end gap-2">
+                            <button type="button" onclick="window.DisicureMain.closeClientSubModal('cli-add-prod-modal')" class="px-3 py-1.5 bg-gray-100 text-xs font-bold rounded">Cancel</button>
+                            <button type="submit" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded">Save Product</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- SUB-ITEM MODAL: ADD ORDER / PO -->
+            <div id="cli-add-order-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <div class="absolute inset-0 bg-navy-950/70 backdrop-blur-sm" onclick="window.DisicureMain.closeClientSubModal('cli-add-order-modal')"></div>
+                <div class="relative bg-white rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl z-10">
+                    <h4 class="text-base font-extrabold text-navy-950 mb-3">Record Client Purchase Order / Supply Contract</h4>
+                    <form onsubmit="window.DisicureMain.saveClientOrder(event)" class="space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">PO Number *</label>
+                                <input type="text" name="poNumber" required placeholder="e.g. PO-MAX-2026-99" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Order Total Amount (₹) *</label>
+                                <input type="number" name="totalAmount" required placeholder="1500000" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Products & Quantities *</label>
+                            <textarea name="items" rows="2" required placeholder="e.g. Disicef-1000 (20,000 Vials), Disimol-SP (50,000 Tabs)" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs"></textarea>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Target Delivery Date</label>
+                                <input type="date" name="deliveryDate" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Fulfillment Status</label>
+                                <select name="status" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs font-bold text-gray-700">
+                                    <option value="In Production / Quality Testing">In Production</option>
+                                    <option value="Dispatched / In Transit">Dispatched</option>
+                                    <option value="Delivered & Accepted">Delivered & Accepted</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="pt-2 flex justify-end gap-2">
+                            <button type="button" onclick="window.DisicureMain.closeClientSubModal('cli-add-order-modal')" class="px-3 py-1.5 bg-gray-100 text-xs font-bold rounded">Cancel</button>
+                            <button type="submit" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded">Save Order</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- SUB-ITEM MODAL: ADD PAYMENT / INVOICE -->
+            <div id="cli-add-payment-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <div class="absolute inset-0 bg-navy-950/70 backdrop-blur-sm" onclick="window.DisicureMain.closeClientSubModal('cli-add-payment-modal')"></div>
+                <div class="relative bg-white rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl z-10">
+                    <h4 class="text-base font-extrabold text-navy-950 mb-3">Record Tax Invoice / Payment</h4>
+                    <form onsubmit="window.DisicureMain.saveClientPayment(event)" class="space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Invoice Number *</label>
+                                <input type="text" name="invoiceId" required placeholder="INV-2026-CLI-01" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">PO Reference Number</label>
+                                <input type="text" name="poNumber" placeholder="PO-MAX-26-9901" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Total Invoiced Amount (₹) *</label>
+                                <input type="number" name="totalAmount" required placeholder="500000" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Initial Paid Amount (₹)</label>
+                                <input type="number" name="paidAmount" placeholder="250000" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Payment Mode</label>
+                                <select name="paymentMode" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                                    <option value="RTGS / NEFT Transfer">RTGS / NEFT Transfer</option>
+                                    <option value="Bank Cheque / DD">Bank Cheque / DD</option>
+                                    <option value="PFMS Govt Treasury">PFMS Govt Treasury</option>
+                                    <option value="UPI / Online Transfer">UPI / Online Transfer</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Bank Ref / UTR No.</label>
+                                <input type="text" name="refNo" placeholder="HDFCR52026..." class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                            </div>
+                        </div>
+                        <div class="pt-2 flex justify-end gap-2">
+                            <button type="button" onclick="window.DisicureMain.closeClientSubModal('cli-add-payment-modal')" class="px-3 py-1.5 bg-gray-100 text-xs font-bold rounded">Cancel</button>
+                            <button type="submit" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded">Save Invoice</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- SUB-ITEM MODAL: ADD DOCUMENT -->
+            <div id="cli-add-doc-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <div class="absolute inset-0 bg-navy-950/70 backdrop-blur-sm" onclick="window.DisicureMain.closeClientSubModal('cli-add-doc-modal')"></div>
+                <div class="relative bg-white rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl z-10">
+                    <h4 class="text-base font-extrabold text-navy-950 mb-3">Upload Client Document</h4>
+                    <form onsubmit="window.DisicureMain.saveClientDocument(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Document Title *</label>
+                            <input type="text" name="title" required placeholder="e.g. GST Registration Certificate" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Document Category</label>
+                                <select name="category" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                                    <option value="Tax & Compliance">Tax & Compliance</option>
+                                    <option value="Regulatory Licenses">Regulatory Licenses</option>
+                                    <option value="Legal Contracts & MSA">Legal Contracts & MSA</option>
+                                    <option value="Quality & Test Reports">Quality & Test Reports (COA)</option>
+                                    <option value="Invoices & Billing">Invoices & Billing</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">File Name</label>
+                                <input type="text" name="fileName" placeholder="GST_Certificate.pdf" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                            </div>
+                        </div>
+                        <div class="pt-2 flex justify-end gap-2">
+                            <button type="button" onclick="window.DisicureMain.closeClientSubModal('cli-add-doc-modal')" class="px-3 py-1.5 bg-gray-100 text-xs font-bold rounded">Cancel</button>
+                            <button type="submit" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded">Upload Document</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- SUB-ITEM MODAL: ADD NOTE -->
+            <div id="cli-add-note-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <div class="absolute inset-0 bg-navy-950/70 backdrop-blur-sm" onclick="window.DisicureMain.closeClientSubModal('cli-add-note-modal')"></div>
+                <div class="relative bg-white rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl z-10">
+                    <h4 class="text-base font-extrabold text-navy-950 mb-3">Add Internal Account Note</h4>
+                    <form onsubmit="window.DisicureMain.saveClientNote(event)" class="space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Note Category / Tag</label>
+                                <select name="tag" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                                    <option value="Procurement Priority">Procurement Priority</option>
+                                    <option value="Payment Clearance">Payment Clearance</option>
+                                    <option value="Quality Assurance">Quality Assurance</option>
+                                    <option value="Market Feedback">Market Feedback</option>
+                                    <option value="General Note">General Note</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Author Name</label>
+                                <input type="text" name="author" placeholder="Ayushi Khare" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Internal Note Content *</label>
+                            <textarea name="text" rows="3" required placeholder="Write internal memo regarding client order, dispatch priority, or contract terms..." class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs"></textarea>
+                        </div>
+                        <div class="pt-2 flex justify-end gap-2">
+                            <button type="button" onclick="window.DisicureMain.closeClientSubModal('cli-add-note-modal')" class="px-3 py-1.5 bg-gray-100 text-xs font-bold rounded">Cancel</button>
+                            <button type="submit" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded">Save Note</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- SUB-ITEM MODAL: ADD COMMUNICATION LOG -->
+            <div id="cli-add-comm-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <div class="absolute inset-0 bg-navy-950/70 backdrop-blur-sm" onclick="window.DisicureMain.closeClientSubModal('cli-add-comm-modal')"></div>
+                <div class="relative bg-white rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl z-10">
+                    <h4 class="text-base font-extrabold text-navy-950 mb-3">Log Communication Touchpoint</h4>
+                    <form onsubmit="window.DisicureMain.saveClientComm(event)" class="space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Channel / Touchpoint Type *</label>
+                                <select name="type" required class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs font-bold text-gray-700">
+                                    <option value="Phone Call">📞 Phone Call</option>
+                                    <option value="WhatsApp Message">💬 WhatsApp Message</option>
+                                    <option value="In-Person Meeting">🤝 In-Person Meeting</option>
+                                    <option value="Email Communication">✉️ Email Communication</option>
+                                    <option value="Zoom Video Call">📹 Zoom Video Call</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Contact Person Talked To</label>
+                                <input type="text" name="contactPerson" placeholder="e.g. Dr. Arvind Swaminathan" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Discussion Summary *</label>
+                            <textarea name="summary" rows="2" required placeholder="What was discussed during this touchpoint..." class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Next Follow-up Action</label>
+                            <input type="text" name="nextAction" placeholder="e.g. Send revised quotation and COA by Friday" class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs">
+                        </div>
+                        <div class="pt-2 flex justify-end gap-2">
+                            <button type="button" onclick="window.DisicureMain.closeClientSubModal('cli-add-comm-modal')" class="px-3 py-1.5 bg-gray-100 text-xs font-bold rounded">Cancel</button>
+                            <button type="submit" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded">Save Communication Log</button>
+                        </div>
+                    </form>
+                </div>
             </div>
 
             <!-- Edit/View Lead Details Drawer/Modal -->

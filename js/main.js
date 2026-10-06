@@ -1129,6 +1129,8 @@ const DisicureMain = {
         } else if (tabId === 'tab-partners') {
             this.renderAdminPartners();
             this.renderAdminCommissionsTable();
+        } else if (tabId === 'tab-clients') {
+            this.renderClientsTable();
         } else if (tabId === 'tab-financials') {
             this.renderPaymentsTable();
         } else if (tabId === 'tab-documents') {
@@ -4702,6 +4704,1102 @@ const DisicureMain = {
             </tr>
             `;
         }).join('');
+    },
+
+    // =========================================================================
+    // MODULE 13: CLIENT MANAGEMENT CONTROLLER & 360° PROFILE ENGINE
+    // =========================================================================
+    clientState: {
+        searchQuery: '',
+        typeFilter: 'all',
+        statusFilter: 'all',
+        sortFilter: 'newest'
+    },
+    activeClientId: null,
+    activeClient360Tab: 'cli-tab-overview',
+
+    renderClientsTable: function() {
+        if (!window.DisicureClients) return;
+        const allClients = window.DisicureClients.getAllClients();
+        const kpis = window.DisicureClients.getClientSummaryKPIs();
+
+        // 1. Update KPI Cards
+        const setElText = (id, txt) => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = txt;
+        };
+        setElText('cli-kpi-total', kpis.totalClients);
+        setElText('cli-kpi-active', kpis.activeAccounts);
+        setElText('cli-kpi-orders', kpis.totalBusinessFormatted);
+        setElText('cli-kpi-dues', kpis.totalOutstandingFormatted);
+
+        // 2. Filter & Sort Clients
+        const query = (this.clientState.searchQuery || '').toLowerCase().trim();
+        const typeF = this.clientState.typeFilter;
+        const statusF = this.clientState.statusFilter;
+        const sortF = this.clientState.sortFilter;
+
+        let filtered = allClients.filter(c => {
+            const matchesQuery = !query ||
+                (c.companyName && c.companyName.toLowerCase().includes(query)) ||
+                (c.contactPerson && c.contactPerson.toLowerCase().includes(query)) ||
+                (c.mobile && c.mobile.toLowerCase().includes(query)) ||
+                (c.email && c.email.toLowerCase().includes(query)) ||
+                (c.id && c.id.toLowerCase().includes(query)) ||
+                (c.location && c.location.city && c.location.city.toLowerCase().includes(query)) ||
+                (c.location && c.location.state && c.location.state.toLowerCase().includes(query)) ||
+                (c.businessType && c.businessType.toLowerCase().includes(query));
+
+            const matchesType = (typeF === 'all') || (c.businessType === typeF);
+            const matchesStatus = (statusF === 'all') || (c.accountStatus === statusF);
+
+            return matchesQuery && matchesType && matchesStatus;
+        });
+
+        // Sorting
+        if (sortF === 'name-asc') {
+            filtered.sort((a, b) => (a.companyName || '').localeCompare(b.companyName || ''));
+        } else if (sortF === 'value-desc') {
+            filtered.sort((a, b) => {
+                const aVal = (a.orders || []).reduce((acc, o) => acc + (o.totalAmount || 0), 0);
+                const bVal = (b.orders || []).reduce((acc, o) => acc + (o.totalAmount || 0), 0);
+                return bVal - aVal;
+            });
+        } else if (sortF === 'due-desc') {
+            filtered.sort((a, b) => {
+                const aDue = (a.payments || []).reduce((acc, p) => acc + (p.balanceDue || 0), 0);
+                const bDue = (b.payments || []).reduce((acc, p) => acc + (p.balanceDue || 0), 0);
+                return bDue - aDue;
+            });
+        }
+
+        // Update count indicator
+        setElText('cli-showing-count', `Showing ${filtered.length} of ${allClients.length} client accounts`);
+
+        // Render Table Rows
+        const tbody = document.getElementById('adm-clients-tbody');
+        const emptyState = document.getElementById('adm-clients-empty');
+        if (!tbody) return;
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '';
+            if (emptyState) emptyState.classList.remove('hidden');
+            return;
+        }
+
+        if (emptyState) emptyState.classList.add('hidden');
+
+        tbody.innerHTML = filtered.map(c => {
+            const totalOrdersVal = (c.orders || []).reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+            const totalOrdersFormatted = '₹' + totalOrdersVal.toLocaleString('en-IN');
+            const totalBalanceDue = (c.payments || []).reduce((sum, p) => sum + (p.balanceDue || 0), 0);
+            const balanceDueFormatted = '₹' + totalBalanceDue.toLocaleString('en-IN');
+
+            // Status Badge
+            let statusBadge = '';
+            if (c.accountStatus === 'Key Enterprise Account') {
+                statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">⭐ Key Enterprise</span>`;
+            } else if (c.accountStatus === 'Active Account') {
+                statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">🟢 Active</span>`;
+            } else if (c.accountStatus === 'Onboarding') {
+                statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">🟡 Onboarding</span>`;
+            } else {
+                statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-600 border border-gray-200">⚪ Inactive</span>`;
+            }
+
+            // Requirements & Products count summary
+            const reqCount = (c.requirements || []).length;
+            const prodCount = (c.productsServices || []).length;
+            const ordersCount = (c.orders || []).length;
+            const primaryReq = c.requirements && c.requirements[0] ? c.requirements[0].title : 'General Supply';
+
+            return `
+            <tr class="border-b border-gray-100 hover:bg-slate-50 text-xs transition-colors">
+                <td class="p-4">
+                    <div class="flex items-start gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-blue-100 text-blue-800 font-extrabold flex items-center justify-center flex-shrink-0 text-xs">
+                            ${(c.companyName || 'C').substring(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                            <span class="font-extrabold text-navy-950 block hover:text-blue-600 cursor-pointer" onclick="window.DisicureMain.openClient360Modal('${c.id}')">
+                                ${c.companyName}
+                            </span>
+                            <div class="flex items-center gap-2 text-[11px] text-gray-500 mt-0.5">
+                                <span>👤 ${c.contactPerson}</span>
+                                <span>•</span>
+                                <span class="font-mono text-gray-400">${c.id}</span>
+                            </div>
+                            <div class="text-[10px] text-gray-400 mt-0.5">
+                                📱 ${c.mobile} | ✉️ ${c.email}
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td class="p-4">
+                    <span class="font-bold text-gray-800 block">${c.businessType}</span>
+                    <span class="text-[11px] text-gray-500 mt-0.5 block">📍 ${c.location ? (c.location.city + ', ' + c.location.state) : 'India'}</span>
+                    <span class="text-[10px] text-gray-400 font-mono">GST: ${c.gstin || 'N/A'}</span>
+                </td>
+                <td class="p-4">
+                    <span class="font-semibold text-gray-800 line-clamp-1">${primaryReq}</span>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="text-[10px] bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded">${reqCount} Requirements</span>
+                        <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded">${prodCount} Formulations</span>
+                    </div>
+                </td>
+                <td class="p-4">
+                    <div class="font-extrabold text-navy-950 text-sm">${totalOrdersFormatted}</div>
+                    <div class="text-[10px] text-gray-500">${ordersCount} Supply Contracts / POs</div>
+                    ${totalBalanceDue > 0 
+                        ? `<div class="text-[10px] text-rose-600 font-bold mt-0.5">Due: ${balanceDueFormatted}</div>`
+                        : `<div class="text-[10px] text-emerald-600 font-bold mt-0.5">✓ Cleared</div>`
+                    }
+                </td>
+                <td class="p-4 whitespace-nowrap">
+                    ${statusBadge}
+                    <span class="block text-[10px] text-gray-400 mt-1">Mgr: ${c.accountManager || 'Admin'}</span>
+                </td>
+                <td class="p-4 text-right whitespace-nowrap">
+                    <div class="flex items-center justify-end gap-1.5">
+                        <button onclick="window.DisicureMain.openClient360Modal('${c.id}')" title="View 360° Profile" class="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-lg text-xs font-bold transition-all flex items-center gap-1 border border-blue-100">
+                            <span>👁️ 360° Profile</span>
+                        </button>
+                        <button onclick="window.DisicureMain.openEditClientModal('${c.id}')" title="Edit Client" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-gray-600 rounded-lg text-xs font-bold transition-colors">
+                            ✏️
+                        </button>
+                        <button onclick="window.DisicureMain.deleteClient('${c.id}')" title="Delete Client" class="p-1.5 bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-600 rounded-lg text-xs font-bold transition-colors">
+                            🗑️
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            `;
+        }).join('');
+    },
+
+    filterClientsTable: function() {
+        const searchInput = document.getElementById('cli-search-input');
+        const typeFilter = document.getElementById('cli-type-filter');
+        const statusFilter = document.getElementById('cli-status-filter');
+        const sortFilter = document.getElementById('cli-sort-select');
+
+        if (searchInput) this.clientState.searchQuery = searchInput.value;
+        if (typeFilter) this.clientState.typeFilter = typeFilter.value;
+        if (statusFilter) this.clientState.statusFilter = statusFilter.value;
+        if (sortFilter) this.clientState.sortFilter = sortFilter.value;
+
+        this.renderClientsTable();
+    },
+
+    resetClientFilters: function() {
+        this.clientState = {
+            searchQuery: '',
+            typeFilter: 'all',
+            statusFilter: 'all',
+            sortFilter: 'newest'
+        };
+
+        const searchInput = document.getElementById('cli-search-input');
+        const typeFilter = document.getElementById('cli-type-filter');
+        const statusFilter = document.getElementById('cli-status-filter');
+        const sortFilter = document.getElementById('cli-sort-select');
+
+        if (searchInput) searchInput.value = '';
+        if (typeFilter) typeFilter.value = 'all';
+        if (statusFilter) statusFilter.value = 'all';
+        if (sortFilter) sortFilter.value = 'newest';
+
+        this.renderClientsTable();
+    },
+
+    openCreateClientModal: function() {
+        const form = document.getElementById('adm-client-form');
+        if (form) form.reset();
+        const editId = document.getElementById('cli-form-edit-id');
+        if (editId) editId.value = '';
+        const title = document.getElementById('client-form-modal-title');
+        if (title) title.innerText = 'Register New Pharma Client Account';
+
+        const modal = document.getElementById('adm-client-form-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+    },
+
+    openEditClientModal: function(clientId) {
+        if (!window.DisicureClients) return;
+        const client = window.DisicureClients.getClientById(clientId);
+        if (!client) return;
+
+        const setVal = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.value = val !== undefined ? val : '';
+        };
+
+        setVal('cli-form-edit-id', client.id);
+        setVal('cli-form-company', client.companyName);
+        setVal('cli-form-type', client.businessType);
+        setVal('cli-form-contact', client.contactPerson);
+        setVal('cli-form-designation', client.designation);
+        setVal('cli-form-manager', client.accountManager);
+        setVal('cli-form-mobile', client.mobile);
+        setVal('cli-form-whatsapp', client.whatsapp);
+        setVal('cli-form-email', client.email);
+        setVal('cli-form-address', client.location ? client.location.address : '');
+        setVal('cli-form-city', client.location ? client.location.city : '');
+        setVal('cli-form-state', client.location ? client.location.state : '');
+        setVal('cli-form-pincode', client.location ? client.location.pincode : '');
+        setVal('cli-form-gstin', client.gstin);
+        setVal('cli-form-druglicense', client.drugLicense);
+        setVal('cli-form-status', client.accountStatus);
+        setVal('cli-form-creditlimit', client.creditLimit);
+        setVal('cli-form-creditdays', client.creditDays);
+
+        const title = document.getElementById('client-form-modal-title');
+        if (title) title.innerText = `Edit Profile: ${client.companyName}`;
+
+        const modal = document.getElementById('adm-client-form-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+    },
+
+    closeClientFormModal: function() {
+        const modal = document.getElementById('adm-client-form-modal');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+    },
+
+    saveClientForm: function(event) {
+        if (event) event.preventDefault();
+        if (!window.DisicureClients) return;
+
+        const form = document.getElementById('adm-client-form');
+        if (!form) return;
+
+        const formData = new FormData(form);
+        const editId = formData.get('clientId');
+
+        const clientData = {
+            companyName: formData.get('companyName'),
+            businessType: formData.get('businessType'),
+            contactPerson: formData.get('contactPerson'),
+            designation: formData.get('designation'),
+            accountManager: formData.get('accountManager'),
+            mobile: formData.get('mobile'),
+            whatsapp: formData.get('whatsapp'),
+            email: formData.get('email'),
+            address: formData.get('address'),
+            city: formData.get('city'),
+            state: formData.get('state'),
+            pincode: formData.get('pincode'),
+            gstin: formData.get('gstin'),
+            drugLicense: formData.get('drugLicense'),
+            accountStatus: formData.get('accountStatus'),
+            creditLimit: formData.get('creditLimit'),
+            creditDays: formData.get('creditDays')
+        };
+
+        if (editId) {
+            window.DisicureClients.updateClient(editId, clientData);
+            this.showToast('success', `Client account "${clientData.companyName}" updated successfully!`);
+            if (this.activeClientId === editId) {
+                this.renderClient360Details(editId);
+            }
+        } else {
+            const created = window.DisicureClients.addClient(clientData);
+            this.showToast('success', `New client "${created.companyName}" registered into CRM!`);
+        }
+
+        this.closeClientFormModal();
+        this.renderClientsTable();
+    },
+
+    deleteClient: function(clientId) {
+        if (!window.DisicureClients) return;
+        const client = window.DisicureClients.getClientById(clientId);
+        if (!client) return;
+
+        if (confirm(`Are you sure you want to delete client account "${client.companyName}"? This action cannot be undone.`)) {
+            window.DisicureClients.deleteClient(clientId);
+            this.showToast('info', `Client account "${client.companyName}" deleted.`);
+            this.renderClientsTable();
+            if (this.activeClientId === clientId) {
+                this.closeClient360Modal();
+            }
+        }
+    },
+
+    // -------------------------------------------------------------------------
+    // 360° CLIENT PROFILE MODAL CONTROLLER
+    // -------------------------------------------------------------------------
+    openClient360Modal: function(clientId) {
+        if (!window.DisicureClients) return;
+        const client = window.DisicureClients.getClientById(clientId);
+        if (!client) return;
+
+        this.activeClientId = clientId;
+        this.activeClient360Tab = 'cli-tab-overview';
+
+        // Update Top Banner
+        const setElText = (id, txt) => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = txt || '-';
+        };
+
+        setElText('cli360-company-name', client.companyName);
+        setElText('cli360-contact-person', client.contactPerson);
+        setElText('cli360-designation', client.designation || 'Client Representative');
+        setElText('cli360-location-summary', client.location ? `${client.location.city}, ${client.location.state}` : 'India');
+        setElText('cli360-mgr', client.accountManager || 'Admin');
+        setElText('cli360-footer-id', client.id);
+
+        // Status & Type Badges
+        const statusBadge = document.getElementById('cli360-status-badge');
+        if (statusBadge) {
+            statusBadge.innerText = client.accountStatus || 'Active';
+            statusBadge.className = client.accountStatus === 'Key Enterprise Account'
+                ? 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/30'
+                : 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30';
+        }
+
+        const typeBadge = document.getElementById('cli360-type-badge');
+        if (typeBadge) {
+            typeBadge.innerText = client.businessType || 'Healthcare Client';
+        }
+
+        // Quick Communication Action Buttons
+        const callBtn = document.getElementById('cli360-call-btn');
+        if (callBtn) callBtn.href = `tel:${client.mobile || ''}`;
+
+        const waBtn = document.getElementById('cli360-wa-btn');
+        if (waBtn) {
+            const phoneClean = (client.whatsapp || client.mobile || '').replace(/[^0-9]/g, '');
+            waBtn.href = `https://wa.me/${phoneClean}?text=Hello%20${encodeURIComponent(client.contactPerson)},%20greetings%20from%20Disicure%20Care%20Pvt.%20Ltd.`;
+        }
+
+        const emailBtn = document.getElementById('cli360-email-btn');
+        if (emailBtn) emailBtn.href = `mailto:${client.email || ''}?subject=Disicure%20Care%20-%20Account%20Updates`;
+
+        // Update Sub-Tab Counts
+        setElText('cli360-count-req', (client.requirements || []).length);
+        setElText('cli360-count-prod', (client.productsServices || []).length);
+        setElText('cli360-count-leads', (client.leads || []).length);
+        setElText('cli360-count-orders', (client.orders || []).length);
+        setElText('cli360-count-payments', (client.payments || []).length);
+        setElText('cli360-count-docs', (client.documents || []).length);
+        setElText('cli360-count-notes', (client.notes || []).length);
+        setElText('cli360-count-comms', (client.communicationHistory || []).length);
+
+        // Reset sub-tab active classes
+        this.switchClient360Tab('cli-tab-overview');
+
+        const modal = document.getElementById('adm-client-360-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+    },
+
+    closeClient360Modal: function() {
+        const modal = document.getElementById('adm-client-360-modal');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+        this.activeClientId = null;
+    },
+
+    switchClient360Tab: function(tabId) {
+        this.activeClient360Tab = tabId;
+
+        // Update button visual styles
+        const btns = document.querySelectorAll('.cli360-tab-btn');
+        btns.forEach(btn => {
+            btn.classList.remove('bg-blue-600', 'text-white', 'active');
+            btn.classList.add('bg-slate-800', 'text-blue-200');
+        });
+
+        const activeBtn = document.getElementById(`btn-${tabId}`);
+        if (activeBtn) {
+            activeBtn.classList.remove('bg-slate-800', 'text-blue-200');
+            activeBtn.classList.add('bg-blue-600', 'text-white', 'active');
+        }
+
+        if (this.activeClientId) {
+            this.renderClient360Details(this.activeClientId);
+        }
+    },
+
+    renderClient360Details: function(clientId) {
+        if (!window.DisicureClients) return;
+        const client = window.DisicureClients.getClientById(clientId);
+        if (!client) return;
+
+        const body = document.getElementById('cli360-modal-body');
+        if (!body) return;
+
+        const tab = this.activeClient360Tab;
+
+        if (tab === 'cli-tab-overview') {
+            // SUB-TAB 1: 📋 Profile Overview & KYC
+            body.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Organization & Contact Card -->
+                <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                    <h4 class="text-xs font-extrabold text-navy-950 uppercase tracking-wider border-b border-gray-100 pb-2">🏢 Organization & Contact</h4>
+                    <div class="space-y-2.5 text-xs">
+                        <div>
+                            <span class="text-gray-400 block text-[10px] uppercase font-bold">Company Name</span>
+                            <span class="font-extrabold text-navy-950">${client.companyName}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 block text-[10px] uppercase font-bold">Business Vertical</span>
+                            <span class="font-bold text-blue-700">${client.businessType}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 block text-[10px] uppercase font-bold">Primary Contact</span>
+                            <span class="font-bold text-gray-800">${client.contactPerson} (${client.designation || 'Representative'})</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 block text-[10px] uppercase font-bold">Direct Phone / WhatsApp</span>
+                            <span class="font-mono text-gray-800">${client.mobile} / ${client.whatsapp || client.mobile}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 block text-[10px] uppercase font-bold">Email Address</span>
+                            <span class="font-mono text-gray-800">${client.email}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location & Facilities -->
+                <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                    <h4 class="text-xs font-extrabold text-navy-950 uppercase tracking-wider border-b border-gray-100 pb-2">📍 Geographic Location</h4>
+                    <div class="space-y-2.5 text-xs">
+                        <div>
+                            <span class="text-gray-400 block text-[10px] uppercase font-bold">Operating Address</span>
+                            <span class="text-gray-800 font-medium">${client.location ? client.location.address : 'Registered Head Office'}</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <span class="text-gray-400 block text-[10px] uppercase font-bold">City</span>
+                                <span class="font-bold text-gray-800">${client.location ? client.location.city : 'Dehradun'}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400 block text-[10px] uppercase font-bold">State</span>
+                                <span class="font-bold text-gray-800">${client.location ? client.location.state : 'Uttarakhand'}</span>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 block text-[10px] uppercase font-bold">Postal Pincode</span>
+                            <span class="font-mono text-gray-800">${client.location ? (client.location.pincode || 'N/A') : 'N/A'}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 block text-[10px] uppercase font-bold">Country</span>
+                            <span class="text-gray-800 font-medium">India</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Compliance, Credit & Account Terms -->
+                <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                    <h4 class="text-xs font-extrabold text-navy-950 uppercase tracking-wider border-b border-gray-100 pb-2">⚖️ Compliance & Credit Terms</h4>
+                    <div class="space-y-2.5 text-xs">
+                        <div>
+                            <span class="text-gray-400 block text-[10px] uppercase font-bold">GSTIN Registration</span>
+                            <span class="font-mono font-bold text-navy-950">${client.gstin || 'Pending Verification'}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 block text-[10px] uppercase font-bold">Wholesale Drug License (20B/21B)</span>
+                            <span class="font-mono font-bold text-emerald-700">${client.drugLicense || 'Under Document Verification'}</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <span class="text-gray-400 block text-[10px] uppercase font-bold">Credit Limit</span>
+                                <span class="font-extrabold text-purple-700">${client.creditLimit || '₹5,00,000'}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400 block text-[10px] uppercase font-bold">Credit Days</span>
+                                <span class="font-bold text-gray-800">${client.creditDays || 30} Days</span>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 block text-[10px] uppercase font-bold">Dedicated Account Manager</span>
+                            <span class="font-extrabold text-navy-950">${client.accountManager || 'Ayushi Khare'}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+        } else if (tab === 'cli-tab-requirements') {
+            // SUB-TAB 2: 📑 Requirements & Specifications
+            const reqs = client.requirements || [];
+            body.innerHTML = `
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="text-sm font-extrabold text-navy-950">Active & Historical Product Requirements</h4>
+                        <p class="text-xs text-gray-500">Track specifications, batch quantities, formulations, target delivery dates, and budgets.</p>
+                    </div>
+                    <button onclick="window.DisicureMain.openClientSubModal('cli-add-req-modal')" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5">
+                        <span>+ Add Requirement</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    ${reqs.length === 0 ? `<div class="col-span-2 text-center py-8 text-gray-400 text-xs">No requirements recorded yet. Click above to add one.</div>` : ''}
+                    ${reqs.map(r => `
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <span class="text-[10px] font-mono text-blue-600 font-bold">${r.reqId}</span>
+                                <h5 class="text-sm font-extrabold text-navy-950">${r.title}</h5>
+                                <span class="text-[10px] font-semibold bg-slate-100 text-slate-700 px-2 py-0.5 rounded">${r.category}</span>
+                            </div>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">${r.status}</span>
+                        </div>
+                        <p class="text-xs text-gray-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100">${r.specifications || 'No specific chemical assay notes provided.'}</p>
+                        <div class="grid grid-cols-2 gap-2 text-xs border-t border-gray-100 pt-2 text-gray-500">
+                            <div>📦 Batch Size: <strong class="text-gray-800">${r.batchSize}</strong></div>
+                            <div>💰 Budget: <strong class="text-emerald-700">${r.budget}</strong></div>
+                        </div>
+                    </div>
+                    `).join('')}
+                </div>
+            </div>
+            `;
+        } else if (tab === 'cli-tab-products') {
+            // SUB-TAB 3: 💊 Products & Services
+            const prods = client.productsServices || [];
+            body.innerHTML = `
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="text-sm font-extrabold text-navy-950">Contracted Formulations & Services</h4>
+                        <p class="text-xs text-gray-500">Active manufactured molecules, dosage forms, contracted unit rates, and monthly recurring volumes.</p>
+                    </div>
+                    <button onclick="window.DisicureMain.openClientSubModal('cli-add-prod-modal')" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5">
+                        <span>+ Add Product / Service</span>
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-[11px] font-extrabold text-navy-950 uppercase tracking-wider border-b border-gray-200">
+                            <tr>
+                                <th class="p-3.5">Product / Service Name</th>
+                                <th class="p-3.5">Category</th>
+                                <th class="p-3.5">Dosage Form / Packaging</th>
+                                <th class="p-3.5">Contract Unit Price</th>
+                                <th class="p-3.5">Monthly Volume</th>
+                                <th class="p-3.5 text-right">Contract Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 font-medium">
+                            ${prods.length === 0 ? `<tr><td colspan="6" class="p-6 text-center text-gray-400">No contracted products listed yet.</td></tr>` : ''}
+                            ${prods.map(p => `
+                            <tr class="hover:bg-slate-50">
+                                <td class="p-3.5 font-bold text-navy-950">
+                                    ${p.name}
+                                    <span class="block text-[10px] text-gray-400 font-mono">${p.prodId}</span>
+                                </td>
+                                <td class="p-3.5 text-gray-600">${p.category}</td>
+                                <td class="p-3.5 text-gray-600">${p.form}</td>
+                                <td class="p-3.5 font-extrabold text-emerald-700">${p.unitPrice}</td>
+                                <td class="p-3.5 text-gray-700 font-bold">${p.monthlyVolume}</td>
+                                <td class="p-3.5 text-right">
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Active Contract</span>
+                                </td>
+                            </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            `;
+        } else if (tab === 'cli-tab-leads') {
+            // SUB-TAB 4: 🎯 CRM Leads & Inquiries
+            const leads = client.leads || [];
+            body.innerHTML = `
+            <div class="space-y-4">
+                <div>
+                    <h4 class="text-sm font-extrabold text-navy-950">CRM Inquiry & Lead Conversion History</h4>
+                    <p class="text-xs text-gray-500">Historical customer inquiries, pipeline conversion stages, and partner origin sources.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-[11px] font-extrabold text-navy-950 uppercase tracking-wider border-b border-gray-200">
+                            <tr>
+                                <th class="p-3.5">Lead ID & Inquiry Date</th>
+                                <th class="p-3.5">Requirement Details</th>
+                                <th class="p-3.5">Origin Partner / Channel</th>
+                                <th class="p-3.5">Deal Business Value</th>
+                                <th class="p-3.5 text-right">Conversion Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 font-medium">
+                            ${leads.length === 0 ? `<tr><td colspan="5" class="p-6 text-center text-gray-400">No linked CRM leads recorded.</td></tr>` : ''}
+                            ${leads.map(l => `
+                            <tr class="hover:bg-slate-50">
+                                <td class="p-3.5">
+                                    <span class="font-bold text-navy-950 font-mono">${l.leadId}</span>
+                                    <span class="block text-[10px] text-gray-400">${l.inquiryDate}</span>
+                                </td>
+                                <td class="p-3.5 text-gray-800 font-semibold">${l.requirement}</td>
+                                <td class="p-3.5 text-gray-600">${l.originPartner || 'Direct Inbound'}</td>
+                                <td class="p-3.5 font-extrabold text-emerald-700">${l.valueFormatted || ('₹' + (l.value || 0).toLocaleString('en-IN'))}</td>
+                                <td class="p-3.5 text-right">
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">${l.status}</span>
+                                </td>
+                            </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            `;
+        } else if (tab === 'cli-tab-orders') {
+            // SUB-TAB 5: 📦 Orders & Business Fulfillment
+            const orders = client.orders || [];
+            body.innerHTML = `
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="text-sm font-extrabold text-navy-950">Purchase Orders & Supply Fulfillment</h4>
+                        <p class="text-xs text-gray-500">Commercial supply contracts, purchase orders, batch dispatches, and manufacturing fulfillment.</p>
+                    </div>
+                    <button onclick="window.DisicureMain.openClientSubModal('cli-add-order-modal')" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5">
+                        <span>+ Record PO / Order</span>
+                    </button>
+                </div>
+
+                <div class="space-y-3">
+                    ${orders.length === 0 ? `<div class="text-center py-8 text-gray-400 text-xs bg-white rounded-2xl border border-gray-200">No purchase orders recorded yet.</div>` : ''}
+                    ${orders.map(o => `
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-3">
+                            <div>
+                                <span class="text-[10px] font-mono text-purple-700 font-bold bg-purple-50 px-2 py-0.5 rounded">${o.poNumber}</span>
+                                <h5 class="text-sm font-extrabold text-navy-950 mt-1">${o.items}</h5>
+                                <span class="text-[11px] text-gray-400">Order Date: ${o.orderDate} • Target Delivery: ${o.deliveryDate || 'Standard'}</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-base font-extrabold text-emerald-700 block">${o.totalFormatted || ('₹' + (o.totalAmount || 0).toLocaleString('en-IN'))}</span>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 inline-block mt-1">${o.status}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span>💳 Payment Status: <strong class="text-navy-950">${o.paymentStatus}</strong></span>
+                            <span class="font-mono text-gray-400">${o.orderId}</span>
+                        </div>
+                    </div>
+                    `).join('')}
+                </div>
+            </div>
+            `;
+        } else if (tab === 'cli-tab-payments') {
+            // SUB-TAB 6: 💳 Invoices & Payments Ledger
+            const payments = client.payments || [];
+            const totInvoiced = payments.reduce((sum, p) => sum + (p.totalAmount || 0), 0);
+            const totPaid = payments.reduce((sum, p) => sum + (p.paidAmount || 0), 0);
+            const totDue = payments.reduce((sum, p) => sum + (p.balanceDue || 0), 0);
+
+            body.innerHTML = `
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="text-sm font-extrabold text-navy-950">Tax Invoices & Payment Ledger</h4>
+                        <p class="text-xs text-gray-500">GST tax invoices, RTGS/NEFT transaction settlements, and outstanding credit balances.</p>
+                    </div>
+                    <button onclick="window.DisicureMain.openClientSubModal('cli-add-payment-modal')" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5">
+                        <span>+ Record Tax Invoice</span>
+                    </button>
+                </div>
+
+                <!-- 3 KPI Cards -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="bg-blue-50/50 border border-blue-100 p-4 rounded-xl">
+                        <span class="text-[10px] font-bold text-blue-700 uppercase">Total Invoiced</span>
+                        <div class="text-xl font-extrabold text-navy-950 mt-1">₹${totInvoiced.toLocaleString('en-IN')}</div>
+                    </div>
+                    <div class="bg-emerald-50/50 border border-emerald-100 p-4 rounded-xl">
+                        <span class="text-[10px] font-bold text-emerald-700 uppercase">Settled / Received</span>
+                        <div class="text-xl font-extrabold text-emerald-600 mt-1">₹${totPaid.toLocaleString('en-IN')}</div>
+                    </div>
+                    <div class="bg-rose-50/50 border border-rose-100 p-4 rounded-xl">
+                        <span class="text-[10px] font-bold text-rose-700 uppercase">Outstanding Balance Due</span>
+                        <div class="text-xl font-extrabold text-rose-600 mt-1">₹${totDue.toLocaleString('en-IN')}</div>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    ${payments.length === 0 ? `<div class="text-center py-8 text-gray-400 text-xs bg-white rounded-2xl border border-gray-200">No invoices recorded yet.</div>` : ''}
+                    ${payments.map(p => `
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-3">
+                            <div>
+                                <span class="font-extrabold text-navy-950 text-sm">${p.invoiceId}</span>
+                                <span class="text-[11px] text-gray-500 block">Ref PO: ${p.poNumber} • Date: ${p.invDate} • Due: ${p.dueDate || '30 Days'}</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-base font-extrabold text-navy-950 block">₹${(p.totalAmount || 0).toLocaleString('en-IN')}</span>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${p.status === 'Fully Paid' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}">${p.status}</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-gray-600">
+                            <div>Paid: <strong class="text-emerald-700">₹${(p.paidAmount || 0).toLocaleString('en-IN')}</strong></div>
+                            <div>Balance: <strong class="text-rose-600">₹${(p.balanceDue || 0).toLocaleString('en-IN')}</strong></div>
+                            <div>Mode: <strong>${p.paymentMode}</strong></div>
+                            <div>Transactions: <strong>${(p.transactions || []).length} Recorded</strong></div>
+                        </div>
+                        ${(p.transactions && p.transactions.length > 0) ? `
+                        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-[11px] space-y-1">
+                            <span class="font-bold text-gray-700 block">Settlement Transaction Slips:</span>
+                            ${p.transactions.map(t => `
+                            <div class="flex items-center justify-between text-gray-500">
+                                <span>💳 ${t.date} • ${t.mode} (${t.refNo})</span>
+                                <span class="font-bold text-emerald-700 font-mono">${t.amountFormatted || ('₹' + t.amount)}</span>
+                            </div>
+                            `).join('')}
+                        </div>
+                        ` : ''}
+                    </div>
+                    `).join('')}
+                </div>
+            </div>
+            `;
+        } else if (tab === 'cli-tab-docs') {
+            // SUB-TAB 7: 📁 Document Vault
+            const docs = client.documents || [];
+            body.innerHTML = `
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="text-sm font-extrabold text-navy-950">Verified KYC & Compliance Vault</h4>
+                        <p class="text-xs text-gray-500">GSTIN, wholesale drug licenses (20B/21B), MSA contracts, and batch Certificate of Analysis (COA).</p>
+                    </div>
+                    <button onclick="window.DisicureMain.openClientSubModal('cli-add-doc-modal')" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5">
+                        <span>+ Upload Document</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    ${docs.length === 0 ? `<div class="col-span-2 text-center py-8 text-gray-400 text-xs">No documents uploaded yet.</div>` : ''}
+                    ${docs.map(d => `
+                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 font-bold flex items-center justify-center flex-shrink-0 text-sm">
+                            📄
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h5 class="text-xs font-extrabold text-navy-950 truncate">${d.title}</h5>
+                            <span class="text-[10px] text-gray-400 block">${d.category} • ${d.fileSize || 'PDF'}</span>
+                            <div class="flex items-center gap-2 mt-2">
+                                <span class="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">✓ Verified</span>
+                                <button onclick="window.DisicureMain.showToast('info', 'Viewing document: ${d.fileName}')" class="text-[10px] font-bold text-blue-600 hover:underline">
+                                    Download / View
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    `).join('')}
+                </div>
+            </div>
+            `;
+        } else if (tab === 'cli-tab-notes') {
+            // SUB-TAB 8: 📝 Internal Notes & Account Logs
+            const notes = client.notes || [];
+            body.innerHTML = `
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="text-sm font-extrabold text-navy-950">Internal Team Notes & Directives</h4>
+                        <p class="text-xs text-gray-500">Internal memos between sales heads, quality assurance, logistics, and executive management.</p>
+                    </div>
+                    <button onclick="window.DisicureMain.openClientSubModal('cli-add-note-modal')" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5">
+                        <span>+ Add Note</span>
+                    </button>
+                </div>
+
+                <div class="space-y-3">
+                    ${notes.length === 0 ? `<div class="text-center py-8 text-gray-400 text-xs bg-white rounded-2xl border border-gray-200">No internal notes logged.</div>` : ''}
+                    ${notes.map(n => `
+                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm space-y-2">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="font-extrabold text-navy-950">📝 ${n.author || 'Admin'} <span class="text-[10px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded ml-1">${n.tag || 'General'}</span></span>
+                            <span class="text-[10px] text-gray-400">${n.date}</span>
+                        </div>
+                        <p class="text-xs text-gray-700 leading-relaxed">${n.text}</p>
+                    </div>
+                    `).join('')}
+                </div>
+            </div>
+            `;
+        } else if (tab === 'cli-tab-comms') {
+            // SUB-TAB 9: 📞 Omnichannel Communication History
+            const comms = client.communicationHistory || [];
+            body.innerHTML = `
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="text-sm font-extrabold text-navy-950">Omnichannel Touchpoint Log</h4>
+                        <p class="text-xs text-gray-500">Chronological history of Phone calls, WhatsApp chats, Meetings, Emails, and Video conferences.</p>
+                    </div>
+                    <button onclick="window.DisicureMain.openClientSubModal('cli-add-comm-modal')" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5">
+                        <span>+ Log Communication</span>
+                    </button>
+                </div>
+
+                <div class="space-y-3">
+                    ${comms.length === 0 ? `<div class="text-center py-8 text-gray-400 text-xs bg-white rounded-2xl border border-gray-200">No touchpoints recorded.</div>` : ''}
+                    ${comms.map(cm => `
+                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm space-y-2.5">
+                        <div class="flex items-center justify-between text-xs border-b border-gray-100 pb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="font-extrabold text-navy-950">${cm.type}</span>
+                                <span class="text-gray-400">•</span>
+                                <span class="text-gray-600">With: <strong>${cm.contactPerson}</strong></span>
+                            </div>
+                            <span class="text-[10px] text-gray-400">${cm.date}</span>
+                        </div>
+                        <p class="text-xs text-gray-800 font-medium">${cm.summary}</p>
+                        ${cm.nextAction ? `
+                        <div class="bg-amber-50/60 border border-amber-100 p-2 rounded-lg text-[11px] text-amber-800 flex items-center gap-1.5">
+                            <span>⚡ Next Action:</span>
+                            <strong>${cm.nextAction}</strong>
+                        </div>
+                        ` : ''}
+                        <div class="text-[10px] text-gray-400 text-right">Logged by: ${cm.loggedBy || 'Sales Head'}</div>
+                    </div>
+                    `).join('')}
+                </div>
+            </div>
+            `;
+        }
+    },
+
+    // -------------------------------------------------------------------------
+    // SUB-MODALS FOR 360° PROFILE (REQUIREMENT, PRODUCT, ORDER, PAYMENT, DOC, NOTE, COMM)
+    // -------------------------------------------------------------------------
+    openClientSubModal: function(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+    },
+
+    closeClientSubModal: function(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+    },
+
+    saveClientRequirement: function(event) {
+        if (event) event.preventDefault();
+        if (!this.activeClientId || !window.DisicureClients) return;
+
+        const form = event.target;
+        const formData = new FormData(form);
+
+        window.DisicureClients.addClientRequirement(this.activeClientId, {
+            title: formData.get('title'),
+            category: formData.get('category'),
+            specifications: formData.get('specifications'),
+            batchSize: formData.get('batchSize'),
+            budget: formData.get('budget')
+        });
+
+        this.showToast('success', 'Pharmaceutical requirement added!');
+        this.closeClientSubModal('cli-add-req-modal');
+        form.reset();
+        this.openClient360Modal(this.activeClientId);
+        this.switchClient360Tab('cli-tab-requirements');
+        this.renderClientsTable();
+    },
+
+    saveClientProduct: function(event) {
+        if (event) event.preventDefault();
+        if (!this.activeClientId || !window.DisicureClients) return;
+
+        const form = event.target;
+        const formData = new FormData(form);
+
+        window.DisicureClients.addClientProductService(this.activeClientId, {
+            name: formData.get('name'),
+            category: formData.get('category'),
+            form: formData.get('form'),
+            unitPrice: formData.get('unitPrice'),
+            monthlyVolume: formData.get('monthlyVolume')
+        });
+
+        this.showToast('success', 'Contracted formulation saved!');
+        this.closeClientSubModal('cli-add-prod-modal');
+        form.reset();
+        this.openClient360Modal(this.activeClientId);
+        this.switchClient360Tab('cli-tab-products');
+        this.renderClientsTable();
+    },
+
+    saveClientOrder: function(event) {
+        if (event) event.preventDefault();
+        if (!this.activeClientId || !window.DisicureClients) return;
+
+        const form = event.target;
+        const formData = new FormData(form);
+
+        window.DisicureClients.addClientOrder(this.activeClientId, {
+            poNumber: formData.get('poNumber'),
+            totalAmount: formData.get('totalAmount'),
+            items: formData.get('items'),
+            deliveryDate: formData.get('deliveryDate'),
+            status: formData.get('status')
+        });
+
+        this.showToast('success', 'Purchase order recorded successfully!');
+        this.closeClientSubModal('cli-add-order-modal');
+        form.reset();
+        this.openClient360Modal(this.activeClientId);
+        this.switchClient360Tab('cli-tab-orders');
+        this.renderClientsTable();
+    },
+
+    saveClientPayment: function(event) {
+        if (event) event.preventDefault();
+        if (!this.activeClientId || !window.DisicureClients) return;
+
+        const form = event.target;
+        const formData = new FormData(form);
+
+        window.DisicureClients.addClientPayment(this.activeClientId, {
+            invoiceId: formData.get('invoiceId'),
+            poNumber: formData.get('poNumber'),
+            totalAmount: formData.get('totalAmount'),
+            paidAmount: formData.get('paidAmount'),
+            paymentMode: formData.get('paymentMode'),
+            refNo: formData.get('refNo')
+        });
+
+        this.showToast('success', 'Tax invoice & payment settlement saved!');
+        this.closeClientSubModal('cli-add-payment-modal');
+        form.reset();
+        this.openClient360Modal(this.activeClientId);
+        this.switchClient360Tab('cli-tab-payments');
+        this.renderClientsTable();
+    },
+
+    saveClientDocument: function(event) {
+        if (event) event.preventDefault();
+        if (!this.activeClientId || !window.DisicureClients) return;
+
+        const form = event.target;
+        const formData = new FormData(form);
+
+        window.DisicureClients.addClientDocument(this.activeClientId, {
+            title: formData.get('title'),
+            category: formData.get('category'),
+            fileName: formData.get('fileName')
+        });
+
+        this.showToast('success', 'Document uploaded to client vault!');
+        this.closeClientSubModal('cli-add-doc-modal');
+        form.reset();
+        this.openClient360Modal(this.activeClientId);
+        this.switchClient360Tab('cli-tab-docs');
+        this.renderClientsTable();
+    },
+
+    saveClientNote: function(event) {
+        if (event) event.preventDefault();
+        if (!this.activeClientId || !window.DisicureClients) return;
+
+        const form = event.target;
+        const formData = new FormData(form);
+
+        window.DisicureClients.addClientNote(
+            this.activeClientId,
+            formData.get('text'),
+            formData.get('author'),
+            formData.get('tag')
+        );
+
+        this.showToast('success', 'Internal note logged!');
+        this.closeClientSubModal('cli-add-note-modal');
+        form.reset();
+        this.openClient360Modal(this.activeClientId);
+        this.switchClient360Tab('cli-tab-notes');
+        this.renderClientsTable();
+    },
+
+    saveClientComm: function(event) {
+        if (event) event.preventDefault();
+        if (!this.activeClientId || !window.DisicureClients) return;
+
+        const form = event.target;
+        const formData = new FormData(form);
+
+        window.DisicureClients.addClientCommunication(this.activeClientId, {
+            type: formData.get('type'),
+            contactPerson: formData.get('contactPerson'),
+            summary: formData.get('summary'),
+            nextAction: formData.get('nextAction')
+        });
+
+        this.showToast('success', 'Communication touchpoint recorded!');
+        this.closeClientSubModal('cli-add-comm-modal');
+        form.reset();
+        this.openClient360Modal(this.activeClientId);
+        this.switchClient360Tab('cli-tab-comms');
+        this.renderClientsTable();
+    },
+
+    exportClientsCSV: function() {
+        if (!window.DisicureClients) return;
+        const clients = window.DisicureClients.getAllClients();
+        if (!clients || clients.length === 0) {
+            this.showToast('error', 'No client data available to export.');
+            return;
+        }
+
+        const headers = ['Client ID', 'Company Name', 'Business Type', 'Contact Person', 'Designation', 'Mobile', 'Email', 'City', 'State', 'GSTIN', 'Drug License', 'Account Status', 'Credit Limit', 'Total Orders (INR)', 'Balance Due (INR)'];
+        
+        const rows = clients.map(c => {
+            const totOrders = (c.orders || []).reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+            const totDue = (c.payments || []).reduce((sum, p) => sum + (p.balanceDue || 0), 0);
+            return [
+                `"${c.id}"`,
+                `"${(c.companyName || '').replace(/"/g, '""')}"`,
+                `"${(c.businessType || '').replace(/"/g, '""')}"`,
+                `"${(c.contactPerson || '').replace(/"/g, '""')}"`,
+                `"${(c.designation || '').replace(/"/g, '""')}"`,
+                `"${c.mobile || ''}"`,
+                `"${c.email || ''}"`,
+                `"${c.location ? c.location.city : ''}"`,
+                `"${c.location ? c.location.state : ''}"`,
+                `"${c.gstin || ''}"`,
+                `"${c.drugLicense || ''}"`,
+                `"${c.accountStatus || ''}"`,
+                `"${c.creditLimit || ''}"`,
+                `"${totOrders}"`,
+                `"${totDue}"`
+            ].join(',');
+        });
+
+        const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows].join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', `Disicure_Clients_Ledger_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        this.showToast('success', 'Client Ledger exported as CSV!');
     }
 };
 
