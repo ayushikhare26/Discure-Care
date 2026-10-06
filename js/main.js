@@ -268,12 +268,13 @@ const DisicureMain = {
             let visibleCount = 0;
 
             productItems.forEach(item => {
-                const category = item.getAttribute('data-category');
-                const name = item.getAttribute('data-name');
-                const composition = item.getAttribute('data-composition');
+                const category = item.getAttribute('data-category') || '';
+                const name = item.getAttribute('data-name') || '';
+                const composition = item.getAttribute('data-composition') || '';
+                const therapeutic = item.getAttribute('data-therapeutic') || '';
                 
                 const matchesCategory = activeCategory === 'all' || category === activeCategory;
-                const matchesSearch = name.includes(searchQuery) || composition.includes(searchQuery);
+                const matchesSearch = name.includes(searchQuery) || composition.includes(searchQuery) || therapeutic.includes(searchQuery);
 
                 if (matchesCategory && matchesSearch) {
                     item.classList.remove('hidden');

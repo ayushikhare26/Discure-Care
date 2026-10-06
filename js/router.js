@@ -177,20 +177,23 @@ const DisicureRouter = {
             let marqueeHtml = '';
             featuredProducts.forEach(p => {
                 marqueeHtml += `
-                <div class="product-card-slide flex-shrink-0 w-80 bg-white border border-blue-100 rounded-lg p-5 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 mx-4" data-category="${p.category}">
-                    <div class="h-48 flex items-center justify-center bg-blue-50/20 rounded-md mb-4 overflow-hidden relative group">
-                        <img src="${p.image}" alt="${p.name}" class="h-40 object-contain transition-transform duration-500 group-hover:scale-105">
-                        <span class="absolute top-2 right-2 text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 bg-blue-600 text-white rounded">${p.dosageForm}</span>
+                <div class="product-card-slide flex-shrink-0 w-80 bg-white border border-blue-100 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 mx-4 flex flex-col justify-between" data-category="${p.category}">
+                    <div>
+                        <div class="h-48 flex items-center justify-center bg-blue-50/20 rounded-lg mb-3 overflow-hidden relative group border border-blue-50">
+                            <img src="${p.image}" alt="${p.name}" class="h-40 object-contain transition-transform duration-500 group-hover:scale-105">
+                            <span class="absolute top-2 right-2 text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 bg-blue-600 text-white rounded shadow-sm">${p.dosageForm}</span>
+                        </div>
+                        <span class="inline-block text-[9px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded uppercase tracking-wider mb-1">${p.therapeuticCategory || 'Pharmaceutical Formulation'}</span>
+                        <h3 class="text-base font-extrabold text-navy-950 mb-1 line-clamp-1">${p.name}</h3>
+                        <p class="text-[11px] text-blue-600 font-bold mb-2">${p.packaging}</p>
+                        <p class="text-xs text-gray-500 mb-4 line-clamp-2 h-10 font-normal leading-relaxed">${p.composition}</p>
                     </div>
-                    <h3 class="text-base font-extrabold text-navy-950 mb-1 line-clamp-1">${p.name}</h3>
-                    <p class="text-[11px] text-blue-600 font-semibold mb-2">${p.packaging}</p>
-                    <p class="text-xs text-gray-500 mb-4 line-clamp-2 h-10 font-normal leading-relaxed">${p.composition}</p>
-                    <div class="flex gap-1.5 justify-between mt-auto">
+                    <div class="flex gap-1.5 justify-between pt-2 border-t border-blue-50 mt-auto">
                         <a href="#/products/${p.slug}" class="flex-1 text-center py-2 bg-blue-50 text-blue-700 text-xs font-bold rounded-md hover:bg-blue-600 hover:text-white transition-colors duration-300">Details</a>
-                        <button onclick="window.DisicureMain.openEnquiryModal('${p.name}')" class="py-2 px-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-md transition-colors flex items-center gap-1 justify-center">
+                        <button onclick="window.DisicureMain.openEnquiryModal('${p.name}')" class="py-2 px-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-md transition-colors flex items-center gap-1 justify-center whitespace-nowrap">
                             Quote
                         </button>
-                        <a href="https://wa.me/919005874417?text=Hello%20Disicure%20Care%20Team%2C%20I%20need%20assistance%20regarding%20a%20product%20enquiry%20for%20${encodeURIComponent(p.name)}." target="_blank" rel="noopener noreferrer" class="py-2 px-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors flex items-center justify-center" aria-label="WhatsApp Enquiry">
+                        <a href="https://wa.me/919005874417?text=Hello%20Disicure%20Care%20Team%2C%20I%20need%20assistance%20regarding%20a%20product%20enquiry%20for%20${encodeURIComponent(p.name)}." target="_blank" rel="noopener noreferrer" class="py-2 px-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors flex items-center justify-center shrink-0" aria-label="WhatsApp Enquiry">
                             <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984a9.96 9.96 0 001.33 4.982L2 22l5.233-1.371a9.994 9.994 0 004.773 1.226h.004c5.505 0 9.989-4.478 9.99-9.984a9.96 9.96 0 00-2.925-7.064 9.964 9.964 0 00-7.063-2.923zm5.035 14.175c-.276.776-1.357 1.411-1.854 1.503-.497.092-.992.176-2.915-.584-2.457-.973-4.043-3.473-4.165-3.637-.123-.164-1.002-1.332-1.002-2.541 0-1.21.635-1.803.862-2.049.227-.246.497-.307.662-.307.165 0 .331.006.475.012.148.006.348-.055.546.425.199.479.679 1.656.739 1.779.061.123.102.266.02.43-.082.164-.123.266-.246.41-.122.143-.258.32-.367.43-.122.123-.25.257-.107.502.143.246.636 1.05 1.37 1.702.946.84 1.74 1.1 1.987 1.224.246.123.389.102.532-.062.143-.164.615-.717.778-.962.164-.246.327-.205.551-.123.224.082 1.424.671 1.669.794.246.123.41.184.471.287.062.102.062.594-.214 1.37z"/></svg>
                         </a>
                     </div>
@@ -1031,21 +1034,32 @@ const DisicureRouter = {
             let productsGridHtml = '';
             products.forEach(p => {
                 productsGridHtml += `
-                <div class="product-item bg-white border border-blue-100 p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 scroll-reveal" data-category="${p.category}" data-name="${p.name.toLowerCase()}" data-composition="${p.composition.toLowerCase()}">
-                    <div class="h-56 flex items-center justify-center bg-blue-50/15 rounded-lg mb-4 overflow-hidden relative group p-4 border border-blue-50">
-                        <img src="${p.image}" alt="${p.name}" class="h-44 object-contain transition-transform duration-500 group-hover:scale-105 drop-shadow-md">
-                        <span class="absolute top-3 right-3 text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 bg-blue-600 text-white rounded shadow-sm">${p.dosageForm}</span>
+                <div class="product-item bg-white border border-blue-100 p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 scroll-reveal flex flex-col justify-between" data-category="${p.category}" data-name="${p.name.toLowerCase()}" data-composition="${p.composition.toLowerCase()}" data-therapeutic="${(p.therapeuticCategory || '').toLowerCase()}">
+                    <div>
+                        <div class="h-56 flex items-center justify-center bg-blue-50/15 rounded-lg mb-4 overflow-hidden relative group p-4 border border-blue-50">
+                            <img src="${p.image}" alt="${p.name}" class="h-44 object-contain transition-transform duration-500 group-hover:scale-105 drop-shadow-md">
+                            <span class="absolute top-3 right-3 text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 bg-blue-600 text-white rounded shadow-sm">${p.dosageForm}</span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="inline-block text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded uppercase tracking-wider">${p.therapeuticCategory || 'Pharmaceutical Formulation'}</span>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-navy-950 mb-1 leading-snug">${p.name}</h3>
+                        <p class="text-xs text-blue-600 font-extrabold mb-3 uppercase tracking-wide flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                            ${p.details} • ${p.packaging}
+                        </p>
+                        <div class="bg-blue-50/30 border border-blue-100/60 rounded-lg p-3 mb-3">
+                            <span class="text-[10px] font-extrabold text-blue-700 uppercase tracking-wider block mb-1">Active Composition</span>
+                            <p class="text-xs text-navy-950 font-bold leading-relaxed line-clamp-2">${p.composition}</p>
+                        </div>
+                        <p class="text-xs text-gray-500 leading-relaxed font-normal h-10 line-clamp-2 mb-4">${p.description}</p>
                     </div>
-                    <h3 class="text-lg font-extrabold text-navy-950 mb-1.5">${p.name}</h3>
-                    <p class="text-xs text-blue-600 font-extrabold mb-3 uppercase tracking-wider">${p.packaging}</p>
-                    <p class="text-xs text-gray-700 font-bold mb-3 h-8 line-clamp-2">${p.composition}</p>
-                    <p class="text-xs text-gray-500 leading-relaxed font-normal h-12 line-clamp-3 mb-6">${p.description}</p>
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 pt-3 border-t border-blue-50 mt-auto">
                         <a href="#/products/${p.slug}" class="flex-1 text-center py-2.5 bg-blue-50 text-blue-700 text-xs font-bold rounded-md hover:bg-blue-600 hover:text-white transition-colors">Details</a>
-                        <button onclick="window.DisicureMain.openEnquiryModal('${p.name}')" class="py-2.5 px-3.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-md transition-colors flex items-center gap-1 justify-center">
-                            Quote
+                        <button onclick="window.DisicureMain.openEnquiryModal('${p.name}')" class="py-2.5 px-3.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-md transition-colors flex items-center gap-1 justify-center whitespace-nowrap">
+                            Request Quote
                         </button>
-                        <a href="https://wa.me/919005874417?text=Hello%20Disicure%20Care%20Team%2C%20I%20need%20assistance%20regarding%20a%20product%20enquiry%20for%20${encodeURIComponent(p.name)}." target="_blank" rel="noopener noreferrer" class="py-2.5 px-3 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors flex items-center justify-center" aria-label="WhatsApp Enquiry">
+                        <a href="https://wa.me/919005874417?text=Hello%20Disicure%20Care%20Team%2C%20I%20need%20assistance%20regarding%20a%20product%20enquiry%20for%20${encodeURIComponent(p.name)}." target="_blank" rel="noopener noreferrer" class="py-2.5 px-3 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors flex items-center justify-center shrink-0" aria-label="WhatsApp Enquiry">
                             <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984a9.96 9.96 0 001.33 4.982L2 22l5.233-1.371a9.994 9.994 0 004.773 1.226h.004c5.505 0 9.989-4.478 9.99-9.984a9.96 9.96 0 00-2.925-7.064 9.964 9.964 0 00-7.063-2.923zm5.035 14.175c-.276.776-1.357 1.411-1.854 1.503-.497.092-.992.176-2.915-.584-2.457-.973-4.043-3.473-4.165-3.637-.123-.164-1.002-1.332-1.002-2.541 0-1.21.635-1.803.862-2.049.227-.246.497-.307.662-.307.165 0 .331.006.475.012.148.006.348-.055.546.425.199.479.679 1.656.739 1.779.061.123.102.266.02.43-.082.164-.123.266-.246.41-.122.143-.258.32-.367.43-.122.123-.25.257-.107.502.143.246.636 1.05 1.37 1.702.946.84 1.74 1.1 1.987 1.224.246.123.389.102.532-.062.143-.164.615-.717.778-.962.164-.246.327-.205.551-.123.224.082 1.424.671 1.669.794.246.123.41.184.471.287.062.102.062.594-.214 1.37z"/></svg>
                         </a>
                     </div>
@@ -1058,9 +1072,9 @@ const DisicureRouter = {
             <section class="bg-gradient-to-r from-blue-900 to-navy-950 text-white py-6 md:py-8 md:py-14 relative overflow-hidden">
                 <div class="absolute inset-0 opacity-15 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-blue-400 via-transparent to-transparent"></div>
                 <div class="max-w-7xl mx-auto px-4 lg:px-8 text-center space-y-4 relative z-10 scroll-reveal">
-                    <span class="text-xs font-bold text-blue-300 tracking-wider uppercase font-extrabold">Our Products</span>
+                    <span class="text-xs font-bold text-blue-300 tracking-wider uppercase font-extrabold">Product Portfolio</span>
                     <h1 class="text-4xl font-extrabold uppercase tracking-wide">PHARMACEUTICAL PRODUCTS</h1>
-                    <p class="text-sm text-blue-200 max-w-xl mx-auto font-normal">Explore the Disicure Care product portfolio. Quality-focused pharmaceutical products designed for diverse healthcare requirements.</p>
+                    <p class="text-sm text-blue-200 max-w-xl mx-auto font-normal">Explore the Disicure Care product portfolio. Quality-focused pharmaceutical formulations designed for diverse therapeutic requirements.</p>
                 </div>
             </section>
 
@@ -1070,7 +1084,7 @@ const DisicureRouter = {
                     
                     <!-- Search Input -->
                     <div class="relative w-full md:max-w-md scroll-reveal">
-                        <input type="text" id="catalog-search" placeholder="Search by name, composition or active ingredient..." class="w-full bg-white border border-blue-100 rounded-md p-3.5 pl-11 text-sm focus:outline-none focus:border-blue-500 font-normal">
+                        <input type="text" id="catalog-search" placeholder="Search by name, composition or therapeutic category..." class="w-full bg-white border border-blue-100 rounded-md p-3.5 pl-11 text-sm focus:outline-none focus:border-blue-500 font-normal shadow-sm">
                         <span class="absolute left-4 top-4 text-gray-400">
                             ${DisicureRouter.icons.search}
                         </span>
@@ -1078,9 +1092,9 @@ const DisicureRouter = {
                     
                     <!-- Filters -->
                     <div class="flex gap-3 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 scroll-reveal">
-                        <button class="filter-btn active px-5 py-2.5 bg-white border border-blue-100 text-xs font-extrabold rounded-md hover:bg-blue-50 text-gray-700 transition-colors uppercase tracking-wider" data-filter="all">All</button>
-                        <button class="filter-btn px-5 py-2.5 bg-white border border-blue-100 text-xs font-extrabold rounded-md hover:bg-blue-50 text-gray-700 transition-colors uppercase tracking-wider" data-filter="tablets">Tablets</button>
-                        <button class="filter-btn px-5 py-2.5 bg-white border border-blue-100 text-xs font-extrabold rounded-md hover:bg-blue-50 text-gray-700 transition-colors uppercase tracking-wider" data-filter="capsules">Capsules</button>
+                        <button class="filter-btn active px-5 py-2.5 bg-white border border-blue-100 text-xs font-extrabold rounded-md hover:bg-blue-50 text-gray-700 transition-colors uppercase tracking-wider shadow-sm" data-filter="all">All Formulations</button>
+                        <button class="filter-btn px-5 py-2.5 bg-white border border-blue-100 text-xs font-extrabold rounded-md hover:bg-blue-50 text-gray-700 transition-colors uppercase tracking-wider shadow-sm" data-filter="tablets">Tablets</button>
+                        <button class="filter-btn px-5 py-2.5 bg-white border border-blue-100 text-xs font-extrabold rounded-md hover:bg-blue-50 text-gray-700 transition-colors uppercase tracking-wider shadow-sm" data-filter="capsules">Capsules</button>
                     </div>
                     
                 </div>
@@ -1119,13 +1133,17 @@ const DisicureRouter = {
             let relatedHtml = '';
             related.forEach(r => {
                 relatedHtml += `
-                <div class="bg-white border border-blue-100 p-5 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 scroll-reveal">
-                    <div class="h-36 flex items-center justify-center bg-blue-50/10 rounded mb-4 border border-blue-50">
-                        <img src="${r.image}" alt="${r.name}" class="h-28 object-contain">
+                <div class="bg-white border border-blue-100 p-5 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 scroll-reveal flex flex-col justify-between">
+                    <div>
+                        <div class="h-36 flex items-center justify-center bg-blue-50/10 rounded mb-4 border border-blue-50 relative">
+                            <img src="${r.image}" alt="${r.name}" class="h-28 object-contain">
+                            <span class="absolute top-2 right-2 text-[9px] font-bold px-2 py-0.5 bg-blue-600 text-white rounded">${r.dosageForm}</span>
+                        </div>
+                        <h4 class="font-extrabold text-navy-950 text-sm mb-1 line-clamp-1">${r.name}</h4>
+                        <p class="text-[10px] text-blue-600 font-bold uppercase tracking-wider mb-2">${r.details} • ${r.packaging}</p>
+                        <p class="text-xs text-gray-500 line-clamp-2 mb-4 font-normal">${r.composition}</p>
                     </div>
-                    <h4 class="font-extrabold text-navy-950 text-sm mb-1 line-clamp-1">${r.name}</h4>
-                    <p class="text-[10px] text-blue-600 font-bold uppercase tracking-wider mb-3">${r.packaging}</p>
-                    <a href="#/products/${r.slug}" class="block text-center py-2 bg-blue-50 text-blue-700 text-xs font-bold rounded hover:bg-blue-600 hover:text-white transition-colors">Details</a>
+                    <a href="#/products/${r.slug}" class="block text-center py-2 bg-blue-50 text-blue-700 text-xs font-bold rounded hover:bg-blue-600 hover:text-white transition-colors">View Details</a>
                 </div>
                 `;
             });
@@ -1134,7 +1152,7 @@ const DisicureRouter = {
             product.indications.forEach(ind => {
                 indicationsHtml += `
                 <li class="flex gap-3 text-sm text-gray-600 leading-relaxed font-normal scroll-reveal">
-                    <span class="text-blue-600 mt-1">${DisicureRouter.icons.check}</span>
+                    <span class="text-blue-600 mt-1 shrink-0">${DisicureRouter.icons.check}</span>
                     <span>${ind}</span>
                 </li>
                 `;
@@ -1144,7 +1162,7 @@ const DisicureRouter = {
             product.benefits.forEach(b => {
                 benefitsHtml += `
                 <li class="flex gap-3 text-sm text-gray-600 leading-relaxed font-normal scroll-reveal">
-                    <span class="text-blue-600 mt-1">${DisicureRouter.icons.check}</span>
+                    <span class="text-blue-600 mt-1 shrink-0">${DisicureRouter.icons.check}</span>
                     <span>${b}</span>
                 </li>
                 `;
@@ -1162,14 +1180,14 @@ const DisicureRouter = {
             </section>
 
             <section class="py-8 md:py-12 bg-white">
-                <div class="max-w-7xl mx-auto px-4 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12">
+                <div class="max-w-7xl mx-auto px-4 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
                     
                     <!-- Left Side: Product Staging Visual -->
                     <div class="lg:col-span-5 scroll-reveal">
-                        <div class="border border-blue-100 p-8 rounded-xl bg-gradient-to-b from-blue-50/20 to-white flex items-center justify-center relative min-h-[380px] shadow-sm">
+                        <div class="border border-blue-100 p-8 rounded-2xl bg-gradient-to-b from-blue-50/20 to-white flex items-center justify-center relative min-h-[380px] shadow-sm">
                             <img src="${product.image}" alt="${product.name}" class="h-80 object-contain drop-shadow-lg max-w-full">
                             <!-- Packaging Badge -->
-                            <div class="absolute bottom-4 left-4 right-4 bg-white border border-blue-100 p-3 rounded-lg shadow-sm flex items-center justify-between">
+                            <div class="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur border border-blue-100 p-3 rounded-xl shadow-sm flex items-center justify-between">
                                 <span class="text-[10px] font-extrabold text-gray-400 uppercase">Packaging Standard</span>
                                 <span class="text-[10px] font-extrabold text-blue-700 px-3 py-0.5 bg-blue-50 border border-blue-100 rounded-full uppercase">${product.packaging}</span>
                             </div>
@@ -1178,16 +1196,27 @@ const DisicureRouter = {
                     
                     <!-- Right Side: Content Details -->
                     <div class="lg:col-span-7 space-y-6 scroll-reveal">
-                        <div>
-                            <span class="inline-block px-2.5 py-0.5 bg-blue-50 text-blue-700 text-xs font-bold rounded uppercase tracking-wider mb-2">${product.dosageForm}</span>
+                        <div class="space-y-2">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="inline-block px-2.5 py-1 bg-blue-600 text-white text-xs font-bold rounded uppercase tracking-wider">${product.dosageForm}</span>
+                                <span class="inline-block px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-100 text-xs font-bold rounded uppercase tracking-wider">${product.therapeuticCategory || 'Pharmaceutical Formulation'}</span>
+                            </div>
                             <h1 class="text-3xl font-extrabold text-navy-950">${product.name}</h1>
-                            <p class="text-xs text-gray-400 font-semibold mt-1 uppercase tracking-wide">Packaging: ${product.details} / ${product.packaging}</p>
                         </div>
                         
-                        <!-- Composition card -->
-                        <div class="bg-blue-50/30 border border-blue-50 p-5 rounded-lg">
-                            <h4 class="text-xs font-bold text-blue-700 uppercase tracking-wider mb-1.5">Active Ingredient Composition</h4>
-                            <p class="text-sm font-extrabold text-navy-950">${product.composition}</p>
+                        <!-- Packaging Specification & Composition Cards Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Composition Card -->
+                            <div class="bg-blue-50/40 border border-blue-100 p-4 rounded-xl">
+                                <h4 class="text-[10px] font-extrabold text-blue-700 uppercase tracking-wider mb-1">Active Composition</h4>
+                                <p class="text-sm font-extrabold text-navy-950 leading-snug">${product.composition}</p>
+                            </div>
+                            <!-- Packaging Info Card -->
+                            <div class="bg-blue-50/40 border border-blue-100 p-4 rounded-xl">
+                                <h4 class="text-[10px] font-extrabold text-blue-700 uppercase tracking-wider mb-1">Packaging Information</h4>
+                                <p class="text-sm font-extrabold text-navy-950 leading-snug">${product.details}</p>
+                                <p class="text-xs text-blue-600 font-semibold mt-0.5">${product.packaging}</p>
+                            </div>
                         </div>
                         
                         <!-- Product Overview -->
@@ -1214,14 +1243,14 @@ const DisicureRouter = {
                         
                         <!-- Actions -->
                         <div class="border-t border-blue-50 pt-6 flex flex-wrap gap-4">
-                            <button onclick="window.DisicureMain.openEnquiryModal('${product.name}')" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow-sm hover:shadow transition-all duration-300">
+                            <button onclick="window.DisicureMain.openEnquiryModal('${product.name}')" class="px-7 py-3.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow-sm hover:shadow transition-all duration-300 uppercase tracking-wider">
                                 Request Business Quote
                             </button>
-                            <a href="https://wa.me/919005874417?text=Hello%20Disicure%20Care%20Team%2C%20I%20need%20assistance%20regarding%20a%20product%20enquiry%20for%20${encodeURIComponent(product.name)}." target="_blank" rel="noopener noreferrer" class="px-6 py-3.5 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded shadow-sm hover:shadow transition-all duration-300 flex items-center gap-1.5">
+                            <a href="https://wa.me/919005874417?text=Hello%20Disicure%20Care%20Team%2C%20I%20need%20assistance%20regarding%20a%20product%20enquiry%20for%20${encodeURIComponent(product.name)}." target="_blank" rel="noopener noreferrer" class="px-6 py-3.5 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded shadow-sm hover:shadow transition-all duration-300 flex items-center gap-2 uppercase tracking-wider">
                                 <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984a9.96 9.96 0 001.33 4.982L2 22l5.233-1.371a9.994 9.994 0 004.773 1.226h.004c5.505 0 9.989-4.478 9.99-9.984a9.96 9.96 0 00-2.925-7.064 9.964 9.964 0 00-7.063-2.923zm5.035 14.175c-.276.776-1.357 1.411-1.854 1.503-.497.092-.992.176-2.915-.584-2.457-.973-4.043-3.473-4.165-3.637-.123-.164-1.002-1.332-1.002-2.541 0-1.21.635-1.803.862-2.049.227-.246.497-.307.662-.307.165 0 .331.006.475.012.148.006.348-.055.546.425.199.479.679 1.656.739 1.779.061.123.102.266.02.43-.082.164-.123.266-.246.41-.122.143-.258.32-.367.43-.122.123-.25.257-.107.502.143.246.636 1.05 1.37 1.702.946.84 1.74 1.1 1.987 1.224.246.123.389.102.532-.062.143-.164.615-.717.778-.962.164-.246.327-.205.551-.123.224.082 1.424.671 1.669.794.246.123.41.184.471.287.062.102.062.594-.214 1.37z"/></svg>
                                 <span>WhatsApp Enquiry</span>
                             </a>
-                            <a href="#/products" class="px-6 py-3.5 bg-white border border-blue-200 text-blue-700 text-xs font-bold rounded hover:bg-blue-50 transition-colors">
+                            <a href="#/products" class="px-6 py-3.5 bg-white border border-blue-200 text-blue-700 text-xs font-bold rounded hover:bg-blue-50 transition-colors uppercase tracking-wider">
                                 Back to Products
                             </a>
                         </div>
