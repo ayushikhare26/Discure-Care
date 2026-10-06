@@ -38,6 +38,9 @@ const DisicurePartner = {
             state: 'Uttar Pradesh',
             assignedTerritory: 'Western UP & NCR Stockist Zone',
             commercialTerms: '22% Commercial Wholesale Discount • 30 Days Credit',
+            defaultCommissionModel: 'percentage',
+            defaultCommissionRate: 10,
+            defaultCommissionLabel: '10% Revenue Margin',
             gstin: '09AABCM1234F1Z8',
             drugLicense: 'UP/20B/2021/8849',
             businessGeneratedFormatted: '₹14,50,000',
@@ -71,6 +74,9 @@ const DisicurePartner = {
             state: 'Uttar Pradesh',
             assignedTerritory: 'Institutional Hospital Supply Rate Agreement',
             commercialTerms: '15% Institutional Tender Margin • Net 15 LC',
+            defaultCommissionModel: 'percentage',
+            defaultCommissionRate: 0,
+            defaultCommissionLabel: 'Institutional Supply Margin (0%)',
             gstin: '09AABCA9988D1Z2',
             drugLicense: 'UP/20B/HOSP/2023/112',
             businessGeneratedFormatted: '₹28,00,000',
@@ -104,6 +110,9 @@ const DisicurePartner = {
             state: 'Maharashtra',
             assignedTerritory: 'Digital & Physician Detailing Campaigns',
             commercialTerms: '10% Commission on Attributed B2B Inbound Contracts',
+            defaultCommissionModel: 'custom',
+            defaultCommissionRate: 'Milestone Slab Tier 1 + 5% Inbound',
+            defaultCommissionLabel: 'Custom Milestone Slabs',
             gstin: '27AABCA5566G1Z4',
             drugLicense: 'N/A (Marketing Agency)',
             businessGeneratedFormatted: '₹48,00,000',
@@ -136,7 +145,10 @@ const DisicurePartner = {
             city: 'Dehradun',
             state: 'Uttarakhand',
             assignedTerritory: 'Dehradun & Haridwar Clinical Network',
-            commercialTerms: '8% Referral Incentive on Confirmed Institutional Orders',
+            commercialTerms: '₹15,000 Fixed per Converted Franchisee + 8% Reorders',
+            defaultCommissionModel: 'fixed',
+            defaultCommissionRate: 15000,
+            defaultCommissionLabel: '₹15,000 Flat per Client',
             gstin: '05AADPS8899K1Z1',
             drugLicense: 'UK/DR/2024/099',
             businessGeneratedFormatted: '₹26,25,000',
@@ -170,6 +182,9 @@ const DisicurePartner = {
             state: 'Bihar',
             assignedTerritory: 'Bihar & Jharkhand Exclusive PCD Franchise Zone',
             commercialTerms: '20% PCD Franchise Margin Tier 1 • Visual Aid Kit Provided',
+            defaultCommissionModel: 'percentage',
+            defaultCommissionRate: 20,
+            defaultCommissionLabel: '20% PCD Franchise Margin',
             gstin: '10AABCB4433E1Z9',
             drugLicense: 'BR/20B/PCD/2022/441',
             businessGeneratedFormatted: '₹41,20,000',
@@ -203,6 +218,9 @@ const DisicurePartner = {
             state: 'Gujarat',
             assignedTerritory: 'Gujarat & Western Maharashtra Bulk Supply',
             commercialTerms: '12% Key Account Margin • Net 21 Days',
+            defaultCommissionModel: 'percentage',
+            defaultCommissionRate: 12,
+            defaultCommissionLabel: '12% Key Account Margin',
             gstin: '24AABCZ7788P1Z6',
             drugLicense: 'GJ/20B/2020/9981',
             businessGeneratedFormatted: '₹53,30,000',
@@ -236,6 +254,9 @@ const DisicurePartner = {
             state: 'Assam',
             assignedTerritory: 'North-East Institutional Procurement Desk',
             commercialTerms: '15% Master Brokerage Commission',
+            defaultCommissionModel: 'percentage',
+            defaultCommissionRate: 15,
+            defaultCommissionLabel: '15% Master Brokerage Commission',
             gstin: '18AABCN3322L1Z3',
             drugLicense: 'AS/20B/AGY/2023/505',
             businessGeneratedFormatted: '₹65,00,000',
@@ -274,9 +295,15 @@ const DisicurePartner = {
             leadStatus: '🟣 Converted',
             businessValueNumeric: 500000,
             businessValue: '₹5,00,000',
+            commissionModel: 'percentage',
             commissionRate: '10%',
             commissionNumeric: 50000,
             commission: '₹50,000',
+            commissionDetails: '10% Revenue Margin on ₹5,00,000 Contract',
+            approvalStatus: '🟢 Approved',
+            approvedBy: 'Mr. Nishant Chaturvedi (Super Admin)',
+            approvedDate: '2026-09-26 10:00',
+            approvalNotes: 'Contract and commercial GST invoice verified.',
             paymentStatus: '🟢 Paid',
             paidNumeric: 50000,
             paidFormatted: '₹50,000',
@@ -294,7 +321,7 @@ const DisicurePartner = {
                 { stage: 'Requirement Qualified', timestamp: '2026-09-18 14:00', detail: 'Formulation: 20,000 strips DISIZOLE-DSR' },
                 { stage: 'Negotiation', timestamp: '2026-09-22 16:30', detail: 'Wholesale price locked at ₹25/strip' },
                 { stage: 'Converted & PO Signed', timestamp: '2026-09-25 12:00', detail: 'Purchase Order #PO-SRC-2026-88 valued at ₹5,00,000' },
-                { stage: 'Commission Calculated', timestamp: '2026-09-26 10:00', detail: '10% partner margin accrued = ₹50,000' },
+                { stage: 'Commission Approved', timestamp: '2026-09-26 10:00', detail: '10% partner margin (₹50,000) approved by Mr. Nishant Chaturvedi' },
                 { stage: 'Payment Disbursed', timestamp: '2026-09-30 15:30', detail: 'Cleared ₹50,000 via UTR-HDFC-992144' }
             ]
         },
@@ -312,9 +339,15 @@ const DisicurePartner = {
             leadStatus: '🟣 Converted',
             businessValueNumeric: 600000,
             businessValue: '₹6,00,000',
+            commissionModel: 'percentage',
             commissionRate: '10%',
             commissionNumeric: 60000,
             commission: '₹60,000',
+            commissionDetails: '10% PCD Franchise Fee on ₹6,00,000 Agreement',
+            approvalStatus: '🟢 Approved',
+            approvedBy: 'Mr. Nishant Chaturvedi (Super Admin)',
+            approvedDate: '2026-09-29 11:00',
+            approvalNotes: 'PCD franchise agreement executed and verified.',
             paymentStatus: '🟡 Partial',
             paidNumeric: 55000,
             paidFormatted: '₹55,000',
@@ -332,7 +365,7 @@ const DisicurePartner = {
                 { stage: 'Requirement Qualified', timestamp: '2026-09-23 11:30', detail: 'PCD Antibiotics & Syrups franchise portfolio' },
                 { stage: 'Negotiation', timestamp: '2026-09-26 14:00', detail: 'Exclusive territory agreed for Mathura dist.' },
                 { stage: 'Converted & PO Signed', timestamp: '2026-09-28 17:00', detail: 'Agreement executed for ₹6,00,000' },
-                { stage: 'Commission Calculated', timestamp: '2026-09-29 11:00', detail: '10% partner margin = ₹60,000' },
+                { stage: 'Commission Approved', timestamp: '2026-09-29 11:00', detail: '10% partner margin (₹60,000) approved by Super Admin' },
                 { stage: 'Partial Payment Cleared', timestamp: '2026-10-02 16:00', detail: '₹55,000 disbursed (UTR-ICICI-881290), ₹5,000 pending' }
             ]
         },
@@ -350,9 +383,15 @@ const DisicurePartner = {
             leadStatus: '🟣 Converted',
             businessValueNumeric: 350000,
             businessValue: '₹3,50,000',
-            commissionRate: '10%',
+            commissionModel: 'fixed',
+            commissionRate: '₹35,000 Fixed',
             commissionNumeric: 35000,
             commission: '₹35,000',
+            commissionDetails: 'Fixed ₹35,000 Procurement Referral Incentive',
+            approvalStatus: '🟢 Approved',
+            approvedBy: 'Dr. Vivek Sharma (VP Institutional)',
+            approvedDate: '2026-10-02 09:30',
+            approvalNotes: 'Institutional procurement rate cleared. Payout scheduled.',
             paymentStatus: '🔴 Pending',
             paidNumeric: 0,
             paidFormatted: '₹0',
@@ -370,7 +409,7 @@ const DisicurePartner = {
                 { stage: 'Requirement Qualified', timestamp: '2026-09-26 16:00', detail: 'Rabeprazole & Cefpodoxime institutional pack' },
                 { stage: 'Negotiation', timestamp: '2026-09-29 15:30', detail: 'Institutional rate approved by Disicure Director' },
                 { stage: 'Converted & MOU Signed', timestamp: '2026-10-01 12:00', detail: 'Annual contract closed at ₹3,50,000' },
-                { stage: 'Commission Accrued', timestamp: '2026-10-02 09:30', detail: '₹35,000 partner commission ledgered' },
+                { stage: 'Commission Approved', timestamp: '2026-10-02 09:30', detail: 'Fixed ₹35,000 partner commission approved by Dr. Vivek Sharma' },
                 { stage: 'Payment Pending', timestamp: '2026-10-02 10:00', detail: 'Accounts voucher generated (VOUCH-803); pending payout' }
             ]
         },
@@ -388,9 +427,15 @@ const DisicurePartner = {
             leadStatus: '🟠 Negotiation',
             businessValueNumeric: 320000,
             businessValue: '₹3,20,000',
-            commissionRate: '10%',
+            commissionModel: 'custom',
+            commissionRate: 'Custom Earning',
             commissionNumeric: 32000,
             commission: '₹32,000 (Potential)',
+            commissionDetails: 'Base ₹20,000 + 3.75% Volume Bonus',
+            approvalStatus: '🟡 Pending Approval',
+            approvedBy: 'Awaiting Admin Sign-off',
+            approvedDate: '-',
+            approvalNotes: 'Under active commercial negotiation.',
             paymentStatus: '⚪ In Negotiation',
             paidNumeric: 0,
             paidFormatted: '₹0',
@@ -423,9 +468,15 @@ const DisicurePartner = {
             leadStatus: '🟠 Negotiation',
             businessValueNumeric: 280000,
             businessValue: '₹2,80,000',
+            commissionModel: 'percentage',
             commissionRate: '10%',
             commissionNumeric: 28000,
             commission: '₹28,000 (Potential)',
+            commissionDetails: '10% of ₹2,80,000 PCD Quote',
+            approvalStatus: '🟡 Pending Approval',
+            approvedBy: 'Awaiting Admin Sign-off',
+            approvedDate: '-',
+            approvalNotes: 'Under territory review.',
             paymentStatus: '⚪ In Negotiation',
             paidNumeric: 0,
             paidFormatted: '₹0',
@@ -458,9 +509,13 @@ const DisicurePartner = {
             leadStatus: '🔵 Contacted',
             businessValueNumeric: 210000,
             businessValue: '₹2,10,000',
+            commissionModel: 'percentage',
             commissionRate: '10%',
             commissionNumeric: 21000,
             commission: '₹21,000 (Potential)',
+            commissionDetails: '10% of ₹2,10,000 Supply Value',
+            approvalStatus: '🟡 Pending Approval',
+            approvedBy: 'Awaiting Admin Sign-off',
             paymentStatus: '⚪ Discussion Initiated',
             paidNumeric: 0,
             paidFormatted: '₹0',
@@ -491,9 +546,13 @@ const DisicurePartner = {
             leadStatus: '🔵 Contacted',
             businessValueNumeric: 190000,
             businessValue: '₹1,90,000',
+            commissionModel: 'percentage',
             commissionRate: '10%',
             commissionNumeric: 19000,
             commission: '₹19,000 (Potential)',
+            commissionDetails: '10% of ₹1,90,000 Pediatric Line',
+            approvalStatus: '🟡 Pending Approval',
+            approvedBy: 'Awaiting Admin Sign-off',
             paymentStatus: '⚪ Discussion Initiated',
             paidNumeric: 0,
             paidFormatted: '₹0',
@@ -524,9 +583,13 @@ const DisicurePartner = {
             leadStatus: '🔵 Contacted',
             businessValueNumeric: 160000,
             businessValue: '₹1,60,000',
+            commissionModel: 'percentage',
             commissionRate: '10%',
             commissionNumeric: 16000,
             commission: '₹16,000 (Potential)',
+            commissionDetails: '10% Third-party Manufacturing Margin',
+            approvalStatus: '🟡 Pending Approval',
+            approvedBy: 'Awaiting Admin Sign-off',
             paymentStatus: '⚪ Discussion Initiated',
             paidNumeric: 0,
             paidFormatted: '₹0',
@@ -557,9 +620,13 @@ const DisicurePartner = {
             leadStatus: '🟢 New',
             businessValueNumeric: 120000,
             businessValue: '₹1,20,000',
+            commissionModel: 'percentage',
             commissionRate: '10%',
             commissionNumeric: 12000,
             commission: '₹12,000 (Potential)',
+            commissionDetails: '10% Anticipated Commission',
+            approvalStatus: '🟡 Pending Approval',
+            approvedBy: 'Awaiting Admin Sign-off',
             paymentStatus: '⚪ New Lead Received',
             paidNumeric: 0,
             paidFormatted: '₹0',
@@ -589,9 +656,13 @@ const DisicurePartner = {
             leadStatus: '🟢 New',
             businessValueNumeric: 110000,
             businessValue: '₹1,10,000',
+            commissionModel: 'percentage',
             commissionRate: '10%',
             commissionNumeric: 11000,
             commission: '₹11,000 (Potential)',
+            commissionDetails: '10% Anticipated Commission',
+            approvalStatus: '🟡 Pending Approval',
+            approvedBy: 'Awaiting Admin Sign-off',
             paymentStatus: '⚪ New Lead Received',
             paidNumeric: 0,
             paidFormatted: '₹0',
@@ -623,9 +694,15 @@ const DisicurePartner = {
             leadStatus: '🟣 Converted',
             businessValueNumeric: 2800000,
             businessValue: '₹28,00,000',
+            commissionModel: 'fixed',
             commissionRate: '0%',
             commissionNumeric: 0,
             commission: '₹0 (Institutional)',
+            commissionDetails: 'Direct Hospital Procurement Margin (0%)',
+            approvalStatus: '🟢 Approved',
+            approvedBy: 'Dr. Vivek Sharma (VP Institutional)',
+            approvedDate: '2026-03-01 12:00',
+            approvalNotes: 'Direct institutional purchase verified.',
             paymentStatus: '🟢 Paid',
             paidNumeric: 2800000,
             paidFormatted: '₹28,00,000',
@@ -659,12 +736,18 @@ const DisicurePartner = {
             leadStatus: '🟣 Converted',
             businessValueNumeric: 320000,
             businessValue: '₹3,20,000',
-            commissionRate: '10%',
+            commissionModel: 'custom',
+            commissionRate: 'Custom Earning',
             commissionNumeric: 32000,
             commission: '₹32,000',
+            commissionDetails: 'Digital Inbound Attributed Margin (10%)',
+            approvalStatus: '🟢 Approved',
+            approvedBy: 'Mr. Nishant Chaturvedi (Super Admin)',
+            approvedDate: '2026-09-26 14:00',
+            approvalNotes: 'Attributed marketing inbound closed.',
             paymentStatus: '🟢 Paid',
             paidNumeric: 32000,
-            paidFormatted: '₹32,000',
+            paidFormatted: '₹32,00,000',
             pendingNumeric: 0,
             pendingFormatted: '₹0',
             paymentRef: 'UTR-HDFC-882910',
@@ -693,9 +776,15 @@ const DisicurePartner = {
             leadStatus: '🟣 Converted',
             businessValueNumeric: 140000,
             businessValue: '₹1,40,000',
-            commissionRate: '8%',
+            commissionModel: 'fixed',
+            commissionRate: '₹11,200 Fixed',
             commissionNumeric: 11200,
             commission: '₹11,200',
+            commissionDetails: 'Fixed ₹11,200 Field MR Referral Tier 1',
+            approvalStatus: '🟢 Approved',
+            approvedBy: 'Ankit Rawat (Sales Executive)',
+            approvedDate: '2026-09-29 10:00',
+            approvalNotes: 'Clinical trial order verified.',
             paymentStatus: '🟢 Paid',
             paidNumeric: 11200,
             paidFormatted: '₹11,200',
@@ -726,9 +815,15 @@ const DisicurePartner = {
             leadStatus: '🟣 Converted',
             businessValueNumeric: 840000,
             businessValue: '₹8,40,000',
+            commissionModel: 'percentage',
             commissionRate: '20%',
             commissionNumeric: 168000,
             commission: '₹1,68,000',
+            commissionDetails: '20% PCD Franchise Key Account Margin',
+            approvalStatus: '🟢 Approved',
+            approvedBy: 'Dr. Vivek Sharma (VP Institutional)',
+            approvedDate: '2026-09-10 16:00',
+            approvalNotes: 'Institutional contract approved.',
             paymentStatus: '🟢 Paid',
             paidNumeric: 168000,
             paidFormatted: '₹1,68,000',
@@ -757,21 +852,30 @@ const DisicurePartner = {
             leadStatus: '🟣 Converted',
             businessValueNumeric: 850000,
             businessValue: '₹8,50,000',
+            commissionModel: 'percentage',
             commissionRate: '15%',
             commissionNumeric: 127500,
             commission: '₹1,27,500',
+            commissionDetails: '15% Master Brokerage Commission',
+            approvalStatus: '🟢 Approved',
+            approvedBy: 'Mr. Nishant Chaturvedi (Super Admin)',
+            approvedDate: '2026-09-12 11:00',
+            approvalNotes: 'North-East regional procurement broker agreement verified.',
             paymentStatus: '🟢 Paid',
             paidNumeric: 127500,
             paidFormatted: '₹1,27,500',
-            paymentRef: 'UTR-AXIS-993311',
-            paymentDate: '2026-09-25',
-            followUpDate: '2026-10-12',
-            notes: 'Master stockist agreement executed. Dispatches in transit.',
-            createdDate: '2026-09-10',
+            pendingNumeric: 0,
+            pendingFormatted: '₹0',
+            paymentRef: 'UTR-AXIS-993321',
+            paymentDate: '2026-09-18',
+            followUpDate: '2026-10-15',
+            notes: 'Bulk purchase order executed for 8 Stockist branches in Assam.',
+            createdDate: '2026-08-25',
             lifecycleStages: [
-                { stage: 'Partner Attributed', timestamp: '2026-09-10 14:00', detail: 'Nexus Global Pharma Agency' },
-                { stage: 'Converted & Agreement Locked', timestamp: '2026-09-20 16:00', detail: 'Order value ₹8,50,000' },
-                { stage: 'Payment Disbursed', timestamp: '2026-09-25 10:30', detail: '15% master brokerage ₹1,27,500 paid' }
+                { stage: 'Partner Attributed', timestamp: '2026-08-25 10:00', detail: 'Nexus Global Pharma Agency' },
+                { stage: 'Lead Registered', timestamp: '2026-08-25 10:30', detail: 'PLEAD-2026-870 Stockist Union PO' },
+                { stage: 'Converted & Contract Signed', timestamp: '2026-09-10 14:00', detail: 'PO cleared for ₹8,50,000' },
+                { stage: 'Commission Disbursed', timestamp: '2026-09-18 16:30', detail: '15% brokerage ₹1,27,500 paid' }
             ]
         }
     ],
@@ -1202,6 +1306,8 @@ const DisicurePartner = {
 
         let businessGeneratedNumeric = 0;
         let commissionEarnedNumeric = 0;
+        let approvedEarningsNumeric = 0;
+        let pendingApprovalNumeric = 0;
         let paidNumeric = 0;
         let pendingNumeric = 0;
         let totalPipelineValueNumeric = 0;
@@ -1217,6 +1323,11 @@ const DisicurePartner = {
             if (l.leadStatus && l.leadStatus.includes('Converted')) {
                 businessGeneratedNumeric += val;
                 commissionEarnedNumeric += comm;
+                if (l.approvalStatus && (l.approvalStatus.includes('Approved') || l.approvalStatus.includes('Disbursed'))) {
+                    approvedEarningsNumeric += comm;
+                } else {
+                    pendingApprovalNumeric += comm;
+                }
                 paidNumeric += paid;
                 pendingNumeric += pending;
             }
@@ -1239,6 +1350,10 @@ const DisicurePartner = {
             businessGeneratedFormatted: `₹${businessGeneratedNumeric.toLocaleString('en-IN')}`,
             commissionEarnedNumeric,
             commissionEarnedFormatted: `₹${commissionEarnedNumeric.toLocaleString('en-IN')}`,
+            approvedEarningsNumeric,
+            approvedEarningsFormatted: `₹${approvedEarningsNumeric.toLocaleString('en-IN')}`,
+            pendingApprovalNumeric,
+            pendingApprovalFormatted: `₹${pendingApprovalNumeric.toLocaleString('en-IN')}`,
             paidNumeric,
             paidFormatted: `₹${paidNumeric.toLocaleString('en-IN')}`,
             pendingNumeric,
@@ -1246,6 +1361,156 @@ const DisicurePartner = {
             totalPipelineValueNumeric,
             totalPipelineValueFormatted: `₹${totalPipelineValueNumeric.toLocaleString('en-IN')}`
         };
+    },
+
+    // --- MODULE 12: COMMISSION CALCULATION & APPROVAL ENGINE ---
+    calculateCommissionValue: function(model, rateOrAmount, businessValue, customNote) {
+        const bVal = parseFloat(String(businessValue || '0').replace(/[^0-9.]/g, '')) || 0;
+        if (model === 'fixed') {
+            const amt = Math.round(parseFloat(String(rateOrAmount || '0').replace(/[^0-9.]/g, '')) || 0);
+            return {
+                model: 'fixed',
+                modelLabel: `Fixed Commission (₹${amt.toLocaleString('en-IN')})`,
+                rateLabel: `₹${amt.toLocaleString('en-IN')} Flat`,
+                amountNumeric: amt,
+                amountFormatted: `₹${amt.toLocaleString('en-IN')}`,
+                details: customNote || `Fixed ₹${amt.toLocaleString('en-IN')} deal commission`
+            };
+        } else if (model === 'custom') {
+            const amt = Math.round(parseFloat(String(rateOrAmount || '0').replace(/[^0-9.]/g, '')) || 0);
+            return {
+                model: 'custom',
+                modelLabel: 'Custom Earning',
+                rateLabel: 'Custom Earning',
+                amountNumeric: amt,
+                amountFormatted: `₹${amt.toLocaleString('en-IN')}`,
+                details: customNote || `Custom calculated earning of ₹${amt.toLocaleString('en-IN')}`
+            };
+        } else {
+            // default percentage
+            const pct = parseFloat(String(rateOrAmount || '10').replace(/[^0-9.]/g, '')) || 10;
+            const amt = Math.round((bVal * pct) / 100);
+            return {
+                model: 'percentage',
+                modelLabel: `Percentage Commission (${pct}%)`,
+                rateLabel: `${pct}%`,
+                amountNumeric: amt,
+                amountFormatted: `₹${amt.toLocaleString('en-IN')}`,
+                details: customNote || `${pct}% margin on ₹${bVal.toLocaleString('en-IN')} business value`
+            };
+        }
+    },
+
+    // Get all partner commissions across the platform for Admin Commission Desk
+    getAllCommissions: function() {
+        const leads = this.getAllLeads();
+        return leads.map(l => {
+            const partner = this.getPartnerById(l.partnerId) || {};
+            const isApproved = l.approvalStatus && (l.approvalStatus.includes('Approved') || l.approvalStatus.includes('Disbursed'));
+            return {
+                leadId: l.leadId,
+                partnerId: l.partnerId,
+                partnerName: l.partnerName || partner.companyName || 'Partner',
+                clientName: l.clientName,
+                leadStatus: l.leadStatus,
+                businessValue: l.businessValue || '₹0',
+                businessValueNumeric: l.businessValueNumeric || 0,
+                commissionModel: l.commissionModel || 'percentage',
+                commissionRate: l.commissionRate || '10%',
+                commissionNumeric: l.commissionNumeric || 0,
+                commission: l.commission || '₹0',
+                commissionDetails: l.commissionDetails || `${l.commissionRate || '10%'} Commercial Margin`,
+                approvalStatus: l.approvalStatus || (l.leadStatus && l.leadStatus.includes('Converted') ? '🟢 Approved' : '🟡 Pending Approval'),
+                approvedBy: l.approvedBy || (isApproved ? 'Mr. Nishant Chaturvedi (Super Admin)' : 'Awaiting Review'),
+                approvedDate: l.approvedDate || (isApproved ? (l.createdDate || '2026-09-26') : '-'),
+                approvalNotes: l.approvalNotes || '',
+                paymentStatus: l.paymentStatus || '⚪ In Pipeline',
+                paidNumeric: l.paidNumeric || 0,
+                paidFormatted: l.paidFormatted || '₹0',
+                pendingNumeric: l.pendingNumeric || 0,
+                pendingFormatted: l.pendingFormatted || '₹0',
+                paymentRef: l.paymentRef || 'N/A',
+                paymentDate: l.paymentDate || 'Pending Payout',
+                createdDate: l.createdDate || ''
+            };
+        });
+    },
+
+    // Fast 1-Click Approve Commission by Admin
+    approveCommission: function(leadId, approverName, notes) {
+        const lead = this.getLeadById(leadId);
+        if (!lead) return false;
+
+        const dateStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+        const adminName = approverName || 'Mr. Nishant Chaturvedi (Super Admin)';
+        const approvalNotes = notes || 'Manually approved by Admin upon contract verification.';
+
+        return this.updateLeadLifecycle(leadId, {
+            approvalStatus: '🟢 Approved',
+            approvedBy: adminName,
+            approvedDate: dateStr,
+            approvalNotes: approvalNotes,
+            newStageEvent: {
+                stage: 'Commission Approved',
+                detail: `${lead.commission || 'Commission'} approved by ${adminName}`
+            }
+        });
+    },
+
+    // Comprehensive update/reconfigure commission by Admin
+    updatePartnerCommission: function(leadId, data) {
+        const lead = this.getLeadById(leadId);
+        if (!lead) return false;
+
+        const calc = this.calculateCommissionValue(
+            data.commissionModel || lead.commissionModel || 'percentage',
+            data.rateOrAmount !== undefined ? data.rateOrAmount : (lead.commissionNumeric || 10),
+            data.businessValueNumeric !== undefined ? data.businessValueNumeric : lead.businessValueNumeric,
+            data.commissionDetails || lead.commissionDetails
+        );
+
+        const dateStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+        const updates = {
+            commissionModel: calc.model,
+            commissionRate: calc.rateLabel,
+            commissionNumeric: calc.amountNumeric,
+            commission: calc.amountFormatted,
+            commissionDetails: calc.details,
+            approvalStatus: data.approvalStatus || lead.approvalStatus || '🟢 Approved',
+            approvedBy: data.approvedBy || lead.approvedBy || 'Mr. Nishant Chaturvedi (Super Admin)',
+            approvedDate: data.approvalStatus && data.approvalStatus.includes('Approved') ? (lead.approvedDate && lead.approvedDate !== '-' ? lead.approvedDate : dateStr) : '-',
+            approvalNotes: data.approvalNotes !== undefined ? data.approvalNotes : (lead.approvalNotes || '')
+        };
+
+        if (data.businessValueNumeric !== undefined) {
+            updates.businessValueNumeric = parseFloat(data.businessValueNumeric) || 0;
+            updates.businessValue = `₹${updates.businessValueNumeric.toLocaleString('en-IN')}`;
+        }
+
+        if (data.paymentStatus !== undefined) {
+            updates.paymentStatus = data.paymentStatus;
+        }
+
+        if (data.paidNumeric !== undefined) {
+            updates.paidNumeric = parseFloat(data.paidNumeric) || 0;
+            updates.paidFormatted = `₹${updates.paidNumeric.toLocaleString('en-IN')}`;
+            updates.pendingNumeric = Math.max(0, updates.commissionNumeric - updates.paidNumeric);
+            updates.pendingFormatted = `₹${updates.pendingNumeric.toLocaleString('en-IN')}`;
+        }
+
+        if (data.paymentRef !== undefined) {
+            updates.paymentRef = data.paymentRef;
+        }
+        if (data.paymentDate !== undefined) {
+            updates.paymentDate = data.paymentDate;
+        }
+
+        updates.newStageEvent = {
+            stage: 'Commission Configured',
+            detail: `${calc.modelLabel} updated: ${calc.amountFormatted} (${updates.approvalStatus})`
+        };
+
+        return this.updateLeadLifecycle(leadId, updates);
     },
 
     updateLeadLifecycle: function(leadId, updates) {
@@ -1332,13 +1597,11 @@ const DisicurePartner = {
         const partner = this.getPartnerById(partnerId);
         const partnerName = partner ? partner.companyName : `Partner ${partnerId}`;
 
-        // Parse numerical estimated value and compute partner commission
+        // Parse numerical estimated value and compute partner commission based on configured model
         const cleanVal = parseFloat(String(leadData.estimatedValue || leadData.businessValueNumeric || '0').replace(/[^0-9.]/g, '')) || 0;
-        const ratePercent = partner && partner.commercialTerms && partner.commercialTerms.includes('%') 
-            ? (parseFloat(partner.commercialTerms.match(/(\d+)%/)?.[1]) || 10) 
-            : 10;
-        
-        const commVal = Math.round((cleanVal * ratePercent) / 100);
+        const model = (partner && partner.defaultCommissionModel) || 'percentage';
+        const rateOrAmt = (partner && partner.defaultCommissionRate !== undefined) ? partner.defaultCommissionRate : 10;
+        const calc = this.calculateCommissionValue(model, rateOrAmt, cleanVal, `${(partner && partner.defaultCommissionLabel) || 'Commercial Margin'}`);
 
         const newLead = {
             leadId: nextId,
@@ -1354,9 +1617,15 @@ const DisicurePartner = {
             leadStatus: leadData.leadStatus || '🟢 New',
             businessValueNumeric: cleanVal,
             businessValue: cleanVal > 0 ? `₹${cleanVal.toLocaleString('en-IN')}` : 'Under Evaluation',
-            commissionRate: `${ratePercent}%`,
-            commissionNumeric: commVal,
-            commission: commVal > 0 ? `₹${commVal.toLocaleString('en-IN')} (Potential)` : 'Calculating (10%)',
+            commissionModel: calc.model,
+            commissionRate: calc.rateLabel,
+            commissionNumeric: calc.amountNumeric,
+            commission: calc.amountNumeric > 0 ? `₹${calc.amountNumeric.toLocaleString('en-IN')} (Potential)` : 'Calculating',
+            commissionDetails: calc.details,
+            approvalStatus: '🟡 Pending Approval',
+            approvedBy: 'Awaiting Admin Sign-off',
+            approvedDate: '-',
+            approvalNotes: 'Lead newly registered; pending qualification.',
             paymentStatus: '⚪ Lead In Pipeline',
             paidNumeric: 0,
             paidFormatted: '₹0',
@@ -1550,7 +1819,11 @@ const DisicurePartner = {
             // Required Metric 4: Commission / Earnings
             commissionEarned: funnel.commissionEarnedFormatted,
             commissionEarnedNumeric: funnel.commissionEarnedNumeric,
-            // Required Metric 5: Payment Received
+            approvedEarnings: funnel.approvedEarningsFormatted,
+            approvedEarningsNumeric: funnel.approvedEarningsNumeric,
+            pendingApproval: funnel.pendingApprovalFormatted,
+            pendingApprovalNumeric: funnel.pendingApprovalNumeric,
+            // Required Metric 5: Payment Received / Disbursed
             paymentReceived: funnel.paidFormatted,
             paymentReceivedNumeric: funnel.paidNumeric,
             // Required Metric 6: Pending Payment

@@ -1128,6 +1128,7 @@ const DisicureMain = {
             this.renderAdminLeads();
         } else if (tabId === 'tab-partners') {
             this.renderAdminPartners();
+            this.renderAdminCommissionsTable();
         } else if (tabId === 'tab-financials') {
             this.renderPaymentsTable();
         } else if (tabId === 'tab-documents') {
@@ -3504,6 +3505,16 @@ const DisicureMain = {
         setElText('prt-fn-pending', kpi.pendingPayment);
         setElText('prt-funnel-pipeline-val', kpi.totalPipelineValue || '₹0');
 
+        // Update Module 12 Financials & Earnings KPIs
+        setElText('prt-fin-kpi-biz', kpi.businessGenerated);
+        setElText('prt-fin-kpi-approved', kpi.approvedEarnings || kpi.commissionEarned);
+        setElText('prt-fin-kpi-pending', kpi.pendingApproval || '₹0');
+        setElText('prt-fin-kpi-received', kpi.paymentReceived);
+        setElText('prt-fin-kpi-due', kpi.pendingPayment);
+
+        // Render Partner Earnings Ledger
+        this.renderPartnerEarningsLedger(session.partnerId);
+
         // Status Badge Helper
         const getStatusBadge = (statusStr) => {
             if (!statusStr) return `<span class="px-2 py-0.5 rounded text-xs font-bold bg-gray-100 text-gray-700">🟢 New</span>`;
@@ -4337,6 +4348,360 @@ const DisicureMain = {
             window.DisicurePartner.setSession(partner);
             window.location.hash = '#/partner/dashboard';
         }
+    },
+
+    // =========================================================================
+    // --- MODULE 12: PARTNER COMMISSION & EARNINGS MANAGEMENT CONTROLLER ---
+    // =========================================================================
+    admCommState: {
+        searchQuery: '',
+        statusFilter: 'all'
+    },
+
+    currentCommLead: null,
+
+    renderAdminCommissionsTable: function() {
+        if (!window.DisicurePartner) return;
+        const commissions = window.DisicurePartner.getAllCommissions();
+
+        let totalAccrued = 0;
+        let approvedAccrued = 0;
+        let pendingAccrued = 0;
+        let disbursedAccrued = 0;
+
+        commissions.forEach(c => {
+            const amt = parseFloat(c.commissionNumeric) || 0;
+            totalAccrued += amt;
+            if (c.approvalStatus && (c.approvalStatus.includes('Approved') || c.approvalStatus.includes('Disbursed'))) {
+                approvedAccrued += amt;
+            } else if (c.approvalStatus && c.approvalStatus.includes('Pending')) {
+                pendingAccrued += amt;
+            }
+            if (c.paymentStatus && c.paymentStatus.includes('Paid')) {
+                disbursedAccrued += (parseFloat(c.paidNumeric) || amt);
+            } else if (c.paidNumeric) {
+                disbursedAccrued += parseFloat(c.paidNumeric) || 0;
+            }
+        });
+
+        // Update KPI summary cards
+        const setEl = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = val;
+        };
+        setEl('adm-comm-kpi-total', `₹${totalAccrued.toLocaleString('en-IN')}`);
+        setEl('adm-comm-kpi-approved', `₹${approvedAccrued.toLocaleString('en-IN')}`);
+        setEl('adm-comm-kpi-pending', `₹${pendingAccrued.toLocaleString('en-IN')}`);
+        setEl('adm-comm-kpi-disbursed', `₹${disbursedAccrued.toLocaleString('en-IN')}`);
+
+        // Filter Commission Records
+        const q = (this.admCommState.searchQuery || '').toLowerCase();
+        const stat = this.admCommState.statusFilter;
+
+        const filtered = commissions.filter(c => {
+            const matchesQ = !q || 
+                (c.leadId && c.leadId.toLowerCase().includes(q)) ||
+                (c.partnerName && c.partnerName.toLowerCase().includes(q)) ||
+                (c.clientName && c.clientName.toLowerCase().includes(q)) ||
+                (c.commissionModel && c.commissionModel.toLowerCase().includes(q));
+
+            const matchesStat = stat === 'all' || (c.approvalStatus && c.approvalStatus.includes(stat));
+
+            return matchesQ && matchesStat;
+        });
+
+        const tbody = document.getElementById('adm-commission-tbody');
+        if (!tbody) return;
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-gray-400">No partner commission records found matching your filters.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(c => {
+            const modelBadge = c.commissionModel === 'fixed' 
+                ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">🏷️ Fixed Commission</span>'
+                : c.commissionModel === 'custom'
+                ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200">⚙️ Custom Earning</span>'
+                : '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">📊 Percentage (%)</span>';
+
+            const approvalBadge = c.approvalStatus && (c.approvalStatus.includes('Approved') || c.approvalStatus.includes('Disbursed'))
+                ? `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">🟢 Approved</span>`
+                : c.approvalStatus && c.approvalStatus.includes('Hold')
+                ? `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">🔴 On Hold</span>`
+                : `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">🟡 Pending Review</span>`;
+
+            const paymentBadge = c.paymentStatus && c.paymentStatus.includes('Paid')
+                ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700">🟢 Paid</span>`
+                : c.paymentStatus && c.paymentStatus.includes('Partial')
+                ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700">🟡 Partial</span>`
+                : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-gray-600">🔴 Unpaid</span>`;
+
+            return `
+            <tr class="border-b border-gray-100 hover:bg-slate-50 text-xs">
+                <td class="p-3.5 font-mono font-bold text-blue-600">${c.leadId}</td>
+                <td class="p-3.5 font-bold text-navy-950">${c.partnerName}</td>
+                <td class="p-3.5">
+                    <div class="font-bold text-gray-800">${c.clientName}</div>
+                    <span class="text-[10px] text-gray-400 font-normal truncate block max-w-[150px]">${c.leadStatus}</span>
+                </td>
+                <td class="p-3.5 font-extrabold text-navy-950">${c.businessValue}</td>
+                <td class="p-3.5 whitespace-nowrap">
+                    ${modelBadge}
+                    <span class="text-[10px] text-gray-500 block mt-0.5 font-medium">${c.commissionDetails}</span>
+                </td>
+                <td class="p-3.5 font-extrabold text-emerald-700">${c.commission}</td>
+                <td class="p-3.5 whitespace-nowrap">
+                    ${approvalBadge}
+                    <span class="text-[10px] text-gray-400 block mt-0.5">${c.approvedBy ? c.approvedBy.split(' ')[0] : 'Admin'}</span>
+                </td>
+                <td class="p-3.5 whitespace-nowrap">
+                    ${paymentBadge}
+                    ${c.paidFormatted && c.paidFormatted !== '₹0' ? `<span class="text-[10px] text-emerald-700 font-bold block mt-0.5">${c.paidFormatted} cleared</span>` : ''}
+                </td>
+                <td class="p-3.5 text-right whitespace-nowrap">
+                    <div class="flex items-center justify-end gap-1.5">
+                        ${!c.approvalStatus || c.approvalStatus.includes('Pending') ? `
+                            <button onclick="window.DisicureMain.quickApproveCommission('${c.leadId}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-bold shadow-sm transition-colors" title="1-Click Approve Commission">
+                                ✓ Approve
+                            </button>
+                        ` : ''}
+                        <button onclick="window.DisicureMain.openCommissionModal('${c.leadId}')" class="px-2.5 py-1 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded text-[11px] font-bold transition-colors shadow-sm" title="Configure Commission Model, Rate, and Payment">
+                            ✏️ Configure
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            `;
+        }).join('');
+    },
+
+    filterCommissionTable: function() {
+        const qInput = document.getElementById('adm-comm-search-input');
+        const sSelect = document.getElementById('adm-comm-status-select');
+        this.admCommState.searchQuery = qInput ? qInput.value.trim() : '';
+        this.admCommState.statusFilter = sSelect ? sSelect.value : 'all';
+        this.renderAdminCommissionsTable();
+    },
+
+    openCommissionModal: function(leadId) {
+        if (!window.DisicurePartner) return;
+        const lead = window.DisicurePartner.getLeadById(leadId);
+        if (!lead) return;
+
+        this.currentCommLead = lead;
+
+        const setVal = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.value = val;
+        };
+        const setText = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = val;
+        };
+
+        setVal('adm-comm-leadid', lead.leadId);
+        setText('adm-comm-disp-leadid', lead.leadId);
+        setText('adm-comm-disp-partner', lead.partnerName || lead.partnerId);
+        setText('adm-comm-disp-client', lead.clientName);
+        setText('adm-comm-disp-bizval', lead.businessValue || `₹${(lead.businessValueNumeric || 0).toLocaleString('en-IN')}`);
+
+        // Model selector radio check
+        const model = lead.commissionModel || 'percentage';
+        const radios = document.querySelectorAll('input[name="commModel"]');
+        radios.forEach(r => {
+            r.checked = (r.value === model);
+        });
+        this.onCommissionModelChange(model);
+
+        // Inputs populate
+        if (model === 'fixed') {
+            setVal('adm-comm-fixed-input', lead.commissionNumeric || 35000);
+        } else if (model === 'custom') {
+            setVal('adm-comm-custom-amt-input', lead.commissionNumeric || 32000);
+            setVal('adm-comm-custom-formula-input', lead.commissionDetails || 'Base + Volume Bonus');
+        } else {
+            // percentage
+            const pctVal = parseFloat(String(lead.commissionRate || '10').replace(/[^0-9.]/g, '')) || 10;
+            setVal('adm-comm-pct-input', pctVal);
+        }
+
+        setVal('adm-comm-approval-status', lead.approvalStatus || '🟢 Approved');
+        setVal('adm-comm-approver-name', lead.approvedBy || 'Mr. Nishant Chaturvedi (Super Admin)');
+        setVal('adm-comm-payment-status', lead.paymentStatus && lead.paymentStatus.includes('Paid') ? '🟢 Paid' : lead.paymentStatus && lead.paymentStatus.includes('Partial') ? '🟡 Partial' : '🔴 Pending');
+        setVal('adm-comm-paid-amt', lead.paidNumeric || 0);
+        setVal('adm-comm-utr', lead.paymentRef && !lead.paymentRef.includes('N/A') ? lead.paymentRef : '');
+        setVal('adm-comm-notes', lead.approvalNotes || '');
+
+        this.calculateCommissionPreview();
+
+        const modal = document.getElementById('adm-commission-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+    },
+
+    closeCommissionModal: function() {
+        const modal = document.getElementById('adm-commission-modal');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+        this.currentCommLead = null;
+    },
+
+    onCommissionModelChange: function(model) {
+        const pctWrap = document.getElementById('comm-input-pct-wrapper');
+        const fixWrap = document.getElementById('comm-input-fixed-wrapper');
+        const cstWrap = document.getElementById('comm-input-custom-wrapper');
+
+        if (pctWrap) pctWrap.classList.toggle('hidden', model !== 'percentage');
+        if (fixWrap) fixWrap.classList.toggle('hidden', model !== 'fixed');
+        if (cstWrap) cstWrap.classList.toggle('hidden', model !== 'custom');
+
+        this.calculateCommissionPreview();
+    },
+
+    calculateCommissionPreview: function() {
+        if (!this.currentCommLead || !window.DisicurePartner) return;
+        const checkedRadio = document.querySelector('input[name="commModel"]:checked');
+        const model = checkedRadio ? checkedRadio.value : 'percentage';
+        const bVal = this.currentCommLead.businessValueNumeric || 0;
+
+        let rateOrAmt = 10;
+        let customNote = '';
+
+        if (model === 'fixed') {
+            rateOrAmt = document.getElementById('adm-comm-fixed-input')?.value || 0;
+            customNote = `Fixed Flat Commission ₹${(parseFloat(rateOrAmt) || 0).toLocaleString('en-IN')}`;
+        } else if (model === 'custom') {
+            rateOrAmt = document.getElementById('adm-comm-custom-amt-input')?.value || 0;
+            customNote = document.getElementById('adm-comm-custom-formula-input')?.value || 'Custom calculated earning';
+        } else {
+            rateOrAmt = document.getElementById('adm-comm-pct-input')?.value || 10;
+            customNote = `${rateOrAmt}% Margin on ₹${bVal.toLocaleString('en-IN')} Contract`;
+        }
+
+        const calc = window.DisicurePartner.calculateCommissionValue(model, rateOrAmt, bVal, customNote);
+
+        const prevEl = document.getElementById('adm-comm-calc-preview');
+        const detEl = document.getElementById('adm-comm-calc-details');
+        if (prevEl) prevEl.innerText = calc.amountFormatted;
+        if (detEl) detEl.innerText = calc.details;
+
+        return calc;
+    },
+
+    saveAdminCommission: function(event) {
+        event.preventDefault();
+        if (!this.currentCommLead || !window.DisicurePartner) return;
+
+        const checkedRadio = document.querySelector('input[name="commModel"]:checked');
+        const model = checkedRadio ? checkedRadio.value : 'percentage';
+        const leadId = document.getElementById('adm-comm-leadid')?.value || this.currentCommLead.leadId;
+
+        let rateOrAmt = 10;
+        let details = '';
+
+        if (model === 'fixed') {
+            rateOrAmt = document.getElementById('adm-comm-fixed-input')?.value || 0;
+            details = `Fixed Flat Commission ₹${(parseFloat(rateOrAmt) || 0).toLocaleString('en-IN')}`;
+        } else if (model === 'custom') {
+            rateOrAmt = document.getElementById('adm-comm-custom-amt-input')?.value || 0;
+            details = document.getElementById('adm-comm-custom-formula-input')?.value || 'Custom calculated earning';
+        } else {
+            rateOrAmt = document.getElementById('adm-comm-pct-input')?.value || 10;
+            details = `${rateOrAmt}% Margin on Deal`;
+        }
+
+        const approvalStatus = document.getElementById('adm-comm-approval-status')?.value || '🟢 Approved';
+        const approvedBy = document.getElementById('adm-comm-approver-name')?.value || 'Mr. Nishant Chaturvedi (Super Admin)';
+        const paymentStatus = document.getElementById('adm-comm-payment-status')?.value || '🟢 Paid';
+        const paidNumeric = parseFloat(document.getElementById('adm-comm-paid-amt')?.value || 0);
+        const paymentRef = document.getElementById('adm-comm-utr')?.value || '';
+        const approvalNotes = document.getElementById('adm-comm-notes')?.value || '';
+
+        window.DisicurePartner.updatePartnerCommission(leadId, {
+            commissionModel: model,
+            rateOrAmount: rateOrAmt,
+            commissionDetails: details,
+            approvalStatus: approvalStatus,
+            approvedBy: approvedBy,
+            paymentStatus: paymentStatus,
+            paidNumeric: paidNumeric,
+            paymentRef: paymentRef,
+            approvalNotes: approvalNotes
+        });
+
+        this.closeCommissionModal();
+        this.renderAdminCommissionsTable();
+        this.renderAdminPartners();
+    },
+
+    quickApproveCommission: function(leadId) {
+        if (!window.DisicurePartner) return;
+        window.DisicurePartner.approveCommission(leadId, 'Mr. Nishant Chaturvedi (Super Admin)', 'Fast 1-Click Approved by Admin');
+        this.renderAdminCommissionsTable();
+        this.renderAdminPartners();
+    },
+
+    // Render Partner Portal Earnings Ledger (Sub-Tab 4)
+    renderPartnerEarningsLedger: function(partnerId) {
+        if (!window.DisicurePartner) return;
+        const leads = window.DisicurePartner.getPartnerLeads(partnerId);
+        const tbody = document.getElementById('prt-earnings-tbody');
+        if (!tbody) return;
+
+        if (leads.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400">No earnings or commission deals recorded yet.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = leads.map(l => {
+            const isApproved = l.approvalStatus && (l.approvalStatus.includes('Approved') || l.approvalStatus.includes('Disbursed'));
+            const isPaid = l.paymentStatus && l.paymentStatus.includes('Paid');
+
+            const modelBadge = l.commissionModel === 'fixed'
+                ? '<span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">🏷️ Fixed (Flat)</span>'
+                : l.commissionModel === 'custom'
+                ? '<span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200">⚙️ Custom Earning</span>'
+                : '<span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">📊 Percentage (%)</span>';
+
+            const approvalHtml = isApproved
+                ? `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">🟢 Approved</span><span class="block text-[9px] text-gray-400 mt-0.5">By ${l.approvedBy ? l.approvedBy.split(' ')[0] : 'Admin'}</span>`
+                : `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">🟡 Under Review</span><span class="block text-[9px] text-gray-400 mt-0.5">Awaiting Sign-off</span>`;
+
+            const paymentHtml = isPaid
+                ? `<span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">🟢 Paid</span><span class="block text-[9px] text-emerald-600 font-mono mt-0.5">${l.paymentRef || 'UTR Cleared'}</span>`
+                : l.paymentStatus && l.paymentStatus.includes('Partial')
+                ? `<span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">🟡 Partial</span><span class="block text-[9px] text-gray-400 mt-0.5">Paid: ${l.paidFormatted}</span>`
+                : `<span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">🔴 Pending</span><span class="block text-[9px] text-rose-600 mt-0.5">Due: ${l.commission || '₹0'}</span>`;
+
+            return `
+            <tr class="border-b border-gray-100 hover:bg-slate-50 text-xs">
+                <td class="p-3.5">
+                    <span class="font-extrabold text-navy-950 block">${l.clientName}</span>
+                    <span class="text-[10px] text-gray-400 font-mono">${l.leadId} • ${l.city}</span>
+                </td>
+                <td class="p-3.5 font-bold text-navy-950">${l.businessValue || '₹0'}</td>
+                <td class="p-3.5 whitespace-nowrap">
+                    ${modelBadge}
+                    <span class="text-[10px] text-gray-500 block mt-0.5">${l.commissionDetails || (l.commissionRate + ' Margin')}</span>
+                </td>
+                <td class="p-3.5 font-extrabold text-emerald-700 text-sm">${l.commission || '₹0'}</td>
+                <td class="p-3.5 whitespace-nowrap">${approvalHtml}</td>
+                <td class="p-3.5 whitespace-nowrap">${paymentHtml}</td>
+                <td class="p-3.5 text-right whitespace-nowrap">
+                    <button onclick="window.DisicureMain.openPartnerLeadLifecycleModal('${l.leadId}')" class="px-2.5 py-1 bg-slate-100 hover:bg-blue-600 hover:text-white text-gray-700 rounded text-[11px] font-bold transition-colors">
+                        View Chain
+                    </button>
+                </td>
+            </tr>
+            `;
+        }).join('');
     }
 };
 

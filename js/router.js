@@ -2284,6 +2284,91 @@ const DisicureRouter = {
                             </div>
                         </div>
 
+                        <!-- ========================================================================= -->
+                        <!-- MODULE 12: PARTNER COMMISSION & EARNINGS APPROVAL DESK                  -->
+                        <!-- ========================================================================= -->
+                        <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-5 mt-8">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+                                <div>
+                                    <h3 class="text-base font-extrabold text-navy-950 flex items-center gap-2">
+                                        <span>💰 Partner Commission & Earnings Approval Desk</span>
+                                        <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">Flexible Rates</span>
+                                    </h3>
+                                    <p class="text-xs text-gray-500">Configure Fixed commission, Percentage (%) margin, or Custom earnings per partner/lead. Manually update and approve payouts.</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-bold text-gray-500 bg-slate-50 border border-gray-200 px-3 py-1.5 rounded-lg">
+                                        ⚡ Live Realization Ledger
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- 4 Commission Summary Cards -->
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div class="p-4 bg-slate-50 rounded-xl border border-gray-200">
+                                    <span class="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider block">Total Commission Accrued</span>
+                                    <div class="text-xl font-extrabold text-navy-950 mt-1" id="adm-comm-kpi-total">₹0</div>
+                                    <p class="text-[10px] text-gray-400 mt-0.5">Across all partner deals</p>
+                                </div>
+                                <div class="p-4 bg-emerald-50/50 rounded-xl border border-emerald-200">
+                                    <span class="text-[10px] font-extrabold text-emerald-800 uppercase tracking-wider block">🟢 Approved Earnings</span>
+                                    <div class="text-xl font-extrabold text-emerald-700 mt-1" id="adm-comm-kpi-approved">₹0</div>
+                                    <p class="text-[10px] text-emerald-600 mt-0.5">Verified & signed off by Admin</p>
+                                </div>
+                                <div class="p-4 bg-amber-50/50 rounded-xl border border-amber-200">
+                                    <span class="text-[10px] font-extrabold text-amber-800 uppercase tracking-wider block">🟡 Pending Approval</span>
+                                    <div class="text-xl font-extrabold text-amber-700 mt-1" id="adm-comm-kpi-pending">₹0</div>
+                                    <p class="text-[10px] text-amber-600 mt-0.5">Awaiting Admin validation</p>
+                                </div>
+                                <div class="p-4 bg-purple-50/50 rounded-xl border border-purple-200">
+                                    <span class="text-[10px] font-extrabold text-purple-800 uppercase tracking-wider block">💳 Disbursed / Paid</span>
+                                    <div class="text-xl font-extrabold text-purple-700 mt-1" id="adm-comm-kpi-disbursed">₹0</div>
+                                    <p class="text-[10px] text-purple-600 mt-0.5">Bank RTGS / IMPS cleared</p>
+                                </div>
+                            </div>
+
+                            <!-- Commission Filter & Search Toolbar -->
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div class="sm:col-span-2 relative">
+                                    <input type="text" id="adm-comm-search-input" oninput="window.DisicureMain.filterCommissionTable()" placeholder="Search commission by Partner, Client, Lead ID, or Model..." class="w-full bg-slate-50 border border-gray-200 rounded-lg p-2.5 pl-10 text-xs font-medium focus:outline-none focus:border-blue-500 shadow-sm">
+                                    <span class="absolute left-3.5 top-3 text-gray-400">
+                                        ${DisicureRouter.icons.search}
+                                    </span>
+                                </div>
+                                <div>
+                                    <select id="adm-comm-status-select" onchange="window.DisicureMain.filterCommissionTable()" class="w-full bg-slate-50 border border-gray-200 rounded-lg p-2.5 text-xs font-bold text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
+                                        <option value="all">All Approval Statuses</option>
+                                        <option value="Approved">🟢 Approved</option>
+                                        <option value="Pending">🟡 Pending Approval</option>
+                                        <option value="Disbursed">💳 Disbursed / Paid</option>
+                                        <option value="Hold">🔴 On Hold</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Commission Table -->
+                            <div class="overflow-x-auto rounded-xl border border-gray-200">
+                                <table class="w-full text-left border-collapse text-xs">
+                                    <thead>
+                                        <tr class="bg-slate-100/80 border-b border-gray-200 text-[11px] font-extrabold text-gray-600 uppercase tracking-wider">
+                                            <th class="p-3.5">Lead / Deal ID</th>
+                                            <th class="p-3.5">Partner Name & Territory</th>
+                                            <th class="p-3.5">Client & Requirement</th>
+                                            <th class="p-3.5">Business Value</th>
+                                            <th class="p-3.5">Commission Model</th>
+                                            <th class="p-3.5">Earning Amount</th>
+                                            <th class="p-3.5">Admin Approval</th>
+                                            <th class="p-3.5">Payment Status</th>
+                                            <th class="p-3.5 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adm-commission-tbody">
+                                        <!-- Populated dynamically via window.DisicureMain.renderAdminCommissionsTable() -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
                     </div>
                 </section>
             </div>
@@ -3547,7 +3632,173 @@ const DisicureRouter = {
                                 Cancel
                             </button>
                             <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow">
-                                Save Partner Changes
+            <!-- ========================================================================= -->
+            <!-- MODULE 12: ADMIN COMMISSION & EARNINGS CONFIGURATION / APPROVAL MODAL     -->
+            <!-- ========================================================================= -->
+            <div id="adm-commission-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <div class="absolute inset-0 bg-navy-950/70 backdrop-blur-sm" onclick="window.DisicureMain.closeCommissionModal()"></div>
+                <div class="relative bg-white rounded-2xl p-6 md:p-8 max-w-2xl w-full mx-4 shadow-2xl z-10 max-h-[92vh] overflow-y-auto transform transition-all">
+                    <button class="absolute top-4 right-4 text-gray-400 hover:text-navy-950 focus:outline-none" onclick="window.DisicureMain.closeCommissionModal()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                    
+                    <div class="flex items-center gap-3 border-b border-gray-100 pb-3 mb-5">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-extrabold text-lg">
+                            💰
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-extrabold text-navy-950">Partner Commission & Earning Configuration</h3>
+                            <p class="text-xs text-gray-500">Define Fixed, Percentage (%), or Custom earnings and approve commercial payouts.</p>
+                        </div>
+                    </div>
+
+                    <form id="adm-commission-form" onsubmit="window.DisicureMain.saveAdminCommission(event)" class="space-y-4">
+                        <input type="hidden" id="adm-comm-leadid" name="leadId">
+
+                        <!-- Deal Info Summary Card -->
+                        <div class="p-3.5 bg-slate-50 rounded-xl border border-gray-200 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                            <div>
+                                <span class="text-[10px] text-gray-400 font-bold uppercase block">Deal / Lead ID</span>
+                                <span class="font-extrabold text-blue-600" id="adm-comm-disp-leadid">PLEAD-2026-801</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-gray-400 font-bold uppercase block">Partner Name</span>
+                                <span class="font-bold text-navy-950 truncate block" id="adm-comm-disp-partner">Medilink</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-gray-400 font-bold uppercase block">Client Name</span>
+                                <span class="font-bold text-gray-700 truncate block" id="adm-comm-disp-client">Shri Ram Chemist</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-gray-400 font-bold uppercase block">Business Value</span>
+                                <span class="font-extrabold text-emerald-700 block" id="adm-comm-disp-bizval">₹5,00,000</span>
+                            </div>
+                        </div>
+
+                        <!-- 1. COMMISSION MODEL SELECTOR (Fixed / Percentage / Custom) -->
+                        <div class="space-y-2">
+                            <label class="block text-[11px] font-extrabold text-gray-800 uppercase tracking-wider">
+                                1. Commission Model Selection *
+                            </label>
+                            <div class="grid grid-cols-3 gap-2.5">
+                                <label class="flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer transition-all bg-white hover:border-blue-500 text-center has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50/50 has-[:checked]:ring-1 has-[:checked]:ring-blue-600">
+                                    <input type="radio" name="commModel" value="percentage" checked onchange="window.DisicureMain.onCommissionModelChange('percentage')" class="sr-only">
+                                    <span class="text-base mb-1">📊</span>
+                                    <span class="text-xs font-extrabold text-navy-950">Percentage (%)</span>
+                                    <span class="text-[10px] text-gray-400 mt-0.5">% of Deal Value</span>
+                                </label>
+
+                                <label class="flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer transition-all bg-white hover:border-blue-500 text-center has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50/50 has-[:checked]:ring-1 has-[:checked]:ring-blue-600">
+                                    <input type="radio" name="commModel" value="fixed" onchange="window.DisicureMain.onCommissionModelChange('fixed')" class="sr-only">
+                                    <span class="text-base mb-1">🏷️</span>
+                                    <span class="text-xs font-extrabold text-navy-950">Fixed Commission</span>
+                                    <span class="text-[10px] text-gray-400 mt-0.5">Flat ₹ per deal</span>
+                                </label>
+
+                                <label class="flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer transition-all bg-white hover:border-blue-500 text-center has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50/50 has-[:checked]:ring-1 has-[:checked]:ring-blue-600">
+                                    <input type="radio" name="commModel" value="custom" onchange="window.DisicureMain.onCommissionModelChange('custom')" class="sr-only">
+                                    <span class="text-base mb-1">⚙️</span>
+                                    <span class="text-xs font-extrabold text-navy-950">Custom Earning</span>
+                                    <span class="text-[10px] text-gray-400 mt-0.5">Slabs / Milestone</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 2. DYNAMIC INPUTS ACCORDING TO MODEL -->
+                        <div class="bg-blue-50/30 border border-blue-100 rounded-xl p-4 space-y-3">
+                            <div id="comm-input-pct-wrapper" class="space-y-1">
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider">Commission Percentage Rate (%) *</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" step="0.5" id="adm-comm-pct-input" oninput="window.DisicureMain.calculateCommissionPreview()" placeholder="e.g. 10" value="10" class="w-32 bg-white border border-gray-200 rounded p-2 text-xs font-bold focus:border-blue-500">
+                                    <span class="text-xs font-bold text-gray-500">% of Business Value</span>
+                                </div>
+                            </div>
+
+                            <div id="comm-input-fixed-wrapper" class="space-y-1 hidden">
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider">Fixed Commission Amount (₹ Flat) *</label>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-bold text-gray-500">₹</span>
+                                    <input type="number" id="adm-comm-fixed-input" oninput="window.DisicureMain.calculateCommissionPreview()" placeholder="e.g. 35000" class="w-48 bg-white border border-gray-200 rounded p-2 text-xs font-bold focus:border-blue-500">
+                                    <span class="text-[11px] text-gray-500">Flat payout per converted contract</span>
+                                </div>
+                            </div>
+
+                            <div id="comm-input-custom-wrapper" class="space-y-2 hidden">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Custom Calculated Amount (₹) *</label>
+                                        <input type="number" id="adm-comm-custom-amt-input" oninput="window.DisicureMain.calculateCommissionPreview()" placeholder="e.g. 32000" class="w-full bg-white border border-gray-200 rounded p-2 text-xs font-bold focus:border-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Calculation Formula / Rationale</label>
+                                        <input type="text" id="adm-comm-custom-formula-input" oninput="window.DisicureMain.calculateCommissionPreview()" placeholder="e.g. Base ₹20,000 + 3.75% Performance" class="w-full bg-white border border-gray-200 rounded p-2 text-xs focus:border-blue-500">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Live Calculation Preview Output Box -->
+                            <div class="p-3 bg-emerald-50 rounded-lg border border-emerald-200 flex items-center justify-between">
+                                <div>
+                                    <span class="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">Calculated Partner Earning</span>
+                                    <span class="text-xs text-emerald-700 font-medium" id="adm-comm-calc-details">10% of ₹5,00,000 Deal Value</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-lg font-extrabold text-emerald-800 block" id="adm-comm-calc-preview">₹50,000</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. ADMIN APPROVAL & AUDIT CONTROLS -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Admin Approval Status *</label>
+                                <select id="adm-comm-approval-status" name="approvalStatus" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold focus:border-blue-500">
+                                    <option value="🟢 Approved">🟢 Approved (Ready for Disbursement)</option>
+                                    <option value="🟡 Pending Approval">🟡 Pending Approval (Under Verification)</option>
+                                    <option value="🔴 Rejected / On Hold">🔴 Rejected / On Hold</option>
+                                    <option value="💳 Disbursed">💳 Disbursed (Paid to Partner)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Approving Authority</label>
+                                <input type="text" id="adm-comm-approver-name" name="approvedBy" value="Mr. Nishant Chaturvedi (Super Admin)" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500 font-medium">
+                            </div>
+                        </div>
+
+                        <!-- 4. PAYMENT RECONCILIATION CONTROLS -->
+                        <div class="p-3.5 bg-slate-50 rounded-xl border border-gray-200 space-y-3">
+                            <span class="text-[10px] font-extrabold text-navy-950 uppercase tracking-wider block">💳 Payment & Disbursement Settlement</span>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Payment Status</label>
+                                    <select id="adm-comm-payment-status" name="paymentStatus" class="w-full bg-white border border-gray-200 rounded p-2 text-xs font-bold focus:border-blue-500">
+                                        <option value="🟢 Paid">🟢 Paid</option>
+                                        <option value="🟡 Partial">🟡 Partial</option>
+                                        <option value="🔴 Pending">🔴 Pending</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Amount Paid (₹)</label>
+                                    <input type="number" id="adm-comm-paid-amt" name="paidNumeric" placeholder="0" class="w-full bg-white border border-gray-200 rounded p-2 text-xs font-bold focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Payment Ref / UTR</label>
+                                    <input type="text" id="adm-comm-utr" name="paymentRef" placeholder="UTR-HDFC-XXXX" class="w-full bg-white border border-gray-200 rounded p-2 text-xs font-mono focus:border-blue-500">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Admin Approval Notes & Remarks</label>
+                            <textarea id="adm-comm-notes" name="approvalNotes" rows="2" placeholder="e.g. Approved against verified purchase invoice #INV-88." class="w-full bg-slate-50 border border-gray-200 rounded p-2 text-xs focus:border-blue-500 font-normal"></textarea>
+                        </div>
+
+                        <div class="pt-3 flex justify-end gap-3 border-t border-gray-100">
+                            <button type="button" onclick="window.DisicureMain.closeCommissionModal()" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded">
+                                Cancel
+                            </button>
+                            <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded shadow flex items-center gap-1.5">
+                                <span>Save & Approve Commission</span>
                             </button>
                         </div>
                     </form>
@@ -4131,8 +4382,11 @@ const DisicureRouter = {
                     <div id="prt-tab-invoices" class="prt-tab-content hidden space-y-6">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-4">
                             <div>
-                                <h3 class="text-base font-extrabold text-navy-950">💵 Earnings, Invoices & Settlement Ledger</h3>
-                                <p class="text-xs text-gray-500">Review commercial batch billings, payment receipts, and submit bank payment UTR slips.</p>
+                                <h3 class="text-base font-extrabold text-navy-950 flex items-center gap-2">
+                                    <span>💵 Approved Earnings & Commission Settlement Ledger</span>
+                                    <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">Live Payout Status</span>
+                                </h3>
+                                <p class="text-xs text-gray-500">Track approved commission payouts, pending reviews, bank RTGS settlements, and commercial billing invoices.</p>
                             </div>
                             <button onclick="window.DisicureMain.openPartnerPaymentModal()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow transition-colors flex items-center gap-1.5 self-start sm:self-auto">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -4140,30 +4394,77 @@ const DisicureRouter = {
                             </button>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                        <!-- 5 KPI Summary Cards for Partner -->
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
                             <div class="p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
                                 <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">💰 Business Generated</span>
-                                <span class="text-xl font-extrabold text-navy-950">${kpi.businessGenerated}</span>
+                                <span class="text-lg font-extrabold text-navy-950 block mt-1" id="prt-fin-kpi-biz">${kpi.businessGenerated}</span>
+                                <span class="text-[10px] text-gray-500">Total client revenue</span>
                             </div>
-                            <div class="p-4 bg-purple-50 rounded-xl border border-purple-100 shadow-sm">
-                                <span class="text-[10px] font-bold text-purple-800 uppercase tracking-wider block">💵 Commission Earned</span>
-                                <span class="text-xl font-extrabold text-purple-700">${kpi.commissionEarned}</span>
+                            <div class="p-4 bg-emerald-50/60 rounded-xl border border-emerald-200 shadow-sm">
+                                <span class="text-[10px] font-extrabold text-emerald-800 uppercase tracking-wider block">🟢 Approved Earnings</span>
+                                <span class="text-lg font-extrabold text-emerald-700 block mt-1" id="prt-fin-kpi-approved">${kpi.approvedEarnings || kpi.commissionEarned}</span>
+                                <span class="text-[10px] text-emerald-600">Admin verified & authorized</span>
                             </div>
-                            <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-100 shadow-sm">
-                                <span class="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">💳 Payment Received</span>
-                                <span class="text-xl font-extrabold text-emerald-700">${kpi.paymentReceived}</span>
+                            <div class="p-4 bg-amber-50/60 rounded-xl border border-amber-200 shadow-sm">
+                                <span class="text-[10px] font-extrabold text-amber-800 uppercase tracking-wider block">🟡 Pending Approval</span>
+                                <span class="text-lg font-extrabold text-amber-700 block mt-1" id="prt-fin-kpi-pending">${kpi.pendingApproval || '₹0'}</span>
+                                <span class="text-[10px] text-amber-600">Under Admin review</span>
                             </div>
-                            <div class="p-4 bg-amber-50 rounded-xl border border-amber-100 shadow-sm">
-                                <span class="text-[10px] font-bold text-amber-800 uppercase tracking-wider block">⏳ Pending Payment</span>
-                                <span class="text-xl font-extrabold text-amber-700">${kpi.pendingPayment}</span>
+                            <div class="p-4 bg-purple-50/60 rounded-xl border border-purple-200 shadow-sm">
+                                <span class="text-[10px] font-extrabold text-purple-800 uppercase tracking-wider block">💳 Payment Received</span>
+                                <span class="text-lg font-extrabold text-purple-700 block mt-1" id="prt-fin-kpi-received">${kpi.paymentReceived}</span>
+                                <span class="text-[10px] text-purple-600">Cleared to bank account</span>
+                            </div>
+                            <div class="p-4 bg-rose-50/60 rounded-xl border border-rose-200 shadow-sm col-span-2 md:col-span-1">
+                                <span class="text-[10px] font-extrabold text-rose-800 uppercase tracking-wider block">⏳ Pending Due</span>
+                                <span class="text-lg font-extrabold text-rose-700 block mt-1" id="prt-fin-kpi-due">${kpi.pendingPayment}</span>
+                                <span class="text-[10px] text-rose-600">Remaining to be paid</span>
                             </div>
                         </div>
 
-                        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                            <div class="overflow-x-auto">
+                        <!-- 1. Approved Commission & Earnings Ledger Card -->
+                        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-4">
+                            <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                                <div>
+                                    <h4 class="text-sm font-extrabold text-navy-950">📊 Partner Earnings & Commission Breakdown</h4>
+                                    <p class="text-xs text-gray-500">Itemized commission rates (Fixed / % / Custom), approval status, and payout reconciliation.</p>
+                                </div>
+                                <span class="text-[11px] font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100">
+                                    Terms: ${kpi.commercialTerms || 'Standard Terms'}
+                                </span>
+                            </div>
+
+                            <div class="overflow-x-auto rounded-xl border border-gray-100">
                                 <table class="w-full text-left text-xs border-collapse">
                                     <thead>
-                                        <tr class="bg-slate-100 text-gray-600 text-[11px] font-extrabold uppercase">
+                                        <tr class="bg-slate-100/90 text-gray-600 text-[11px] font-extrabold uppercase">
+                                            <th class="p-3.5">Lead / Client Deal</th>
+                                            <th class="p-3.5">Business Value</th>
+                                            <th class="p-3.5">Commission Structure</th>
+                                            <th class="p-3.5">Earning Amount</th>
+                                            <th class="p-3.5">Admin Approval Status</th>
+                                            <th class="p-3.5">Payment Status</th>
+                                            <th class="p-3.5 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="prt-earnings-tbody">
+                                        <!-- Populated dynamically via window.DisicureMain.renderPartnerEarningsLedger() -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 2. Commercial Batch Invoices Table Card -->
+                        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-4">
+                            <div class="border-b border-gray-100 pb-3">
+                                <h4 class="text-sm font-extrabold text-navy-950">🧾 Commercial Billing Invoices & Tax Receipts</h4>
+                                <p class="text-xs text-gray-500">Official GST tax invoices issued for finished medicine batches.</p>
+                            </div>
+                            <div class="overflow-x-auto rounded-xl border border-gray-100">
+                                <table class="w-full text-left text-xs border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-100/90 text-gray-600 text-[11px] font-extrabold uppercase">
                                             <th class="p-3.5">Invoice Reference</th>
                                             <th class="p-3.5">Batch Reference</th>
                                             <th class="p-3.5">Invoice Date</th>
