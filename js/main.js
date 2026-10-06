@@ -919,7 +919,7 @@ const DisicureMain = {
         });
     },
 
-    // --- 11. LEAD MANAGEMENT SYSTEM (LMS) ADMIN PANEL CONTROLLER ---
+    // --- 11. LEAD MANAGEMENT SYSTEM (LMS) & ADMIN DASHBOARD CONTROLLER ---
     lmsState: {
         searchQuery: '',
         statusFilter: 'all',
@@ -931,7 +931,7 @@ const DisicureMain = {
     initAdminPanel: function() {
         if (!window.DisicureLeads) return;
 
-        // Search Input
+        // Tab Switching buttons if present
         const searchInput = document.getElementById('lms-search-input');
         if (searchInput) {
             searchInput.addEventListener('input', (e) => {
@@ -976,42 +976,53 @@ const DisicureMain = {
             });
         }
 
-        // Initial Render
+        // Initial Full Render (Dashboard + Table + Charts + Directories)
         this.renderAdminLeads();
+    },
+
+    // Tab Switching Functionality
+    switchAdminTab: function(tabId) {
+        const tabContents = document.querySelectorAll('.admin-tab-content');
+        tabContents.forEach(tab => {
+            tab.classList.add('hidden');
+            tab.classList.remove('block');
+        });
+
+        const activeContent = document.getElementById(tabId);
+        if (activeContent) {
+            activeContent.classList.remove('hidden');
+            activeContent.classList.add('block');
+        }
+
+        const tabBtns = document.querySelectorAll('.admin-tab-btn');
+        tabBtns.forEach(btn => {
+            btn.classList.remove('bg-blue-600', 'text-white', 'active');
+            btn.classList.add('bg-slate-800/60', 'text-blue-200');
+        });
+
+        const activeBtn = document.getElementById(`btn-${tabId}`);
+        if (activeBtn) {
+            activeBtn.classList.remove('bg-slate-800/60', 'text-blue-200');
+            activeBtn.classList.add('bg-blue-600', 'text-white', 'active');
+        }
+
+        // Trigger chart or table redraws if needed
+        if (tabId === 'tab-dashboard') {
+            this.renderDashboardAnalytics();
+        } else if (tabId === 'tab-leads') {
+            this.renderAdminLeads();
+        }
     },
 
     renderAdminLeads: function() {
         if (!window.DisicureLeads) return;
         const allLeads = window.DisicureLeads.getAllLeads();
 
-        // 1. Calculate KPI Metrics
+        // 1. Calculate and update dashboard analytics & charts
+        this.renderDashboardAnalytics();
+
+        // 2. Filter & Sort Leads for the LMS table
         const total = allLeads.length;
-        const countNew = allLeads.filter(l => l.leadStatus.includes('New')).length;
-        const countContacted = allLeads.filter(l => l.leadStatus.includes('Contacted')).length;
-        const countFollowup = allLeads.filter(l => l.leadStatus.includes('Follow-up')).length;
-        const countNegotiation = allLeads.filter(l => l.leadStatus.includes('Negotiation')).length;
-        const countConverted = allLeads.filter(l => l.leadStatus.includes('Converted')).length;
-        const countLost = allLeads.filter(l => l.leadStatus.includes('Lost')).length;
-        const countOnHold = allLeads.filter(l => l.leadStatus.includes('On Hold')).length;
-        const conversionRate = total > 0 ? Math.round((countConverted / total) * 100) : 0;
-
-        // Update KPI counters
-        const setElText = (id, val) => {
-            const el = document.getElementById(id);
-            if (el) el.innerText = val;
-        };
-
-        setElText('kpi-total-leads', total);
-        setElText('kpi-new-leads', countNew);
-        setElText('kpi-contacted-leads', countContacted);
-        setElText('kpi-followup-leads', countFollowup);
-        setElText('kpi-negotiation-leads', countNegotiation);
-        setElText('kpi-converted-leads', countConverted);
-        setElText('kpi-lost-leads', countLost);
-        setElText('kpi-onhold-leads', countOnHold);
-        setElText('kpi-conversion-rate', `${conversionRate}%`);
-
-        // 2. Filter & Sort Leads
         let filtered = allLeads.filter(lead => {
             // Search Query
             const query = this.lmsState.searchQuery;
@@ -1405,6 +1416,418 @@ const DisicureMain = {
 
         this.closeAddLeadModal();
         this.renderAdminLeads();
+    },
+
+    // --- DASHBOARD ANALYTICS & VISUAL CHARTS RENDERER ---
+    renderDashboardAnalytics: function() {
+        if (!window.DisicureLeads || typeof window.DisicureLeads.getDashboardAnalytics !== 'function') return;
+        const data = window.DisicureLeads.getDashboardAnalytics();
+
+        // Helper to update text safely
+        const setElText = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = val;
+        };
+
+        // 1. Update 10 KPI Counters
+        setElText('kpi-total-leads', data.totalLeads);
+        setElText('kpi-new-leads', data.newLeads);
+        setElText('kpi-followup-leads', data.followupLeads);
+        setElText('kpi-converted-leads', data.convertedLeads);
+        setElText('kpi-lost-leads', data.lostLeads);
+        setElText('kpi-business-value', data.financials.totalBusinessFormatted);
+        setElText('kpi-payments-received', data.financials.paymentsReceivedFormatted);
+        setElText('kpi-pending-payments', data.financials.pendingPaymentsFormatted);
+        setElText('kpi-active-partners', data.financials.activePartnersCount);
+        setElText('kpi-team-members', data.financials.teamMembersCount);
+        setElText('kpi-conversion-rate', `${data.conversionRate}% Won`);
+
+        // 2. Render 6 Dedicated Charts
+        this.renderMonthlyLeadsChart(data.monthlyLeads);
+        this.renderConversionChart(data);
+        this.renderRevenueChart(data.monthlyRevenue);
+        this.renderPendingAgingChart(data.pendingAging);
+        this.renderLeadSourcesChart(data.leadSources);
+        this.renderPartnerPerformanceTable(data.partnerPerformance);
+
+        // 3. Render Secondary Tabs Directories
+        this.renderPartnersDirectory(data.partnerPerformance);
+        this.renderTeamDirectory(data.teamMembers);
+        this.renderFinancialsAging(data.pendingAging);
+    },
+
+    // Chart 1: Monthly Leads (Bar Chart SVG)
+    renderMonthlyLeadsChart: function(monthlyData) {
+        const container = document.getElementById('chart-monthly-leads');
+        if (!container || !monthlyData || !monthlyData.length) return;
+
+        const maxVal = Math.max(...monthlyData.map(d => d.count), 60);
+        const svgHeight = 220;
+        const svgWidth = 620;
+        const paddingBottom = 30;
+        const paddingTop = 25;
+        const chartHeight = svgHeight - paddingBottom - paddingTop;
+        const barWidth = 32;
+        const gap = (svgWidth - 60 - (monthlyData.length * barWidth)) / (monthlyData.length - 1);
+
+        let barsSvg = '';
+        let labelsSvg = '';
+        let gridSvg = '';
+
+        // Grid lines
+        for (let i = 0; i <= 4; i++) {
+            const y = paddingTop + (chartHeight / 4) * i;
+            const val = Math.round(maxVal - (maxVal / 4) * i);
+            gridSvg += `
+                <line x1="35" y1="${y}" x2="${svgWidth - 10}" y2="${y}" stroke="#f1f5f9" stroke-width="1" />
+                <text x="30" y="${y + 3}" fill="#94a3b8" font-size="9" font-weight="600" text-anchor="end">${val}</text>
+            `;
+        }
+
+        monthlyData.forEach((item, index) => {
+            const x = 45 + index * (barWidth + gap);
+            const h = (item.count / maxVal) * chartHeight;
+            const y = paddingTop + chartHeight - h;
+
+            barsSvg += `
+                <g class="chart-bar-group cursor-pointer">
+                    <rect x="${x}" y="${y}" width="${barWidth}" height="${h}" rx="6" fill="url(#blueBarGrad)" class="transition-all duration-300 hover:opacity-80" />
+                    <text x="${x + barWidth / 2}" y="${y - 6}" fill="#1e3a8a" font-size="10" font-weight="700" text-anchor="middle">${item.count}</text>
+                </g>
+            `;
+
+            labelsSvg += `
+                <text x="${x + barWidth / 2}" y="${svgHeight - 10}" fill="#64748b" font-size="10" font-weight="600" text-anchor="middle">${item.month}</text>
+            `;
+        });
+
+        container.innerHTML = `
+            <svg viewBox="0 0 ${svgWidth} ${svgHeight}" class="w-full h-full select-none">
+                <defs>
+                    <linearGradient id="blueBarGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#2563eb" />
+                        <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.7" />
+                    </linearGradient>
+                </defs>
+                ${gridSvg}
+                ${barsSvg}
+                ${labelsSvg}
+            </svg>
+        `;
+    },
+
+    // Chart 2: Conversion Funnel & Status Distribution
+    renderConversionChart: function(data) {
+        const container = document.getElementById('chart-conversion-rate');
+        if (!container) return;
+
+        const total = data.totalLeads || 1;
+        const statuses = [
+            { label: '🟢 New', count: data.newLeads, color: 'bg-emerald-500', textCol: 'text-emerald-700' },
+            { label: '🔵 Contacted', count: data.contactedLeads, color: 'bg-blue-500', textCol: 'text-blue-700' },
+            { label: '🟡 Follow-up', count: data.followupLeads, color: 'bg-amber-500', textCol: 'text-amber-700' },
+            { label: '🟠 Negotiation', count: data.negotiationLeads, color: 'bg-orange-500', textCol: 'text-orange-700' },
+            { label: '🟣 Converted', count: data.convertedLeads, color: 'bg-purple-500', textCol: 'text-purple-700' },
+            { label: '🔴 Lost', count: data.lostLeads, color: 'bg-rose-500', textCol: 'text-rose-700' },
+            { label: '⚫ On Hold', count: data.onholdLeads, color: 'bg-gray-500', textCol: 'text-gray-700' }
+        ];
+
+        let rowsHtml = '';
+        statuses.forEach(s => {
+            const pct = Math.round((s.count / total) * 100);
+            rowsHtml += `
+                <div class="flex items-center gap-3 text-xs">
+                    <span class="w-24 font-bold text-gray-700 truncate">${s.label}</span>
+                    <div class="flex-1 bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                        <div class="${s.color} h-2.5 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+                    </div>
+                    <span class="w-10 text-right font-extrabold ${s.textCol}">${s.count}</span>
+                    <span class="w-10 text-right text-[10px] text-gray-400 font-medium">${pct}%</span>
+                </div>
+            `;
+        });
+
+        container.innerHTML = `
+            <div class="w-full space-y-2.5 py-1">
+                ${rowsHtml}
+            </div>
+        `;
+    },
+
+    // Chart 3: Monthly Revenue Trajectory (Area / Line Chart SVG)
+    renderRevenueChart: function(monthlyRev) {
+        const container = document.getElementById('chart-revenue');
+        if (!container || !monthlyRev || !monthlyRev.length) return;
+
+        const maxRev = Math.max(...monthlyRev.map(d => d.revenue), 10);
+        const svgHeight = 220;
+        const svgWidth = 620;
+        const paddingBottom = 30;
+        const paddingTop = 25;
+        const chartHeight = svgHeight - paddingBottom - paddingTop;
+        const chartWidth = svgWidth - 60;
+        const stepX = chartWidth / (monthlyRev.length - 1);
+
+        let points = [];
+        let dotsSvg = '';
+        let labelsSvg = '';
+        let gridSvg = '';
+
+        // Grid lines
+        for (let i = 0; i <= 4; i++) {
+            const y = paddingTop + (chartHeight / 4) * i;
+            const val = ((maxRev - (maxRev / 4) * i)).toFixed(1);
+            gridSvg += `
+                <line x1="45" y1="${y}" x2="${svgWidth - 10}" y2="${y}" stroke="#f1f5f9" stroke-width="1" />
+                <text x="38" y="${y + 3}" fill="#94a3b8" font-size="9" font-weight="600" text-anchor="end">₹${val}L</text>
+            `;
+        }
+
+        monthlyRev.forEach((item, index) => {
+            const x = 50 + index * stepX;
+            const y = paddingTop + chartHeight - (item.revenue / maxRev) * chartHeight;
+            points.push(`${x},${y}`);
+
+            dotsSvg += `
+                <g class="chart-dot cursor-pointer">
+                    <circle cx="${x}" cy="${y}" r="4" fill="#2563eb" stroke="#ffffff" stroke-width="2" />
+                    <text x="${x}" y="${y - 8}" fill="#1e3a8a" font-size="9" font-weight="700" text-anchor="middle">₹${item.revenue}L</text>
+                </g>
+            `;
+
+            labelsSvg += `
+                <text x="${x}" y="${svgHeight - 10}" fill="#64748b" font-size="10" font-weight="600" text-anchor="middle">${item.month}</text>
+            `;
+        });
+
+        const linePath = `M ${points.join(' L ')}`;
+        const areaPath = `M ${points[0]} L ${points.join(' L ')} L ${50 + (monthlyRev.length - 1) * stepX},${paddingTop + chartHeight} L 50,${paddingTop + chartHeight} Z`;
+
+        container.innerHTML = `
+            <svg viewBox="0 0 ${svgWidth} ${svgHeight}" class="w-full h-full select-none">
+                <defs>
+                    <linearGradient id="revAreaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.3" />
+                        <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0" />
+                    </linearGradient>
+                </defs>
+                ${gridSvg}
+                <path d="${areaPath}" fill="url(#revAreaGrad)" />
+                <path d="${linePath}" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                ${dotsSvg}
+                ${labelsSvg}
+            </svg>
+        `;
+    },
+
+    // Chart 4: Pending Payments Aging Breakdown
+    renderPendingAgingChart: function(agingData) {
+        const container = document.getElementById('chart-pending-aging');
+        if (!container || !agingData) return;
+
+        let barsHtml = '';
+        agingData.forEach(item => {
+            barsHtml += `
+                <div class="space-y-1.5">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="font-bold text-gray-800">${item.bucket}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="font-extrabold text-navy-950">${item.amountFormatted}</span>
+                            <span class="text-[10px] text-gray-500 font-semibold">(${item.percentage}%)</span>
+                        </div>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                        <div class="h-3 rounded-full transition-all duration-500" style="width: ${item.percentage}%; background-color: ${item.color};"></div>
+                    </div>
+                    <div class="flex justify-between items-center text-[10px]">
+                        <span class="text-gray-400 font-medium">Status: ${item.status}</span>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = `
+            <div class="w-full space-y-3.5 py-1">
+                ${barsHtml}
+            </div>
+        `;
+    },
+
+    // Chart 5: Lead Sources Distribution
+    renderLeadSourcesChart: function(sourcesData) {
+        const container = document.getElementById('chart-lead-sources');
+        if (!container || !sourcesData) return;
+
+        let sourcesHtml = '';
+        sourcesData.forEach(item => {
+            sourcesHtml += `
+                <div class="flex items-center justify-between gap-3 text-xs p-2 rounded-lg bg-gray-50/70 border border-gray-100">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full" style="background-color: ${item.color}"></span>
+                        <span class="font-bold text-navy-950">${item.source}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-extrabold text-blue-700">${item.count} Leads</span>
+                        <span class="text-[11px] font-bold text-gray-500 bg-white px-2 py-0.5 rounded border border-gray-200">${item.percentage}%</span>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = `
+            <div class="w-full space-y-2 py-1">
+                ${sourcesHtml}
+            </div>
+        `;
+    },
+
+    // Chart 6: Partner Performance Leaderboard Table
+    renderPartnerPerformanceTable: function(partners) {
+        const container = document.getElementById('chart-partner-performance');
+        if (!container || !partners) return;
+
+        let rowsHtml = '';
+        partners.forEach((p, idx) => {
+            rowsHtml += `
+                <tr class="border-b border-gray-100 hover:bg-indigo-50/20 text-xs">
+                    <td class="p-3 font-extrabold text-navy-950 flex items-center gap-2">
+                        <span class="w-5 h-5 rounded-full bg-indigo-50 text-indigo-700 flex items-center justify-center text-[10px] font-bold">${idx + 1}</span>
+                        <div>
+                            <div>${p.name}</div>
+                            <div class="text-[10px] text-gray-400 font-normal">📍 ${p.region}</div>
+                        </div>
+                    </td>
+                    <td class="p-3 text-gray-600 font-medium">${p.type}</td>
+                    <td class="p-3 font-extrabold text-indigo-700">${p.orderVolume}</td>
+                    <td class="p-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-20 bg-gray-100 rounded-full h-2 overflow-hidden">
+                                <div class="bg-emerald-500 h-2 rounded-full" style="width: ${p.fulfillment}%"></div>
+                            </div>
+                            <span class="font-bold text-gray-700 text-[11px]">${p.fulfillment}%</span>
+                        </div>
+                    </td>
+                    <td class="p-3 font-bold text-gray-700 text-center">${p.batches} Batches</td>
+                    <td class="p-3 text-right">
+                        <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            ${p.status}
+                        </span>
+                    </td>
+                </tr>
+            `;
+        });
+
+        container.innerHTML = `
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-gray-200 text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">
+                        <th class="p-3">Partner & Region</th>
+                        <th class="p-3">Category</th>
+                        <th class="p-3">Order Volume</th>
+                        <th class="p-3">Fulfillment</th>
+                        <th class="p-3 text-center">Completed Batches</th>
+                        <th class="p-3 text-right">Rating</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowsHtml}
+                </tbody>
+            </table>
+        `;
+    },
+
+    // Secondary Tab 3: Active Partners Directory Cards
+    renderPartnersDirectory: function(partners) {
+        const grid = document.getElementById('lms-partners-grid');
+        if (!grid || !partners) return;
+
+        let cardsHtml = '';
+        partners.forEach(p => {
+            cardsHtml += `
+                <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow space-y-3">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded uppercase tracking-wider">${p.type}</span>
+                            <h4 class="text-base font-extrabold text-navy-950 mt-1">${p.name}</h4>
+                            <p class="text-xs text-gray-500 font-normal">📍 ${p.region}</p>
+                        </div>
+                        <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">${p.status}</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100 text-xs">
+                        <div>
+                            <span class="text-[10px] text-gray-400 block uppercase">Total Business</span>
+                            <span class="font-extrabold text-indigo-700">${p.orderVolume}</span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-gray-400 block uppercase">Batches Cleared</span>
+                            <span class="font-extrabold text-gray-800">${p.batches} Commercial Runs</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between text-xs pt-2">
+                        <span class="text-gray-500">Order Fulfillment:</span>
+                        <span class="font-bold text-emerald-600">${p.fulfillment}%</span>
+                    </div>
+                </div>
+            `;
+        });
+
+        grid.innerHTML = cardsHtml;
+    },
+
+    // Secondary Tab 4: Team Directory Cards
+    renderTeamDirectory: function(members) {
+        const grid = document.getElementById('lms-team-grid');
+        if (!grid || !members) return;
+
+        let cardsHtml = '';
+        members.forEach(m => {
+            cardsHtml += `
+                <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow space-y-3">
+                    <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-700 font-extrabold text-lg flex items-center justify-center">
+                        ${m.name.charAt(0)}
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-extrabold text-navy-950">${m.name}</h4>
+                        <span class="text-xs font-bold text-blue-600">${m.role}</span>
+                        <p class="text-[11px] text-gray-400 font-normal mt-0.5">${m.dept}</p>
+                    </div>
+                    <div class="pt-2 border-t border-gray-100 flex items-center justify-between text-xs">
+                        <span class="text-gray-500 font-medium">Assigned Leads:</span>
+                        <span class="font-extrabold text-navy-950 bg-blue-50 px-2 py-0.5 rounded">${m.activeLeads}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs text-gray-600">
+                        <span>📞 ${m.phone}</span>
+                        <span class="text-[10px] font-bold text-emerald-600">${m.status}</span>
+                    </div>
+                </div>
+            `;
+        });
+
+        grid.innerHTML = cardsHtml;
+    },
+
+    // Secondary Tab 5: Financials Aging Schedule
+    renderFinancialsAging: function(aging) {
+        const container = document.getElementById('lms-financials-aging');
+        if (!container || !aging) return;
+
+        let itemsHtml = '';
+        aging.forEach(a => {
+            itemsHtml += `
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100 text-xs">
+                    <div>
+                        <span class="font-extrabold text-navy-950 text-sm block">${a.bucket}</span>
+                        <span class="text-gray-500 font-normal">Terms: ${a.status}</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-extrabold text-base text-navy-950 block">${a.amountFormatted}</span>
+                        <span class="text-[10px] font-bold text-gray-500">${a.percentage}% of outstanding portfolio</span>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = itemsHtml;
     },
 
     exportLeadsCSV: function() {

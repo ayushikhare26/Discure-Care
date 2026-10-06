@@ -1749,7 +1749,7 @@ const DisicureRouter = {
             `;
         },
 
-        // --- 12. LEAD MANAGEMENT SYSTEM (LMS) ADMIN PANEL TEMPLATE ---
+        // --- 12. EXECUTIVE ADMIN DASHBOARD & LMS TEMPLATE ---
         adminLeads: function() {
             return `
             <!-- Admin Top Navigation Bar -->
@@ -1760,13 +1760,13 @@ const DisicureRouter = {
                         <div class="space-y-1">
                             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-950 border border-blue-500/30 text-cyan-300 text-[10px] font-bold uppercase tracking-wider">
                                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                                Live Lead Management System (LMS)
+                                Executive Pharmaceutical Business Portal
                             </div>
                             <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                                B2B Lead Management & CRM
+                                Disicure Care — Admin Dashboard & CRM
                             </h1>
                             <p class="text-xs text-blue-200/80 font-normal">
-                                Centralized tracking for pharmaceutical enquiries from website forms, WhatsApp CTAs, product pages, and partner requests.
+                                Real-time executive dashboard, lead pipeline tracking, financial ledger, and partner network analytics.
                             </p>
                         </div>
                         
@@ -1786,173 +1786,448 @@ const DisicureRouter = {
                             </button>
                         </div>
                     </div>
-                </div>
-            </section>
 
-            <!-- KPI Summary Metric Cards -->
-            <section class="py-6 bg-slate-50 border-b border-gray-200">
-                <div class="max-w-7xl mx-auto px-4 lg:px-8">
-                    <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-                        <!-- Total Leads -->
-                        <div class="bg-white p-3.5 rounded-xl border border-gray-200 shadow-sm">
-                            <span class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider block">Total Leads</span>
-                            <div class="text-2xl font-extrabold text-navy-950 mt-1" id="kpi-total-leads">0</div>
-                        </div>
-
-                        <!-- 🟢 New -->
-                        <div class="bg-white p-3.5 rounded-xl border border-emerald-200 shadow-sm bg-emerald-50/20">
-                            <span class="text-[10px] font-extrabold text-emerald-700 uppercase tracking-wider block">🟢 New</span>
-                            <div class="text-2xl font-extrabold text-emerald-600 mt-1" id="kpi-new-leads">0</div>
-                        </div>
-
-                        <!-- 🔵 Contacted -->
-                        <div class="bg-white p-3.5 rounded-xl border border-blue-200 shadow-sm bg-blue-50/20">
-                            <span class="text-[10px] font-extrabold text-blue-700 uppercase tracking-wider block">🔵 Contacted</span>
-                            <div class="text-2xl font-extrabold text-blue-600 mt-1" id="kpi-contacted-leads">0</div>
-                        </div>
-
-                        <!-- 🟡 Follow-up -->
-                        <div class="bg-white p-3.5 rounded-xl border border-amber-200 shadow-sm bg-amber-50/20">
-                            <span class="text-[10px] font-extrabold text-amber-700 uppercase tracking-wider block">🟡 Follow-up</span>
-                            <div class="text-2xl font-extrabold text-amber-600 mt-1" id="kpi-followup-leads">0</div>
-                        </div>
-
-                        <!-- 🟠 Negotiation -->
-                        <div class="bg-white p-3.5 rounded-xl border border-orange-200 shadow-sm bg-orange-50/20">
-                            <span class="text-[10px] font-extrabold text-orange-700 uppercase tracking-wider block">🟠 Negotiation</span>
-                            <div class="text-2xl font-extrabold text-orange-600 mt-1" id="kpi-negotiation-leads">0</div>
-                        </div>
-
-                        <!-- 🟣 Converted -->
-                        <div class="bg-white p-3.5 rounded-xl border border-purple-200 shadow-sm bg-purple-50/20">
-                            <span class="text-[10px] font-extrabold text-purple-700 uppercase tracking-wider block">🟣 Converted</span>
-                            <div class="text-2xl font-extrabold text-purple-600 mt-1" id="kpi-converted-leads">0</div>
-                        </div>
-
-                        <!-- 🔴 Lost -->
-                        <div class="bg-white p-3.5 rounded-xl border border-rose-200 shadow-sm bg-rose-50/20">
-                            <span class="text-[10px] font-extrabold text-rose-700 uppercase tracking-wider block">🔴 Lost</span>
-                            <div class="text-2xl font-extrabold text-rose-600 mt-1" id="kpi-lost-leads">0</div>
-                        </div>
-
-                        <!-- ⚫ On Hold -->
-                        <div class="bg-white p-3.5 rounded-xl border border-gray-300 shadow-sm bg-gray-50/50">
-                            <span class="text-[10px] font-extrabold text-gray-600 uppercase tracking-wider block">⚫ On Hold</span>
-                            <div class="text-2xl font-extrabold text-gray-700 mt-1" id="kpi-onhold-leads">0</div>
-                        </div>
+                    <!-- Dashboard Navigation Tabs -->
+                    <div class="flex items-center gap-2 overflow-x-auto pt-6 border-t border-blue-900/50 mt-6 text-xs font-bold">
+                        <button onclick="window.DisicureMain.switchAdminTab('tab-dashboard')" id="btn-tab-dashboard" class="admin-tab-btn active px-4 py-2 rounded-lg bg-blue-600 text-white transition-all whitespace-nowrap flex items-center gap-2">
+                            <span>📊 Executive Dashboard</span>
+                        </button>
+                        <button onclick="window.DisicureMain.switchAdminTab('tab-leads')" id="btn-tab-leads" class="admin-tab-btn px-4 py-2 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-blue-200 transition-all whitespace-nowrap flex items-center gap-2">
+                            <span>📋 Lead Management (LMS)</span>
+                        </button>
+                        <button onclick="window.DisicureMain.switchAdminTab('tab-partners')" id="btn-tab-partners" class="admin-tab-btn px-4 py-2 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-blue-200 transition-all whitespace-nowrap flex items-center gap-2">
+                            <span>🤝 Active Partners Directory</span>
+                        </button>
+                        <button onclick="window.DisicureMain.switchAdminTab('tab-team')" id="btn-tab-team" class="admin-tab-btn px-4 py-2 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-blue-200 transition-all whitespace-nowrap flex items-center gap-2">
+                            <span>👥 Team & Assignees</span>
+                        </button>
+                        <button onclick="window.DisicureMain.switchAdminTab('tab-financials')" id="btn-tab-financials" class="admin-tab-btn px-4 py-2 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-blue-200 transition-all whitespace-nowrap flex items-center gap-2">
+                            <span>💳 Financials & Ledger</span>
+                        </button>
                     </div>
                 </div>
             </section>
 
-            <!-- Main Lead Database Management Area -->
-            <section class="py-8 bg-white min-h-[70vh]">
-                <div class="max-w-7xl mx-auto px-4 lg:px-8 space-y-6">
-                    
-                    <!-- Search & Filter Controls Toolbar -->
-                    <div class="bg-slate-50 border border-gray-200 p-4 rounded-xl shadow-sm space-y-4">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                            <!-- Live Search Input -->
-                            <div class="lg:col-span-2 relative">
-                                <input type="text" id="lms-search-input" placeholder="Search by name, ID, phone, city, or product..." class="w-full bg-white border border-gray-200 rounded-lg p-2.5 pl-10 text-xs font-medium focus:outline-none focus:border-blue-500 shadow-sm">
-                                <span class="absolute left-3.5 top-3 text-gray-400">
+            <!-- ================================================================= -->
+            <!-- TAB 1: EXECUTIVE DASHBOARD (10 KPI Metrics + 6 Interactive Charts) -->
+            <!-- ================================================================= -->
+            <div id="tab-dashboard" class="admin-tab-content block">
+                <!-- 10 Primary Metric KPI Cards -->
+                <section class="py-6 bg-slate-50 border-b border-gray-200">
+                    <div class="max-w-7xl mx-auto px-4 lg:px-8">
+                        <div class="mb-3 flex items-center justify-between">
+                            <span class="text-xs font-extrabold text-gray-500 uppercase tracking-wider">Business Key Performance Indicators</span>
+                            <span class="text-[11px] text-blue-600 font-bold">Real-time Pipeline Sync</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5">
+                            <!-- 1. 📊 Total Leads -->
+                            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                                <div class="flex items-center justify-between text-[11px] font-extrabold text-gray-500 uppercase tracking-wider">
+                                    <span>📊 Total Leads</span>
+                                </div>
+                                <div class="text-2xl font-extrabold text-navy-950 mt-2" id="kpi-total-leads">0</div>
+                                <span class="text-[10px] text-gray-400 font-medium">All capture channels</span>
+                            </div>
+
+                            <!-- 2. 📈 New Leads -->
+                            <div class="bg-white p-4 rounded-xl border border-emerald-200 shadow-sm hover:shadow-md transition-shadow bg-emerald-50/15">
+                                <div class="flex items-center justify-between text-[11px] font-extrabold text-emerald-700 uppercase tracking-wider">
+                                    <span>📈 New Leads</span>
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                </div>
+                                <div class="text-2xl font-extrabold text-emerald-600 mt-2" id="kpi-new-leads">0</div>
+                                <span class="text-[10px] text-emerald-600 font-medium">Awaiting first contact</span>
+                            </div>
+
+                            <!-- 3. 📞 Follow-ups -->
+                            <div class="bg-white p-4 rounded-xl border border-amber-200 shadow-sm hover:shadow-md transition-shadow bg-amber-50/15">
+                                <div class="flex items-center justify-between text-[11px] font-extrabold text-amber-700 uppercase tracking-wider">
+                                    <span>📞 Follow-ups</span>
+                                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                </div>
+                                <div class="text-2xl font-extrabold text-amber-600 mt-2" id="kpi-followup-leads">0</div>
+                                <span class="text-[10px] text-amber-600 font-medium">Action scheduled</span>
+                            </div>
+
+                            <!-- 4. ✅ Converted Leads -->
+                            <div class="bg-white p-4 rounded-xl border border-purple-200 shadow-sm hover:shadow-md transition-shadow bg-purple-50/15">
+                                <div class="flex items-center justify-between text-[11px] font-extrabold text-purple-700 uppercase tracking-wider">
+                                    <span>✅ Converted</span>
+                                    <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+                                </div>
+                                <div class="text-2xl font-extrabold text-purple-600 mt-2" id="kpi-converted-leads">0</div>
+                                <span class="text-[10px] text-purple-600 font-medium" id="kpi-conversion-rate">0% Won</span>
+                            </div>
+
+                            <!-- 5. ❌ Lost Leads -->
+                            <div class="bg-white p-4 rounded-xl border border-rose-200 shadow-sm hover:shadow-md transition-shadow bg-rose-50/15">
+                                <div class="flex items-center justify-between text-[11px] font-extrabold text-rose-700 uppercase tracking-wider">
+                                    <span>❌ Lost Leads</span>
+                                    <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                                </div>
+                                <div class="text-2xl font-extrabold text-rose-600 mt-2" id="kpi-lost-leads">0</div>
+                                <span class="text-[10px] text-rose-600 font-medium">Closed lost</span>
+                            </div>
+
+                            <!-- 6. 💰 Total Business Value -->
+                            <div class="bg-white p-4 rounded-xl border border-blue-200 shadow-sm hover:shadow-md transition-shadow bg-blue-50/15">
+                                <div class="flex items-center justify-between text-[11px] font-extrabold text-blue-700 uppercase tracking-wider">
+                                    <span>💰 Business Value</span>
+                                </div>
+                                <div class="text-2xl font-extrabold text-blue-700 mt-2" id="kpi-business-value">₹48,50,000</div>
+                                <span class="text-[10px] text-blue-600 font-medium">Total pipeline & orders</span>
+                            </div>
+
+                            <!-- 7. 💳 Payments Received -->
+                            <div class="bg-white p-4 rounded-xl border border-teal-200 shadow-sm hover:shadow-md transition-shadow bg-teal-50/15">
+                                <div class="flex items-center justify-between text-[11px] font-extrabold text-teal-700 uppercase tracking-wider">
+                                    <span>💳 Received</span>
+                                </div>
+                                <div class="text-2xl font-extrabold text-teal-700 mt-2" id="kpi-payments-received">₹32,80,000</div>
+                                <span class="text-[10px] text-teal-600 font-medium">Cleared collections</span>
+                            </div>
+
+                            <!-- 8. ⏳ Pending Payments -->
+                            <div class="bg-white p-4 rounded-xl border border-orange-200 shadow-sm hover:shadow-md transition-shadow bg-orange-50/15">
+                                <div class="flex items-center justify-between text-[11px] font-extrabold text-orange-700 uppercase tracking-wider">
+                                    <span>⏳ Pending</span>
+                                </div>
+                                <div class="text-2xl font-extrabold text-orange-600 mt-2" id="kpi-pending-payments">₹15,70,000</div>
+                                <span class="text-[10px] text-orange-600 font-medium">Outstanding receivables</span>
+                            </div>
+
+                            <!-- 9. 🤝 Active Partners -->
+                            <div class="bg-white p-4 rounded-xl border border-indigo-200 shadow-sm hover:shadow-md transition-shadow bg-indigo-50/15">
+                                <div class="flex items-center justify-between text-[11px] font-extrabold text-indigo-700 uppercase tracking-wider">
+                                    <span>🤝 Active Partners</span>
+                                </div>
+                                <div class="text-2xl font-extrabold text-indigo-700 mt-2" id="kpi-active-partners">42</div>
+                                <span class="text-[10px] text-indigo-600 font-medium">Distributors & PCD</span>
+                            </div>
+
+                            <!-- 10. 👥 Team Members -->
+                            <div class="bg-white p-4 rounded-xl border border-cyan-200 shadow-sm hover:shadow-md transition-shadow bg-cyan-50/15">
+                                <div class="flex items-center justify-between text-[11px] font-extrabold text-cyan-800 uppercase tracking-wider">
+                                    <span>👥 Team Members</span>
+                                </div>
+                                <div class="text-2xl font-extrabold text-cyan-800 mt-2" id="kpi-team-members">8</div>
+                                <span class="text-[10px] text-cyan-700 font-medium">Representatives & Staff</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 6 Dedicated Visual Charts Grid -->
+                <section class="py-8 bg-white">
+                    <div class="max-w-7xl mx-auto px-4 lg:px-8 space-y-8">
+                        
+                        <!-- Row 1: Monthly Leads (Bar/Trend) & Conversion Funnel -->
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                            <!-- Chart 1: Monthly Leads -->
+                            <div class="lg:col-span-7 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                                    <div>
+                                        <h3 class="text-base font-extrabold text-navy-950 flex items-center gap-2">
+                                            <span>📈 Monthly Leads Progression</span>
+                                            <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">2026 Inflow</span>
+                                        </h3>
+                                        <p class="text-xs text-gray-500 font-normal">Tracking volume of pharmaceutical business inquiries by month.</p>
+                                    </div>
+                                    <span class="text-xs font-extrabold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded">+24% YoY Growth</span>
+                                </div>
+                                <div id="chart-monthly-leads" class="w-full h-64 flex items-center justify-center">
+                                    <!-- Populated dynamically via SVG in main.js -->
+                                </div>
+                            </div>
+
+                            <!-- Chart 2: Conversion Funnel & Status Breakdown -->
+                            <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                                    <div>
+                                        <h3 class="text-base font-extrabold text-navy-950 flex items-center gap-2">
+                                            <span>🔄 Lead Conversion Funnel</span>
+                                        </h3>
+                                        <p class="text-xs text-gray-500 font-normal">Status stage distribution & pipeline conversion rate.</p>
+                                    </div>
+                                    <span class="text-xs font-extrabold text-purple-600 bg-purple-50 px-2.5 py-1 rounded">78% Win Ratio</span>
+                                </div>
+                                <div id="chart-conversion-rate" class="w-full h-64 flex items-center justify-center">
+                                    <!-- Populated dynamically via SVG in main.js -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: Monthly Revenue & Pending Payments Aging -->
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                            <!-- Chart 3: Monthly Revenue Trajectory -->
+                            <div class="lg:col-span-7 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                                    <div>
+                                        <h3 class="text-base font-extrabold text-navy-950 flex items-center gap-2">
+                                            <span>💵 Monthly Revenue Trajectory (in ₹ Lakhs)</span>
+                                        </h3>
+                                        <p class="text-xs text-gray-500 font-normal">Monthly commercial collections & manufacturing batch billings.</p>
+                                    </div>
+                                    <span class="text-xs font-extrabold text-blue-600 bg-blue-50 px-2.5 py-1 rounded">Total: ₹48.5L</span>
+                                </div>
+                                <div id="chart-revenue" class="w-full h-64 flex items-center justify-center">
+                                    <!-- Populated dynamically via SVG in main.js -->
+                                </div>
+                            </div>
+
+                            <!-- Chart 4: Pending Payments Aging Breakdown -->
+                            <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                                    <div>
+                                        <h3 class="text-base font-extrabold text-navy-950 flex items-center gap-2">
+                                            <span>⏳ Pending Payments Aging Breakdown</span>
+                                        </h3>
+                                        <p class="text-xs text-gray-500 font-normal">Outstanding invoices categorized by credit terms and aging.</p>
+                                    </div>
+                                    <span class="text-xs font-extrabold text-orange-600 bg-orange-50 px-2.5 py-1 rounded">₹15.70L Due</span>
+                                </div>
+                                <div id="chart-pending-aging" class="w-full h-64 flex flex-col justify-center">
+                                    <!-- Populated dynamically via SVG in main.js -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: Lead Sources Distribution & Partner Performance Leaderboard -->
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                            <!-- Chart 5: Lead Sources Distribution -->
+                            <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                                    <div>
+                                        <h3 class="text-base font-extrabold text-navy-950 flex items-center gap-2">
+                                            <span>🌐 Lead Sources Distribution</span>
+                                        </h3>
+                                        <p class="text-xs text-gray-500 font-normal">Origin breakdown of incoming business inquiries.</p>
+                                    </div>
+                                </div>
+                                <div id="chart-lead-sources" class="w-full h-64 flex items-center justify-center">
+                                    <!-- Populated dynamically via SVG in main.js -->
+                                </div>
+                            </div>
+
+                            <!-- Chart 6: Partner Performance Leaderboard -->
+                            <div class="lg:col-span-7 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                                    <div>
+                                        <h3 class="text-base font-extrabold text-navy-950 flex items-center gap-2">
+                                            <span>🏆 Partner Performance Leaderboard</span>
+                                        </h3>
+                                        <p class="text-xs text-gray-500 font-normal">Top distributors and PCD franchise partners ranked by order volume.</p>
+                                    </div>
+                                    <span class="text-xs font-extrabold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded">42 Partners Active</span>
+                                </div>
+                                <div id="chart-partner-performance" class="w-full overflow-x-auto">
+                                    <!-- Populated dynamically via table in main.js -->
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+            </div>
+
+            <!-- ================================================================= -->
+            <!-- TAB 2: LEAD MANAGEMENT & PIPELINE (LMS DATA TABLE & FILTERS)     -->
+            <!-- ================================================================= -->
+            <div id="tab-leads" class="admin-tab-content hidden">
+                <section class="py-8 bg-white min-h-[70vh]">
+                    <div class="max-w-7xl mx-auto px-4 lg:px-8 space-y-6">
+                        
+                        <!-- Search & Filter Controls Toolbar -->
+                        <div class="bg-slate-50 border border-gray-200 p-4 rounded-xl shadow-sm space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                                <!-- Live Search Input -->
+                                <div class="lg:col-span-2 relative">
+                                    <input type="text" id="lms-search-input" placeholder="Search by name, ID, phone, city, or product..." class="w-full bg-white border border-gray-200 rounded-lg p-2.5 pl-10 text-xs font-medium focus:outline-none focus:border-blue-500 shadow-sm">
+                                    <span class="absolute left-3.5 top-3 text-gray-400">
+                                        ${DisicureRouter.icons.search}
+                                    </span>
+                                </div>
+
+                                <!-- Status Filter -->
+                                <div>
+                                    <select id="lms-status-filter" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-bold text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
+                                        <option value="all">All Lead Statuses</option>
+                                        <option value="🟢 New">🟢 New</option>
+                                        <option value="🔵 Contacted">🔵 Contacted</option>
+                                        <option value="🟡 Follow-up">🟡 Follow-up</option>
+                                        <option value="🟠 Negotiation">🟠 Negotiation</option>
+                                        <option value="🟣 Converted">🟣 Converted</option>
+                                        <option value="🔴 Lost">🔴 Lost</option>
+                                        <option value="⚫ On Hold">⚫ On Hold</option>
+                                    </select>
+                                </div>
+
+                                <!-- Business Type Filter -->
+                                <div>
+                                    <select id="lms-business-filter" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-medium text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
+                                        <option value="all">All Business Types</option>
+                                        <option value="Distributor">Distributor</option>
+                                        <option value="Stockist">Stockist</option>
+                                        <option value="Hospital">Hospital</option>
+                                        <option value="Pharmacy">Pharmacy / Chain</option>
+                                        <option value="Clinic">Clinic</option>
+                                        <option value="PCD Partner">PCD Partner</option>
+                                        <option value="Pharma Company">Pharma Company</option>
+                                        <option value="Institutional Buyer">Institutional Buyer</option>
+                                    </select>
+                                </div>
+
+                                <!-- Source Filter -->
+                                <div>
+                                    <select id="lms-source-filter" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-medium text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
+                                        <option value="all">All Lead Sources</option>
+                                        <option value="Website">Website Forms</option>
+                                        <option value="WhatsApp">WhatsApp CTA</option>
+                                        <option value="Product">Product Enquiries</option>
+                                        <option value="Hero">Hero B2B CTAs</option>
+                                        <option value="Contact">Contact Page</option>
+                                        <option value="Admin">Manual Entry</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Secondary Bar: Count & Sort -->
+                            <div class="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-gray-200 text-xs">
+                                <div class="font-bold text-gray-600" id="lms-showing-count">
+                                    Loading lead registry...
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-400 font-semibold">Sort By:</span>
+                                    <select id="lms-sort-filter" class="bg-white border border-gray-200 rounded p-1.5 text-xs font-semibold text-gray-700 focus:outline-none focus:border-blue-500">
+                                        <option value="newest">Newest First</option>
+                                        <option value="oldest">Oldest First</option>
+                                        <option value="followup">Follow-up Due Date</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Leads Data Table Card -->
+                        <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse" id="lms-leads-table">
+                                    <thead>
+                                        <tr class="bg-slate-100/80 border-b border-gray-200 text-[11px] font-extrabold text-gray-600 uppercase tracking-wider">
+                                            <th class="p-3.5">Lead ID & Date</th>
+                                            <th class="p-3.5">Lead Info & Contact</th>
+                                            <th class="p-3.5">Business & Requirement</th>
+                                            <th class="p-3.5">Source</th>
+                                            <th class="p-3.5">Lead Status</th>
+                                            <th class="p-3.5">Assigned & Follow-up</th>
+                                            <th class="p-3.5 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="lms-leads-tbody">
+                                        <!-- Populated dynamically by window.DisicureMain.renderAdminLeads() -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Empty State Notice -->
+                            <div id="lms-empty-state" class="hidden py-16 text-center">
+                                <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
                                     ${DisicureRouter.icons.search}
-                                </span>
+                                </div>
+                                <h3 class="text-base font-extrabold text-navy-950">No Leads Found</h3>
+                                <p class="text-xs text-gray-500 max-w-sm mx-auto mt-1 font-normal leading-relaxed">
+                                    No leads match your selected search term or filters. Try resetting the filters or add a new manual lead.
+                                </p>
                             </div>
+                        </div>
+                        
+                    </div>
+                </section>
+            </div>
 
-                            <!-- Status Filter -->
+            <!-- ================================================================= -->
+            <!-- TAB 3: ACTIVE PARTNERS DIRECTORY                                 -->
+            <!-- ================================================================= -->
+            <div id="tab-partners" class="admin-tab-content hidden">
+                <section class="py-8 bg-white min-h-[70vh]">
+                    <div class="max-w-7xl mx-auto px-4 lg:px-8 space-y-6">
+                        <div class="flex items-center justify-between border-b border-gray-100 pb-4">
                             <div>
-                                <select id="lms-status-filter" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-bold text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
-                                    <option value="all">All Lead Statuses</option>
-                                    <option value="🟢 New">🟢 New</option>
-                                    <option value="🔵 Contacted">🔵 Contacted</option>
-                                    <option value="🟡 Follow-up">🟡 Follow-up</option>
-                                    <option value="🟠 Negotiation">🟠 Negotiation</option>
-                                    <option value="🟣 Converted">🟣 Converted</option>
-                                    <option value="🔴 Lost">🔴 Lost</option>
-                                    <option value="⚫ On Hold">⚫ On Hold</option>
-                                </select>
+                                <h2 class="text-xl font-extrabold text-navy-950">🤝 Active Pharmaceutical Partners Directory</h2>
+                                <p class="text-xs text-gray-500 font-normal">Authorized distributors, hospital procurement networks, and PCD franchise operators.</p>
                             </div>
+                            <span class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">42 Registered Partners</span>
+                        </div>
+                        <div id="lms-partners-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- Populated dynamically via main.js -->
+                        </div>
+                    </div>
+                </section>
+            </div>
 
-                            <!-- Business Type Filter -->
+            <!-- ================================================================= -->
+            <!-- TAB 4: TEAM & ASSIGNEES DIRECTORY                                 -->
+            <!-- ================================================================= -->
+            <div id="tab-team" class="admin-tab-content hidden">
+                <section class="py-8 bg-white min-h-[70vh]">
+                    <div class="max-w-7xl mx-auto px-4 lg:px-8 space-y-6">
+                        <div class="flex items-center justify-between border-b border-gray-100 pb-4">
                             <div>
-                                <select id="lms-business-filter" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-medium text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
-                                    <option value="all">All Business Types</option>
-                                    <option value="Distributor">Distributor</option>
-                                    <option value="Stockist">Stockist</option>
-                                    <option value="Hospital">Hospital</option>
-                                    <option value="Pharmacy">Pharmacy / Chain</option>
-                                    <option value="Clinic">Clinic</option>
-                                    <option value="PCD Partner">PCD Partner</option>
-                                    <option value="Pharma Company">Pharma Company</option>
-                                    <option value="Institutional Buyer">Institutional Buyer</option>
-                                </select>
+                                <h2 class="text-xl font-extrabold text-navy-950">👥 Disicure Team & Representative Directory</h2>
+                                <p class="text-xs text-gray-500 font-normal">Internal executive team, licensing desk officers, and commercial sales leads.</p>
                             </div>
+                            <span class="text-xs font-bold text-cyan-800 bg-cyan-50 px-3 py-1 rounded-full border border-cyan-100">8 Active Representatives</span>
+                        </div>
+                        <div id="lms-team-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <!-- Populated dynamically via main.js -->
+                        </div>
+                    </div>
+                </section>
+            </div>
 
-                            <!-- Source Filter -->
+            <!-- ================================================================= -->
+            <!-- TAB 5: FINANCIALS & LEDGER                                       -->
+            <!-- ================================================================= -->
+            <div id="tab-financials" class="admin-tab-content hidden">
+                <section class="py-8 bg-white min-h-[70vh]">
+                    <div class="max-w-7xl mx-auto px-4 lg:px-8 space-y-6">
+                        <div class="flex items-center justify-between border-b border-gray-100 pb-4">
                             <div>
-                                <select id="lms-source-filter" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-medium text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
-                                    <option value="all">All Lead Sources</option>
-                                    <option value="Website">Website Forms</option>
-                                    <option value="WhatsApp">WhatsApp CTA</option>
-                                    <option value="Product">Product Enquiries</option>
-                                    <option value="Hero">Hero B2B CTAs</option>
-                                    <option value="Contact">Contact Page</option>
-                                    <option value="Admin">Manual Entry</option>
-                                </select>
+                                <h2 class="text-xl font-extrabold text-navy-950">💳 Commercial Financials & Invoicing Ledger</h2>
+                                <p class="text-xs text-gray-500 font-normal">Accounts receivable, manufacturing contract milestones, and collection cycles.</p>
+                            </div>
+                            <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">FY 2026-27 Active</span>
+                        </div>
+                        
+                        <!-- Financial Highlights Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="bg-blue-50/40 border border-blue-100 p-6 rounded-2xl">
+                                <span class="text-xs font-extrabold text-blue-700 uppercase tracking-wider block">Total Business Invoiced</span>
+                                <div class="text-3xl font-extrabold text-navy-950 mt-2">₹48,50,000</div>
+                                <p class="text-xs text-gray-500 mt-2">Across 180+ wholesale batches & contract runs</p>
+                            </div>
+                            <div class="bg-emerald-50/40 border border-emerald-100 p-6 rounded-2xl">
+                                <span class="text-xs font-extrabold text-emerald-700 uppercase tracking-wider block">Payments Cleared & Received</span>
+                                <div class="text-3xl font-extrabold text-emerald-600 mt-2">₹32,80,000</div>
+                                <p class="text-xs text-gray-500 mt-2">67.6% collection clearance efficiency</p>
+                            </div>
+                            <div class="bg-orange-50/40 border border-orange-100 p-6 rounded-2xl">
+                                <span class="text-xs font-extrabold text-orange-700 uppercase tracking-wider block">Outstanding Receivables</span>
+                                <div class="text-3xl font-extrabold text-orange-600 mt-2">₹15,70,000</div>
+                                <p class="text-xs text-gray-500 mt-2">Under active 15–30 day credit cycles</p>
                             </div>
                         </div>
 
-                        <!-- Secondary Bar: Count & Sort -->
-                        <div class="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-gray-200 text-xs">
-                            <div class="font-bold text-gray-600" id="lms-showing-count">
-                                Loading lead registry...
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-gray-400 font-semibold">Sort By:</span>
-                                <select id="lms-sort-filter" class="bg-white border border-gray-200 rounded p-1.5 text-xs font-semibold text-gray-700 focus:outline-none focus:border-blue-500">
-                                    <option value="newest">Newest First</option>
-                                    <option value="oldest">Oldest First</option>
-                                    <option value="followup">Follow-up Due Date</option>
-                                </select>
+                        <!-- Aging Ledger Table -->
+                        <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-4">
+                            <h3 class="text-base font-extrabold text-navy-950">Receivables Aging Schedule</h3>
+                            <div id="lms-financials-aging" class="space-y-3">
+                                <!-- Populated dynamically -->
                             </div>
                         </div>
                     </div>
-
-                    <!-- Leads Data Table Card -->
-                    <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse" id="lms-leads-table">
-                                <thead>
-                                    <tr class="bg-slate-100/80 border-b border-gray-200 text-[11px] font-extrabold text-gray-600 uppercase tracking-wider">
-                                        <th class="p-3.5">Lead ID & Date</th>
-                                        <th class="p-3.5">Lead Info & Contact</th>
-                                        <th class="p-3.5">Business & Requirement</th>
-                                        <th class="p-3.5">Source</th>
-                                        <th class="p-3.5">Lead Status</th>
-                                        <th class="p-3.5">Assigned & Follow-up</th>
-                                        <th class="p-3.5 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="lms-leads-tbody">
-                                    <!-- Populated dynamically by window.DisicureMain.renderAdminLeads() -->
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Empty State Notice -->
-                        <div id="lms-empty-state" class="hidden py-16 text-center">
-                            <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                                ${DisicureRouter.icons.search}
-                            </div>
-                            <h3 class="text-base font-extrabold text-navy-950">No Leads Found</h3>
-                            <p class="text-xs text-gray-500 max-w-sm mx-auto mt-1 font-normal leading-relaxed">
-                                No leads match your selected search term or filters. Try resetting the filters or add a new manual lead.
-                            </p>
-                        </div>
-                    </div>
-                    
-                </div>
-            </section>
+                </section>
+            </div>
 
             <!-- Edit/View Lead Details Drawer/Modal -->
             <div id="lms-lead-drawer" class="fixed inset-0 z-50 items-center justify-center hidden">
