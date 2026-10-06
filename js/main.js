@@ -950,6 +950,11 @@ const DisicureMain = {
         typeFilter: 'all'
     },
 
+    prtLeadState: {
+        searchQuery: '',
+        statusFilter: 'all'
+    },
+
     initAdminPanel: function() {
         if (!window.DisicureLeads && !window.DisicurePayments && !window.DisicureDocuments && !window.DisicureTeam && !window.DisicurePartner) return;
 
@@ -3468,52 +3473,160 @@ const DisicureMain = {
         const session = window.DisicurePartner.getCurrentSession();
         if (!session) return;
 
+        const kpi = window.DisicurePartner.getPartnerSummaryKPIs(session.partnerId);
+        const leads = window.DisicurePartner.getPartnerLeads(session.partnerId);
+        const followups = window.DisicurePartner.getPartnerFollowups(session.partnerId);
         const orders = window.DisicurePartner.getPartnerOrders(session.partnerId);
-        const referrals = window.DisicurePartner.getPartnerReferredLeads(session.partnerId);
+        const docs = window.DisicurePartner.getPartnerSharedDocuments(session.partnerId);
 
-        // 1. Overview Orders Table
-        const overviewTbody = document.getElementById('prt-overview-orders-tbody');
-        if (overviewTbody) {
-            if (orders.length === 0) {
-                overviewTbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">No recent orders recorded. Place your first batch order.</td></tr>`;
+        // Helper to update text safely
+        const setElText = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = val;
+        };
+
+        // Update Top Summary KPI Cards
+        setElText('prt-kpi-leads', `${kpi.leadsGenerated} Leads`);
+        setElText('prt-kpi-converted', `${kpi.leadsConverted} Deals`);
+        setElText('prt-kpi-business', kpi.businessGenerated);
+        setElText('prt-kpi-commission', kpi.commissionEarned);
+        setElText('prt-kpi-received', kpi.paymentReceived);
+        setElText('prt-kpi-pending', kpi.pendingPayment);
+
+        // Status Badge Helper
+        const getStatusBadge = (statusStr) => {
+            if (!statusStr) return `<span class="px-2 py-0.5 rounded text-xs font-bold bg-gray-100 text-gray-700">🟢 New</span>`;
+            let badgeStyle = 'bg-gray-100 text-gray-700 border-gray-200';
+            if (statusStr.includes('New')) badgeStyle = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+            else if (statusStr.includes('Contacted')) badgeStyle = 'bg-blue-50 text-blue-700 border-blue-200';
+            else if (statusStr.includes('Follow-up')) badgeStyle = 'bg-amber-50 text-amber-700 border-amber-200';
+            else if (statusStr.includes('Negotiation')) badgeStyle = 'bg-orange-50 text-orange-700 border-orange-200';
+            else if (statusStr.includes('Converted')) badgeStyle = 'bg-purple-50 text-purple-700 border-purple-200';
+            else if (statusStr.includes('Lost')) badgeStyle = 'bg-rose-50 text-rose-700 border-rose-200';
+            else if (statusStr.includes('Hold')) badgeStyle = 'bg-gray-100 text-gray-700 border-gray-300';
+            
+            return `<span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${badgeStyle}">${statusStr}</span>`;
+        };
+
+        // 1. Overview Recent Leads Table
+        const overviewLeadsTbody = document.getElementById('prt-overview-leads-tbody');
+        if (overviewLeadsTbody) {
+            if (leads.length === 0) {
+                overviewLeadsTbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-gray-400">No leads registered yet. Click "Register New Client Lead".</td></tr>`;
             } else {
-                overviewTbody.innerHTML = orders.slice(0, 3).map(o => `
+                overviewLeadsTbody.innerHTML = leads.slice(0, 3).map(l => `
                     <tr class="border-b border-gray-100 hover:bg-slate-50">
-                        <td class="p-3 font-mono font-bold text-navy-950">${o.orderId}<span class="block text-[10px] text-gray-400">${o.orderDate}</span></td>
-                        <td class="p-3 font-bold text-blue-700">${o.productName}</td>
-                        <td class="p-3"><span class="font-bold">${o.quantity}</span><span class="block font-mono text-[10px] text-gray-400">${o.batchNumber}</span></td>
-                        <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${o.status.includes('Delivered') || o.status.includes('Dispatched') ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">${o.status}</span></td>
-                        <td class="p-3 font-extrabold text-navy-950">${o.invoiceAmount}</td>
+                        <td class="p-2.5 font-bold text-navy-950">${l.clientName}<span class="block text-[10px] text-gray-400 font-normal">📍 ${l.city} • ${l.contactPerson}</span></td>
+                        <td class="p-2.5 text-blue-700 font-medium truncate max-w-[140px]">${l.requirement}</td>
+                        <td class="p-2.5">${getStatusBadge(l.leadStatus)}</td>
                     </tr>
                 `).join('');
             }
         }
 
-        // 2. Full Orders Table
-        const fullOrdersTbody = document.getElementById('prt-full-orders-tbody');
-        if (fullOrdersTbody) {
-            if (orders.length === 0) {
-                fullOrdersTbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400">No batch orders placed yet. Click "+ Place New Batch Order".</td></tr>`;
+        // 2. Overview Upcoming Follow-ups Table
+        const overviewFollowupsTbody = document.getElementById('prt-overview-followups-tbody');
+        if (overviewFollowupsTbody) {
+            if (followups.length === 0) {
+                overviewFollowupsTbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-gray-400">No upcoming follow-ups scheduled.</td></tr>`;
             } else {
-                fullOrdersTbody.innerHTML = orders.map(o => `
+                overviewFollowupsTbody.innerHTML = followups.slice(0, 3).map(f => `
                     <tr class="border-b border-gray-100 hover:bg-slate-50">
-                        <td class="p-3.5 font-mono font-bold text-navy-950">${o.orderId}<span class="block text-[10px] text-gray-400">${o.orderDate}</span></td>
-                        <td class="p-3.5 font-bold text-blue-700">${o.productName}</td>
-                        <td class="p-3.5 font-mono text-xs text-gray-700">${o.batchNumber}</td>
-                        <td class="p-3.5 font-bold text-navy-950">${o.quantity}</td>
-                        <td class="p-3.5"><span class="inline-block px-2.5 py-1 rounded text-xs font-bold ${o.status.includes('Delivered') || o.status.includes('Dispatched') ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}">${o.status}</span></td>
-                        <td class="p-3.5 font-extrabold text-navy-950">${o.invoiceAmount}</td>
-                        <td class="p-3.5 text-right whitespace-nowrap">
-                            <button onclick="alert('Downloading Certified Batch COA: ${o.coaDocument || 'COA_Batch.pdf'}')" class="px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded text-[11px] font-bold transition-colors">
-                                Download COA
-                            </button>
+                        <td class="p-2.5 font-mono font-bold text-navy-950">${f.scheduledDate}<span class="block text-[10px] text-gray-400">${f.scheduledTime || ''}</span></td>
+                        <td class="p-2.5 font-bold text-navy-950">${f.clientName}<span class="block text-[10px] text-indigo-700 font-medium">${f.actionType}</span></td>
+                        <td class="p-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${f.status.includes('Completed') ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">${f.status}</span></td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        // 3. Sub-Tab 2: Full Leads & Pipeline Table (Filtered strictly for this partner)
+        const fullLeadsTbody = document.getElementById('prt-full-leads-tbody');
+        if (fullLeadsTbody) {
+            const query = this.prtLeadState.searchQuery;
+            const statusFilt = this.prtLeadState.statusFilter;
+
+            let filteredLeads = leads.filter(l => {
+                const matchesQuery = !query || 
+                    (l.clientName && l.clientName.toLowerCase().includes(query)) ||
+                    (l.contactPerson && l.contactPerson.toLowerCase().includes(query)) ||
+                    (l.city && l.city.toLowerCase().includes(query)) ||
+                    (l.mobile && l.mobile.toLowerCase().includes(query)) ||
+                    (l.requirement && l.requirement.toLowerCase().includes(query)) ||
+                    (l.leadId && l.leadId.toLowerCase().includes(query));
+
+                const matchesStatus = statusFilt === 'all' || l.leadStatus === statusFilt;
+                return matchesQuery && matchesStatus;
+            });
+
+            if (filteredLeads.length === 0) {
+                fullLeadsTbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400">No leads match your filter or search query. Click "+ Register New Client Lead".</td></tr>`;
+            } else {
+                fullLeadsTbody.innerHTML = filteredLeads.map(l => `
+                    <tr class="border-b border-gray-100 hover:bg-blue-50/20 transition-colors">
+                        <td class="p-3.5 font-mono font-bold text-purple-700">${l.leadId}<span class="block text-[10px] text-gray-400 font-normal">${l.createdDate}</span></td>
+                        <td class="p-3.5">
+                            <div class="font-extrabold text-navy-950">${l.clientName}</div>
+                            <div class="text-[11px] text-gray-500 font-medium">👤 ${l.contactPerson} (${l.mobile})</div>
+                        </td>
+                        <td class="p-3.5 text-gray-700 font-medium">📍 ${l.city}, ${l.state || ''}</td>
+                        <td class="p-3.5">
+                            <div class="text-xs text-navy-950 font-medium max-w-xs">${l.requirement}</div>
+                            <span class="text-[10px] text-emerald-700 font-bold block mt-0.5">Est. Value: ${l.estimatedValue || 'Under Eval'}</span>
+                        </td>
+                        <td class="p-3.5 whitespace-nowrap">${getStatusBadge(l.leadStatus)}</td>
+                        <td class="p-3.5 font-mono text-xs text-amber-800 font-bold">
+                            ${l.followUpDate ? `📅 ${l.followUpDate}` : 'Not scheduled'}
+                        </td>
+                        <td class="p-3.5 font-extrabold text-emerald-700 whitespace-nowrap">
+                            ${l.commission || 'Calculating'}
                         </td>
                     </tr>
                 `).join('');
             }
         }
 
-        // 3. Invoices Table
+        // 4. Sub-Tab 3: Full Follow-ups Table
+        const fullFollowupsTbody = document.getElementById('prt-full-followups-tbody');
+        if (fullFollowupsTbody) {
+            if (followups.length === 0) {
+                fullFollowupsTbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400">No client follow-ups recorded. Click "+ Schedule Follow-up".</td></tr>`;
+            } else {
+                fullFollowupsTbody.innerHTML = followups.map(f => `
+                    <tr class="border-b border-gray-100 hover:bg-slate-50">
+                        <td class="p-3.5 font-mono font-bold text-blue-700">${f.followupId}</td>
+                        <td class="p-3.5">
+                            <div class="font-bold text-navy-950">${f.clientName}</div>
+                            <div class="text-[11px] text-gray-500">👤 ${f.contactPerson}</div>
+                        </td>
+                        <td class="p-3.5 font-mono text-xs">
+                            <span class="font-bold text-navy-950">📅 ${f.scheduledDate}</span>
+                            <span class="text-gray-400 block text-[10px]">${f.scheduledTime || ''}</span>
+                        </td>
+                        <td class="p-3.5">
+                            <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold bg-blue-50 text-blue-800 border border-blue-100">
+                                ${f.actionType}
+                            </span>
+                        </td>
+                        <td class="p-3.5 text-xs text-gray-700 max-w-xs">${f.notes}</td>
+                        <td class="p-3.5 whitespace-nowrap">
+                            <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold ${f.status.includes('Completed') ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}">
+                                ${f.status}
+                            </span>
+                        </td>
+                        <td class="p-3.5 text-right whitespace-nowrap">
+                            ${!f.status.includes('Completed') ? `
+                                <button onclick="window.DisicureMain.completePartnerFollowup('${f.followupId}')" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-700 rounded text-[11px] font-bold transition-colors shadow-sm">
+                                    ✓ Mark Done
+                                </button>
+                            ` : `<span class="text-[11px] text-emerald-600 font-bold">✓ Logged</span>`}
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        // 5. Sub-Tab 4: Invoices & Payment Ledger
         const invoicesTbody = document.getElementById('prt-invoices-tbody');
         if (invoicesTbody) {
             const demoInvoices = [
@@ -3538,25 +3651,118 @@ const DisicureMain = {
             `).join('');
         }
 
-        // 4. Referrals Table
-        const referralsTbody = document.getElementById('prt-referrals-tbody');
-        if (referralsTbody) {
-            if (referrals.length === 0) {
-                referralsTbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400">No client leads submitted yet. Click "+ Submit Client Lead" to claim your commission.</td></tr>`;
+        // 6. Sub-Tab 5: Batch Orders Table
+        const fullOrdersTbody = document.getElementById('prt-full-orders-tbody');
+        if (fullOrdersTbody) {
+            if (orders.length === 0) {
+                fullOrdersTbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400">No batch orders placed yet. Click "+ Place New Batch Order".</td></tr>`;
             } else {
-                referralsTbody.innerHTML = referrals.map(l => `
+                fullOrdersTbody.innerHTML = orders.map(o => `
                     <tr class="border-b border-gray-100 hover:bg-slate-50">
-                        <td class="p-3.5 font-mono font-bold text-purple-700">${l.leadId}<span class="block text-[10px] text-gray-400">${l.submittedDate}</span></td>
-                        <td class="p-3.5 font-bold text-navy-950">${l.clientName}<span class="block text-[11px] text-gray-500 font-normal">Contact: ${l.contactPerson} (${l.phone})</span></td>
-                        <td class="p-3.5 text-gray-600">${l.city}</td>
-                        <td class="p-3.5 text-gray-700 text-xs">${l.requirement}</td>
-                        <td class="p-3.5"><span class="px-2.5 py-1 rounded text-xs font-bold ${l.status.includes('Converted') ? 'bg-purple-50 text-purple-700 border border-purple-200' : 'bg-blue-50 text-blue-700 border border-blue-200'}">${l.status}</span></td>
-                        <td class="p-3.5 font-extrabold text-emerald-700">${l.commissionEarned}</td>
-                        <td class="p-3.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${l.commissionStatus.includes('Paid') ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">${l.commissionStatus}</span></td>
+                        <td class="p-3.5 font-mono font-bold text-navy-950">${o.orderId}<span class="block text-[10px] text-gray-400">${o.orderDate}</span></td>
+                        <td class="p-3.5 font-bold text-blue-700">${o.productName}</td>
+                        <td class="p-3.5 font-mono text-xs text-gray-700">${o.batchNumber}</td>
+                        <td class="p-3.5 font-bold text-navy-950">${o.quantity}</td>
+                        <td class="p-3.5"><span class="inline-block px-2.5 py-1 rounded text-xs font-bold ${o.status.includes('Delivered') || o.status.includes('Dispatched') ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}">${o.status}</span></td>
+                        <td class="p-3.5 font-extrabold text-navy-950">${o.invoiceAmount}</td>
+                        <td class="p-3.5 text-right whitespace-nowrap">
+                            <button onclick="alert('Downloading Certified Batch COA: ${o.coaDocument || 'COA_Batch.pdf'}')" class="px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded text-[11px] font-bold transition-colors">
+                                Download COA
+                            </button>
+                        </td>
                     </tr>
                 `).join('');
             }
         }
+
+        // 7. Sub-Tab 6: Shared Documents Vault Grid (Isolated to current partner)
+        const vaultGrid = document.getElementById('prt-vault-grid');
+        if (vaultGrid) {
+            if (docs.length === 0) {
+                vaultGrid.innerHTML = `<div class="col-span-3 p-8 text-center bg-slate-50 rounded-2xl border border-gray-200 text-gray-400">No shared documents currently in your vault.</div>`;
+            } else {
+                vaultGrid.innerHTML = docs.map(d => {
+                    const iconBg = d.fileType === 'XLSX' ? 'bg-emerald-50 text-emerald-600' :
+                                   d.fileType === 'PDF' ? 'bg-rose-50 text-rose-600' :
+                                   d.fileType === 'DOCX' ? 'bg-blue-50 text-blue-600' : 'bg-indigo-50 text-indigo-600';
+
+                    return `
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="flex items-start justify-between gap-2">
+                                <span class="w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center font-extrabold text-xs">
+                                    ${d.fileType}
+                                </span>
+                                <span class="text-[10px] font-bold text-gray-500 bg-slate-100 px-2 py-0.5 rounded">
+                                    ${d.category}
+                                </span>
+                            </div>
+                            <h4 class="text-sm font-extrabold text-navy-950 mt-3 break-all">${d.title}</h4>
+                            <p class="text-xs text-gray-500 mt-1 line-clamp-2">${d.description || ''}</p>
+                        </div>
+                        <div class="pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
+                            <span class="text-[11px] text-gray-400 font-medium">${d.fileSize} • ${d.uploadDate}</span>
+                            <button onclick="alert('Downloading ${d.title} (Secure Verified Link)...')" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-lg text-xs font-bold transition-colors flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                <span>Download</span>
+                            </button>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+            }
+        }
+    },
+
+    filterPartnerLeads: function() {
+        const searchInput = document.getElementById('prt-lead-search');
+        const statusFilter = document.getElementById('prt-lead-status-filter');
+        if (searchInput) this.prtLeadState.searchQuery = searchInput.value.toLowerCase().trim();
+        if (statusFilter) this.prtLeadState.statusFilter = statusFilter.value;
+        this.renderPartnerDashboardData();
+    },
+
+    openPartnerFollowupModal: function() {
+        const modal = document.getElementById('prt-followup-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+    },
+
+    closePartnerFollowupModal: function() {
+        const modal = document.getElementById('prt-followup-modal');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            const form = document.getElementById('prt-new-followup-form');
+            if (form) form.reset();
+        }
+    },
+
+    savePartnerFollowup: function(event) {
+        event.preventDefault();
+        const form = document.getElementById('prt-new-followup-form');
+        const session = window.DisicurePartner.getCurrentSession();
+        if (!form || !session || !window.DisicurePartner) return;
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        window.DisicurePartner.addPartnerFollowup(session.partnerId, data);
+        this.closePartnerFollowupModal();
+        this.renderPartnerDashboardData();
+        alert('Client follow-up touchpoint scheduled successfully.');
+    },
+
+    completePartnerFollowup: function(followupId) {
+        const session = window.DisicurePartner.getCurrentSession();
+        if (!session || !window.DisicurePartner) return;
+
+        window.DisicurePartner.completePartnerFollowup(session.partnerId, followupId);
+        this.renderPartnerDashboardData();
     },
 
     openPartnerOrderModal: function() {
@@ -3661,7 +3867,7 @@ const DisicureMain = {
         }
     },
 
-    savePartnerReferredLead: function(event) {
+    savePartnerLead: function(event) {
         event.preventDefault();
         const form = document.getElementById('prt-new-lead-form');
         const session = window.DisicurePartner.getCurrentSession();
@@ -3670,7 +3876,7 @@ const DisicureMain = {
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
 
-        window.DisicurePartner.submitReferredLead(session.partnerId, data);
+        window.DisicurePartner.addPartnerLead(session.partnerId, data);
         this.closePartnerLeadModal();
         this.renderPartnerDashboardData();
         alert('Lead registered in Master LMS. Commission tracking active.');
