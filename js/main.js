@@ -945,8 +945,13 @@ const DisicureMain = {
         roleFilter: 'all'
     },
 
+    admPartnerState: {
+        searchQuery: '',
+        typeFilter: 'all'
+    },
+
     initAdminPanel: function() {
-        if (!window.DisicureLeads && !window.DisicurePayments && !window.DisicureDocuments && !window.DisicureTeam) return;
+        if (!window.DisicureLeads && !window.DisicurePayments && !window.DisicureDocuments && !window.DisicureTeam && !window.DisicurePartner) return;
 
         // LMS Search Input
         const searchInput = document.getElementById('lms-search-input');
@@ -1060,11 +1065,29 @@ const DisicureMain = {
             });
         }
 
+        // Admin Partner Management Listeners
+        const admPrtSearch = document.getElementById('adm-prt-search-input');
+        if (admPrtSearch) {
+            admPrtSearch.addEventListener('input', (e) => {
+                this.admPartnerState.searchQuery = e.target.value.toLowerCase().trim();
+                this.renderAdminPartners();
+            });
+        }
+
+        const admPrtTypeSelect = document.getElementById('adm-prt-type-select');
+        if (admPrtTypeSelect) {
+            admPrtTypeSelect.addEventListener('change', (e) => {
+                this.admPartnerState.typeFilter = e.target.value;
+                this.renderAdminPartners();
+            });
+        }
+
         // Initial Full Render
         this.renderAdminLeads();
         this.renderPaymentsTable();
         this.renderDocumentsTable();
         this.renderTeamTable();
+        this.renderAdminPartners();
     },
 
     // Tab Switching Functionality
@@ -1098,6 +1121,8 @@ const DisicureMain = {
             this.renderDashboardAnalytics();
         } else if (tabId === 'tab-leads') {
             this.renderAdminLeads();
+        } else if (tabId === 'tab-partners') {
+            this.renderAdminPartners();
         } else if (tabId === 'tab-financials') {
             this.renderPaymentsTable();
         } else if (tabId === 'tab-documents') {
@@ -3346,6 +3371,627 @@ const DisicureMain = {
         window.DisicureTeam.saveRBACPermissions(currentPerms);
         this.closeRBACModal();
         alert('Role permissions successfully updated and enforced.');
+    },
+
+    // =========================================================================
+    // --- 15. PARTNER / CLIENT PORTAL & DASHBOARD CONTROLLER METHODS ---
+    // =========================================================================
+    initPartnerLogin: function() {
+        const usernameInput = document.getElementById('prt-login-username');
+        if (usernameInput) usernameInput.focus();
+    },
+
+    fillPartnerDemo: function(username, password) {
+        const uInput = document.getElementById('prt-login-username');
+        const pInput = document.getElementById('prt-login-password');
+        if (uInput) uInput.value = username;
+        if (pInput) pInput.value = password;
+
+        // Auto login on select
+        const form = document.getElementById('partner-login-form');
+        if (form) {
+            const fakeEvt = { preventDefault: () => {} };
+            this.handlePartnerLogin(fakeEvt);
+        }
+    },
+
+    handlePartnerLogin: function(event) {
+        event.preventDefault();
+        const usernameInput = document.getElementById('prt-login-username');
+        const passwordInput = document.getElementById('prt-login-password');
+        const errorEl = document.getElementById('prt-login-error');
+
+        if (!usernameInput || !passwordInput || !window.DisicurePartner) return;
+
+        const result = window.DisicurePartner.login(usernameInput.value, passwordInput.value);
+
+        if (result.success) {
+            if (errorEl) errorEl.classList.add('hidden');
+            window.location.hash = '#/partner/dashboard';
+        } else {
+            if (errorEl) {
+                errorEl.innerText = result.message || 'Invalid username or password.';
+                errorEl.classList.remove('hidden');
+            } else {
+                alert(result.message || 'Invalid username or password.');
+            }
+        }
+    },
+
+    handlePartnerLogout: function() {
+        if (confirm('Are you sure you want to log out of your Partner Portal session?')) {
+            if (window.DisicurePartner) {
+                window.DisicurePartner.logout();
+            }
+            window.location.hash = '#/partner/login';
+        }
+    },
+
+    initPartnerDashboard: function() {
+        if (!window.DisicurePartner) return;
+        const session = window.DisicurePartner.getCurrentSession();
+        if (!session) return;
+
+        this.renderPartnerDashboardData();
+    },
+
+    switchPartnerTab: function(tabId) {
+        const tabs = document.querySelectorAll('.prt-tab-content');
+        tabs.forEach(t => {
+            t.classList.add('hidden');
+            t.classList.remove('block');
+        });
+
+        const target = document.getElementById(tabId);
+        if (target) {
+            target.classList.remove('hidden');
+            target.classList.add('block');
+        }
+
+        const btns = document.querySelectorAll('.prt-tab-btn');
+        btns.forEach(b => {
+            b.classList.remove('bg-blue-600', 'text-white', 'shadow-sm', 'font-extrabold');
+            b.classList.add('bg-white', 'text-gray-700', 'border', 'border-gray-200', 'font-bold');
+        });
+
+        const activeBtn = document.getElementById(`btn-${tabId}`);
+        if (activeBtn) {
+            activeBtn.classList.remove('bg-white', 'text-gray-700', 'border', 'border-gray-200');
+            activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow-sm', 'font-extrabold');
+        }
+
+        this.renderPartnerDashboardData();
+    },
+
+    renderPartnerDashboardData: function() {
+        if (!window.DisicurePartner) return;
+        const session = window.DisicurePartner.getCurrentSession();
+        if (!session) return;
+
+        const orders = window.DisicurePartner.getPartnerOrders(session.partnerId);
+        const referrals = window.DisicurePartner.getPartnerReferredLeads(session.partnerId);
+
+        // 1. Overview Orders Table
+        const overviewTbody = document.getElementById('prt-overview-orders-tbody');
+        if (overviewTbody) {
+            if (orders.length === 0) {
+                overviewTbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">No recent orders recorded. Place your first batch order.</td></tr>`;
+            } else {
+                overviewTbody.innerHTML = orders.slice(0, 3).map(o => `
+                    <tr class="border-b border-gray-100 hover:bg-slate-50">
+                        <td class="p-3 font-mono font-bold text-navy-950">${o.orderId}<span class="block text-[10px] text-gray-400">${o.orderDate}</span></td>
+                        <td class="p-3 font-bold text-blue-700">${o.productName}</td>
+                        <td class="p-3"><span class="font-bold">${o.quantity}</span><span class="block font-mono text-[10px] text-gray-400">${o.batchNumber}</span></td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${o.status.includes('Delivered') || o.status.includes('Dispatched') ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">${o.status}</span></td>
+                        <td class="p-3 font-extrabold text-navy-950">${o.invoiceAmount}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        // 2. Full Orders Table
+        const fullOrdersTbody = document.getElementById('prt-full-orders-tbody');
+        if (fullOrdersTbody) {
+            if (orders.length === 0) {
+                fullOrdersTbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400">No batch orders placed yet. Click "+ Place New Batch Order".</td></tr>`;
+            } else {
+                fullOrdersTbody.innerHTML = orders.map(o => `
+                    <tr class="border-b border-gray-100 hover:bg-slate-50">
+                        <td class="p-3.5 font-mono font-bold text-navy-950">${o.orderId}<span class="block text-[10px] text-gray-400">${o.orderDate}</span></td>
+                        <td class="p-3.5 font-bold text-blue-700">${o.productName}</td>
+                        <td class="p-3.5 font-mono text-xs text-gray-700">${o.batchNumber}</td>
+                        <td class="p-3.5 font-bold text-navy-950">${o.quantity}</td>
+                        <td class="p-3.5"><span class="inline-block px-2.5 py-1 rounded text-xs font-bold ${o.status.includes('Delivered') || o.status.includes('Dispatched') ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}">${o.status}</span></td>
+                        <td class="p-3.5 font-extrabold text-navy-950">${o.invoiceAmount}</td>
+                        <td class="p-3.5 text-right whitespace-nowrap">
+                            <button onclick="alert('Downloading Certified Batch COA: ${o.coaDocument || 'COA_Batch.pdf'}')" class="px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded text-[11px] font-bold transition-colors">
+                                Download COA
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        // 3. Invoices Table
+        const invoicesTbody = document.getElementById('prt-invoices-tbody');
+        if (invoicesTbody) {
+            const demoInvoices = [
+                { id: `INV-${session.partnerId}-01`, batch: 'BT-DSR-2608', date: '2026-10-01', mode: 'NEFT / LC 30 Days', amount: '₹2,45,000', status: '🟡 Pending Settlement' },
+                { id: `INV-${session.partnerId}-02`, batch: 'BT-MOL-2609', date: '2026-09-24', mode: 'RTGS Cleared', amount: '₹1,85,000', status: '🟢 Paid & Reconciled' }
+            ];
+
+            invoicesTbody.innerHTML = demoInvoices.map(inv => `
+                <tr class="border-b border-gray-100 hover:bg-slate-50">
+                    <td class="p-3.5 font-mono font-bold text-navy-950">${inv.id}</td>
+                    <td class="p-3.5 font-mono text-gray-600">${inv.batch}</td>
+                    <td class="p-3.5 text-gray-500">${inv.date}</td>
+                    <td class="p-3.5 font-medium text-gray-700">${inv.mode}</td>
+                    <td class="p-3.5 font-extrabold text-navy-950">${inv.amount}</td>
+                    <td class="p-3.5"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${inv.status.includes('Paid') ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}">${inv.status}</span></td>
+                    <td class="p-3.5 text-right whitespace-nowrap">
+                        <button onclick="alert('Downloading GST Tax Invoice ${inv.id}...')" class="px-2.5 py-1 bg-slate-100 hover:bg-blue-600 hover:text-white text-gray-700 rounded text-[11px] font-bold transition-colors">
+                            PDF Invoice
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 4. Referrals Table
+        const referralsTbody = document.getElementById('prt-referrals-tbody');
+        if (referralsTbody) {
+            if (referrals.length === 0) {
+                referralsTbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400">No client leads submitted yet. Click "+ Submit Client Lead" to claim your commission.</td></tr>`;
+            } else {
+                referralsTbody.innerHTML = referrals.map(l => `
+                    <tr class="border-b border-gray-100 hover:bg-slate-50">
+                        <td class="p-3.5 font-mono font-bold text-purple-700">${l.leadId}<span class="block text-[10px] text-gray-400">${l.submittedDate}</span></td>
+                        <td class="p-3.5 font-bold text-navy-950">${l.clientName}<span class="block text-[11px] text-gray-500 font-normal">Contact: ${l.contactPerson} (${l.phone})</span></td>
+                        <td class="p-3.5 text-gray-600">${l.city}</td>
+                        <td class="p-3.5 text-gray-700 text-xs">${l.requirement}</td>
+                        <td class="p-3.5"><span class="px-2.5 py-1 rounded text-xs font-bold ${l.status.includes('Converted') ? 'bg-purple-50 text-purple-700 border border-purple-200' : 'bg-blue-50 text-blue-700 border border-blue-200'}">${l.status}</span></td>
+                        <td class="p-3.5 font-extrabold text-emerald-700">${l.commissionEarned}</td>
+                        <td class="p-3.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${l.commissionStatus.includes('Paid') ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">${l.commissionStatus}</span></td>
+                    </tr>
+                `).join('');
+            }
+        }
+    },
+
+    openPartnerOrderModal: function() {
+        const modal = document.getElementById('prt-order-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+    },
+
+    closePartnerOrderModal: function() {
+        const modal = document.getElementById('prt-order-modal');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            const form = document.getElementById('prt-new-order-form');
+            if (form) form.reset();
+        }
+    },
+
+    savePartnerOrder: function(event) {
+        event.preventDefault();
+        const form = document.getElementById('prt-new-order-form');
+        const session = window.DisicurePartner.getCurrentSession();
+        if (!form || !session || !window.DisicurePartner) return;
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        window.DisicurePartner.placePartnerOrder(session.partnerId, data);
+        this.closePartnerOrderModal();
+        this.renderPartnerDashboardData();
+        alert('Batch Order successfully received and submitted to Disicure Production Queue.');
+    },
+
+    openPartnerPaymentModal: function() {
+        const modal = document.getElementById('prt-payment-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+    },
+
+    closePartnerPaymentModal: function() {
+        const modal = document.getElementById('prt-payment-modal');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            const form = document.getElementById('prt-new-payment-form');
+            if (form) form.reset();
+        }
+    },
+
+    savePartnerPaymentProof: function(event) {
+        event.preventDefault();
+        const form = document.getElementById('prt-new-payment-form');
+        const session = window.DisicurePartner.getCurrentSession();
+        if (!form || !session || !window.DisicurePartner) return;
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        if (window.DisicurePayments) {
+            window.DisicurePayments.addPayment({
+                clientName: session.companyName,
+                invoiceId: data.invoiceId,
+                totalAmount: parseFloat(data.amountPaid) || 0,
+                amountReceived: parseFloat(data.amountPaid) || 0,
+                paymentDate: new Date().toISOString().substring(0, 10),
+                paymentMode: data.paymentMode,
+                paymentStatus: '🟢 Paid',
+                notes: `Direct Partner Settlement UTR: ${data.utrRef}`
+            });
+        }
+
+        this.closePartnerPaymentModal();
+        this.renderPartnerDashboardData();
+        alert('Payment settlement slip received. Reconciled with Disicure Accounts.');
+    },
+
+    openPartnerLeadModal: function() {
+        const modal = document.getElementById('prt-lead-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+    },
+
+    closePartnerLeadModal: function() {
+        const modal = document.getElementById('prt-lead-modal');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            const form = document.getElementById('prt-new-lead-form');
+            if (form) form.reset();
+        }
+    },
+
+    savePartnerReferredLead: function(event) {
+        event.preventDefault();
+        const form = document.getElementById('prt-new-lead-form');
+        const session = window.DisicurePartner.getCurrentSession();
+        if (!form || !session || !window.DisicurePartner) return;
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        window.DisicurePartner.submitReferredLead(session.partnerId, data);
+        this.closePartnerLeadModal();
+        this.renderPartnerDashboardData();
+        alert('Lead registered in Master LMS. Commission tracking active.');
+    },
+
+    savePartnerSelfProfile: function(event) {
+        event.preventDefault();
+        const form = document.getElementById('prt-profile-form');
+        const session = window.DisicurePartner.getCurrentSession();
+        if (!form || !session || !window.DisicurePartner) return;
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        window.DisicurePartner.updatePartner(session.partnerId, {
+            companyName: data.companyName,
+            contactPerson: data.contactPerson,
+            mobile: data.mobile,
+            email: data.email,
+            gstin: data.gstin,
+            drugLicense: data.drugLicense
+        });
+
+        alert('Partner profile details successfully saved.');
+    },
+
+    // =========================================================================
+    // --- 16. ADMIN PARTNER MANAGEMENT SUITE CONTROLLER METHODS ---
+    // =========================================================================
+    renderAdminPartners: function() {
+        if (!window.DisicurePartner) return;
+        const allPartners = window.DisicurePartner.getAllPartners();
+        const summary = window.DisicurePartner.getSummary();
+
+        // Update Summary KPI Cards
+        const setElText = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = val;
+        };
+
+        setElText('adm-prt-total', summary.total);
+        setElText('adm-prt-distributors', (summary.distributors + summary.businessPartners));
+        setElText('adm-prt-clients', summary.clients);
+        setElText('adm-prt-marketing', (summary.marketingPartners + summary.freelancers + summary.salesPartners + summary.agencies));
+
+        // Render Type Filter Pills
+        this.renderPartnerTypePills(summary);
+
+        // Filter Partners
+        const query = this.admPartnerState.searchQuery;
+        let filtered = allPartners.filter(p => {
+            const matchesQuery = !query ||
+                (p.companyName && p.companyName.toLowerCase().includes(query)) ||
+                (p.contactPerson && p.contactPerson.toLowerCase().includes(query)) ||
+                (p.partnerType && p.partnerType.toLowerCase().includes(query)) ||
+                (p.email && p.email.toLowerCase().includes(query)) ||
+                (p.mobile && p.mobile.toLowerCase().includes(query)) ||
+                (p.city && p.city.toLowerCase().includes(query)) ||
+                (p.assignedTerritory && p.assignedTerritory.toLowerCase().includes(query)) ||
+                (p.username && p.username.toLowerCase().includes(query));
+
+            const matchesType = this.admPartnerState.typeFilter === 'all' || p.partnerType.includes(this.admPartnerState.typeFilter);
+
+            return matchesQuery && matchesType;
+        });
+
+        const tbody = document.getElementById('adm-prt-tbody');
+        const emptyState = document.getElementById('adm-prt-empty-state');
+        const countDisplay = document.getElementById('adm-prt-showing-count');
+
+        if (countDisplay) {
+            countDisplay.innerText = `Showing ${filtered.length} of ${allPartners.length} Partners`;
+        }
+
+        if (!tbody) return;
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '';
+            if (emptyState) emptyState.classList.remove('hidden');
+            return;
+        }
+
+        if (emptyState) emptyState.classList.add('hidden');
+
+        let rowsHtml = '';
+        filtered.forEach(p => {
+            const badgeClass = p.partnerType.includes('Distributor') ? 'bg-blue-100 text-blue-900 border-blue-300' :
+                               p.partnerType.includes('Client') || p.partnerType.includes('Hospital') ? 'bg-rose-100 text-rose-900 border-rose-300' :
+                               p.partnerType.includes('Marketing') ? 'bg-purple-100 text-purple-900 border-purple-300' :
+                               p.partnerType.includes('Freelancer') ? 'bg-teal-100 text-teal-900 border-teal-300' :
+                               p.partnerType.includes('Sales') ? 'bg-emerald-100 text-emerald-900 border-emerald-300' :
+                               'bg-indigo-100 text-indigo-900 border-indigo-300';
+
+            const statusClass = p.accountStatus && p.accountStatus.includes('Active') ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200';
+
+            rowsHtml += `
+            <tr class="border-b border-gray-100 hover:bg-blue-50/20 transition-colors text-xs">
+                <!-- Company & Contact -->
+                <td class="p-3.5">
+                    <div class="font-extrabold text-navy-950 text-sm">${p.companyName}</div>
+                    <div class="text-xs text-gray-600 font-medium">👤 ${p.contactPerson}</div>
+                    <div class="text-[11px] text-gray-400 font-mono mt-0.5">${p.mobile} • ${p.city}, ${p.state}</div>
+                </td>
+
+                <!-- Category Badge -->
+                <td class="p-3.5 whitespace-nowrap">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border ${badgeClass}">
+                        ${p.partnerType}
+                    </span>
+                    <span class="text-[10px] text-gray-400 block mt-1 font-mono">${p.partnerId}</span>
+                </td>
+
+                <!-- Territory & Commercial Terms -->
+                <td class="p-3.5">
+                    <div class="font-bold text-navy-950 text-xs">📍 ${p.assignedTerritory}</div>
+                    <div class="text-[11px] text-indigo-700 font-medium mt-0.5">${p.commercialTerms}</div>
+                </td>
+
+                <!-- Login Credentials -->
+                <td class="p-3.5 whitespace-nowrap font-mono text-xs">
+                    <div class="font-bold text-navy-950">🔑 ${p.username}</div>
+                    <span class="text-[10px] text-gray-400 block mt-0.5">Pass: ••••••••</span>
+                </td>
+
+                <!-- Business & Orders -->
+                <td class="p-3.5 whitespace-nowrap">
+                    <div class="font-extrabold text-navy-950">${p.totalBusinessValue}</div>
+                    <span class="text-[10px] text-blue-600 font-bold block mt-0.5">${p.activeOrdersCount || p.referredLeadsCount || 0} Batches / Refs</span>
+                </td>
+
+                <!-- Account Status -->
+                <td class="p-3.5 whitespace-nowrap">
+                    <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${statusClass}">
+                        ${p.accountStatus || '🟢 Active'}
+                    </span>
+                    <span class="text-[10px] text-gray-400 block mt-0.5">Last: ${p.lastLoginDate ? p.lastLoginDate.split(' ')[0] : 'Today'}</span>
+                </td>
+
+                <!-- Actions -->
+                <td class="p-3.5 whitespace-nowrap text-right">
+                    <div class="flex items-center justify-end gap-1.5">
+                        <!-- Impersonate Login -->
+                        <button onclick="window.DisicureMain.impersonatePartner('${p.partnerId}')" class="p-1.5 bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded-md transition-colors" title="Login As Partner (Open Dashboard)">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                        </button>
+                        
+                        <!-- Edit Partner -->
+                        <button onclick="window.DisicureMain.openEditPartnerModal('${p.partnerId}')" class="p-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-md transition-colors" title="Edit Partner">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        </button>
+
+                        <!-- Delete Partner -->
+                        <button onclick="window.DisicureMain.deletePartner('${p.partnerId}')" class="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-md transition-colors" title="Delete Partner">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            `;
+        });
+
+        tbody.innerHTML = rowsHtml;
+    },
+
+    renderPartnerTypePills: function(summary) {
+        const container = document.getElementById('adm-prt-type-pills');
+        if (!container) return;
+
+        const types = [
+            { key: 'all', label: 'All Partners', count: summary ? summary.total : 0, icon: '🤝' },
+            { key: 'Pharma Distributor', label: 'Distributors', count: summary ? summary.distributors : 0, icon: '🏢' },
+            { key: 'Business Partner', label: 'PCD Franchises', count: summary ? summary.businessPartners : 0, icon: '🤝' },
+            { key: 'Client', label: 'Hospital Clients', count: summary ? summary.clients : 0, icon: '🏥' },
+            { key: 'Marketing Partner', label: 'Marketing', count: summary ? summary.marketingPartners : 0, icon: '📢' },
+            { key: 'Freelancer', label: 'Freelancers', count: summary ? summary.freelancers : 0, icon: '💼' },
+            { key: 'Sales Partner', label: 'Sales Alliances', count: summary ? summary.salesPartners : 0, icon: '📞' },
+            { key: 'Agency', label: 'Agencies', count: summary ? summary.agencies : 0, icon: '🏢' }
+        ];
+
+        let html = '';
+        types.forEach(t => {
+            const isActive = (t.key === 'all' && this.admPartnerState.typeFilter === 'all') || (t.key !== 'all' && this.admPartnerState.typeFilter === t.key);
+            const activeClass = isActive 
+                ? 'bg-blue-600 text-white shadow-sm font-extrabold border-blue-600' 
+                : 'bg-white text-gray-700 hover:bg-blue-50 border-gray-200 font-medium';
+
+            html += `
+                <button onclick="window.DisicureMain.filterAdminPartnerType('${t.key}')" class="px-3.5 py-1.5 rounded-lg border text-xs whitespace-nowrap transition-all duration-200 flex items-center gap-1.5 ${activeClass}">
+                    <span>${t.icon}</span>
+                    <span>${t.label}</span>
+                    <span class="text-[10px] px-1.5 py-0.2 rounded-full ${isActive ? 'bg-blue-700 text-blue-100' : 'bg-gray-100 text-gray-600'} font-bold">${t.count}</span>
+                </button>
+            `;
+        });
+
+        container.innerHTML = html;
+    },
+
+    filterAdminPartnerType: function(typeKey) {
+        this.admPartnerState.typeFilter = typeKey;
+        const select = document.getElementById('adm-prt-type-select');
+        if (select) select.value = typeKey;
+        this.renderAdminPartners();
+    },
+
+    openAddPartnerModal: function() {
+        const modal = document.getElementById('lms-add-partner-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+    },
+
+    closeAddPartnerModal: function() {
+        const modal = document.getElementById('lms-add-partner-modal');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            const form = document.getElementById('lms-new-partner-form');
+            if (form) form.reset();
+        }
+    },
+
+    saveNewPartner: function(event) {
+        event.preventDefault();
+        const form = document.getElementById('lms-new-partner-form');
+        if (!form || !window.DisicurePartner) return;
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        window.DisicurePartner.addPartner(data);
+        this.closeAddPartnerModal();
+        this.renderAdminPartners();
+    },
+
+    openEditPartnerModal: function(partnerId) {
+        if (!window.DisicurePartner) return;
+        const partner = window.DisicurePartner.getPartnerById(partnerId);
+        if (!partner) return;
+
+        const modal = document.getElementById('adm-edit-partner-modal');
+        const idInput = document.getElementById('adm-edit-prt-id');
+        const compInput = document.getElementById('adm-edit-prt-company');
+        const typeSelect = document.getElementById('adm-edit-prt-type');
+        const contInput = document.getElementById('adm-edit-prt-contact');
+        const mobInput = document.getElementById('adm-edit-prt-mobile');
+        const terrInput = document.getElementById('adm-edit-prt-territory');
+        const termsInput = document.getElementById('adm-edit-prt-terms');
+        const statusSelect = document.getElementById('adm-edit-prt-status');
+
+        if (idInput) idInput.value = partner.partnerId;
+        if (compInput) compInput.value = partner.companyName;
+        if (typeSelect) typeSelect.value = partner.partnerType;
+        if (contInput) contInput.value = partner.contactPerson;
+        if (mobInput) mobInput.value = partner.mobile;
+        if (terrInput) terrInput.value = partner.assignedTerritory || '';
+        if (termsInput) termsInput.value = partner.commercialTerms || '';
+        if (statusSelect) statusSelect.value = partner.accountStatus || '🟢 Active';
+
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+    },
+
+    closeEditPartnerModal: function() {
+        const modal = document.getElementById('adm-edit-partner-modal');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    },
+
+    saveEditPartner: function(event) {
+        event.preventDefault();
+        const form = document.getElementById('adm-edit-partner-form');
+        if (!form || !window.DisicurePartner) return;
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        const updatePayload = {
+            companyName: data.companyName,
+            partnerType: data.partnerType,
+            contactPerson: data.contactPerson,
+            mobile: data.mobile,
+            assignedTerritory: data.assignedTerritory,
+            commercialTerms: data.commercialTerms,
+            accountStatus: data.accountStatus
+        };
+
+        if (data.newPassword && data.newPassword.trim()) {
+            updatePayload.password = data.newPassword.trim();
+        }
+
+        window.DisicurePartner.updatePartner(data.partnerId, updatePayload);
+        this.closeEditPartnerModal();
+        this.renderAdminPartners();
+    },
+
+    deletePartner: function(partnerId) {
+        if (confirm(`Are you sure you want to remove partner ${partnerId}?`)) {
+            if (window.DisicurePartner) {
+                window.DisicurePartner.deletePartner(partnerId);
+            }
+            this.renderAdminPartners();
+        }
+    },
+
+    impersonatePartner: function(partnerId) {
+        if (!window.DisicurePartner) return;
+        const partner = window.DisicurePartner.getPartnerById(partnerId);
+        if (partner) {
+            window.DisicurePartner.setSession(partner);
+            window.location.hash = '#/partner/dashboard';
+        }
     }
 };
 

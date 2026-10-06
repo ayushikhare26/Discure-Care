@@ -96,6 +96,12 @@ const DisicureRouter = {
         if (hash === '#/disclaimer') {
             return this.templates.disclaimer();
         }
+        if (hash === '#/partner/login' || hash === '#/partner-login') {
+            return this.templates.partnerLogin();
+        }
+        if (hash === '#/partner' || hash === '#/partner/dashboard' || hash.startsWith('#/partner/')) {
+            return this.templates.partnerDashboard();
+        }
         if (hash === '#/admin' || hash === '#/admin/leads' || hash === '#/leads') {
             return this.templates.adminLeads();
         }
@@ -166,6 +172,14 @@ const DisicureRouter = {
         } else if (hash.startsWith('#/products/')) {
             if (window.DisicureMain) {
                 window.DisicureMain.initEnquiryForms();
+            }
+        } else if (hash === '#/partner/login' || hash === '#/partner-login') {
+            if (window.DisicureMain && typeof window.DisicureMain.initPartnerLogin === 'function') {
+                window.DisicureMain.initPartnerLogin();
+            }
+        } else if (hash === '#/partner' || hash === '#/partner/dashboard' || hash.startsWith('#/partner/')) {
+            if (window.DisicureMain && typeof window.DisicureMain.initPartnerDashboard === 'function') {
+                window.DisicureMain.initPartnerDashboard();
             }
         } else if (hash === '#/admin' || hash === '#/admin/leads' || hash === '#/leads') {
             if (window.DisicureMain && typeof window.DisicureMain.initAdminPanel === 'function') {
@@ -2149,21 +2163,127 @@ const DisicureRouter = {
             </div>
 
             <!-- ================================================================= -->
-            <!-- TAB 3: ACTIVE PARTNERS DIRECTORY                                 -->
+            <!-- TAB 3: PARTNER & CLIENT MANAGEMENT SUITE                          -->
             <!-- ================================================================= -->
             <div id="tab-partners" class="admin-tab-content hidden">
                 <section class="py-8 bg-white min-h-[70vh]">
                     <div class="max-w-7xl mx-auto px-4 lg:px-8 space-y-6">
-                        <div class="flex items-center justify-between border-b border-gray-100 pb-4">
+                        
+                        <!-- Header & Actions -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
                             <div>
-                                <h2 class="text-xl font-extrabold text-navy-950">🤝 Active Pharmaceutical Partners Directory</h2>
-                                <p class="text-xs text-gray-500 font-normal">Authorized distributors, hospital procurement networks, and PCD franchise operators.</p>
+                                <h2 class="text-xl font-extrabold text-navy-950 flex items-center gap-2">
+                                    <span>🤝 Partner & Client Relationship Management</span>
+                                    <span class="text-[10px] font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">B2B Portal</span>
+                                </h2>
+                                <p class="text-xs text-gray-500 font-normal mt-0.5">Manage pharma distributors, business partners, marketing affiliates, freelancers, sales associates, clients/hospitals, and agencies.</p>
                             </div>
-                            <span class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">42 Registered Partners</span>
+                            <div class="flex items-center gap-2">
+                                <a href="#/partner/login" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-gray-700 text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
+                                    <span>↗️ Open Partner Portal</span>
+                                </a>
+                                <button onclick="window.DisicureMain.openAddPartnerModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 transform hover:-translate-y-0.5">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+                                    <span>+ Add Partner / Client</span>
+                                </button>
+                            </div>
                         </div>
-                        <div id="lms-partners-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <!-- Populated dynamically via main.js -->
+
+                        <!-- 4 Summary KPI Metric Cards -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="bg-blue-50/40 border border-blue-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-blue-700 uppercase tracking-wider block">🤝 Total Partners</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-navy-950 mt-1.5" id="adm-prt-total">0</div>
+                                <p class="text-[11px] text-gray-500 mt-1">Across all 7 business types</p>
+                            </div>
+                            <div class="bg-indigo-50/40 border border-indigo-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-indigo-700 uppercase tracking-wider block">🏢 Distributors & Stockists</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-indigo-600 mt-1.5" id="adm-prt-distributors">0</div>
+                                <p class="text-[11px] text-indigo-700 font-medium mt-1">Wholesale supply channels</p>
+                            </div>
+                            <div class="bg-rose-50/40 border border-rose-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-rose-700 uppercase tracking-wider block">🏥 Clients & Hospitals</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-rose-600 mt-1.5" id="adm-prt-clients">0</div>
+                                <p class="text-[11px] text-rose-700 font-medium mt-1">Direct institutional buyers</p>
+                            </div>
+                            <div class="bg-emerald-50/40 border border-emerald-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-emerald-700 uppercase tracking-wider block">📢 Marketing & Sales</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-emerald-600 mt-1.5" id="adm-prt-marketing">0</div>
+                                <p class="text-[11px] text-emerald-700 font-medium mt-1">Freelancers, reps & agencies</p>
+                            </div>
                         </div>
+
+                        <!-- Partner Type Filter Pills Bar -->
+                        <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs" id="adm-prt-type-pills">
+                            <!-- Populated dynamically via window.DisicureMain.renderPartnerTypePills() -->
+                        </div>
+
+                        <!-- Search & Filter Controls Toolbar -->
+                        <div class="bg-slate-50 border border-gray-200 p-4 rounded-xl shadow-sm space-y-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                <!-- Search Input -->
+                                <div class="lg:col-span-2 relative">
+                                    <input type="text" id="adm-prt-search-input" placeholder="Search by Company, Contact, Type, City, Territory, Email, or Phone..." class="w-full bg-white border border-gray-200 rounded-lg p-2.5 pl-10 text-xs font-medium focus:outline-none focus:border-blue-500 shadow-sm">
+                                    <span class="absolute left-3.5 top-3 text-gray-400">
+                                        ${DisicureRouter.icons.search}
+                                    </span>
+                                </div>
+
+                                <!-- Partner Type Filter Dropdown -->
+                                <div>
+                                    <select id="adm-prt-type-select" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-bold text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
+                                        <option value="all">All Partner Categories</option>
+                                        <option value="Pharma Distributor">🏢 Pharma Distributor</option>
+                                        <option value="Business Partner">🤝 Business Partner</option>
+                                        <option value="Marketing Partner">📢 Marketing Partner</option>
+                                        <option value="Freelancer">💼 Freelancer</option>
+                                        <option value="Sales Partner">📞 Sales Partner</option>
+                                        <option value="Client">🏥 Client / Hospital / Clinic</option>
+                                        <option value="Agency">🏢 Agency</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Count Indicator -->
+                            <div class="flex items-center justify-between pt-1 text-xs">
+                                <span class="font-bold text-gray-600" id="adm-prt-showing-count">Loading partner database...</span>
+                                <span class="text-gray-400 text-[11px]">Instant client-side indexing & impersonation login</span>
+                            </div>
+                        </div>
+
+                        <!-- Partner Data Table Card -->
+                        <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse" id="adm-prt-table">
+                                    <thead>
+                                        <tr class="bg-slate-100/80 border-b border-gray-200 text-[11px] font-extrabold text-gray-600 uppercase tracking-wider">
+                                            <th class="p-3.5">Company & Contact Person</th>
+                                            <th class="p-3.5">Partner Category</th>
+                                            <th class="p-3.5">Territory & Commercials</th>
+                                            <th class="p-3.5">Login Credentials</th>
+                                            <th class="p-3.5">Business & Orders</th>
+                                            <th class="p-3.5">Account Status</th>
+                                            <th class="p-3.5 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adm-prt-tbody">
+                                        <!-- Populated dynamically via window.DisicureMain.renderAdminPartners() -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Empty State Notice -->
+                            <div id="adm-prt-empty-state" class="hidden py-16 text-center">
+                                <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    ${DisicureRouter.icons.search}
+                                </div>
+                                <h3 class="text-base font-extrabold text-navy-950">No Partners Found</h3>
+                                <p class="text-xs text-gray-500 max-w-sm mx-auto mt-1 font-normal leading-relaxed">
+                                    No records match your selected filter or search query. Click "+ Add Partner / Client" to create a new profile.
+                                </p>
+                            </div>
+                        </div>
+
                     </div>
                 </section>
             </div>
@@ -3237,15 +3357,197 @@ const DisicureRouter = {
 
                         <div class="p-4 bg-blue-50 text-blue-900 rounded-xl text-xs font-normal border border-blue-100 flex items-start gap-2.5">
                             <svg class="w-5 h-5 text-blue-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            <span><strong>Admin Security Note:</strong> Super Admins retain master overrides across all modules. Changes saved here instantly update navigation and access controls across the platform.</span>
+            <!-- Add Partner / Client Modal -->
+            <div id="lms-add-partner-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <!-- Backdrop -->
+                <div class="absolute inset-0 bg-navy-950/60 backdrop-blur-sm" onclick="window.DisicureMain.closeAddPartnerModal()"></div>
+                
+                <!-- Modal Card -->
+                <div class="relative bg-white rounded-2xl p-6 md:p-8 max-w-2xl w-full mx-4 shadow-2xl z-10 max-h-[90vh] overflow-y-auto">
+                    <button class="absolute top-4 right-4 text-gray-400 hover:text-navy-950 focus:outline-none" onclick="window.DisicureMain.closeAddPartnerModal()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                    
+                    <h3 class="text-xl font-extrabold text-navy-950 mb-1">🤝 Provision Partner / Client Account</h3>
+                    <p class="text-xs text-gray-500 mb-6 font-normal">Add distributors, PCD partners, hospital clients, freelancers, or agencies with dedicated portal access.</p>
+                    
+                    <form id="lms-new-partner-form" onsubmit="window.DisicureMain.saveNewPartner(event)" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Company / Organization Name *</label>
+                                <input type="text" name="companyName" required placeholder="e.g. Medilink Pharma Network" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Partner Category / Type *</label>
+                                <select name="partnerType" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold focus:border-blue-500">
+                                    <option value="🏢 Pharma Distributor" selected>🏢 Pharma Distributor</option>
+                                    <option value="🤝 Business Partner">🤝 Business Partner (PCD Franchise)</option>
+                                    <option value="📢 Marketing Partner">📢 Marketing Partner</option>
+                                    <option value="💼 Freelancer">💼 Freelancer (Field Rep)</option>
+                                    <option value="📞 Sales Partner">📞 Sales Partner</option>
+                                    <option value="🏥 Client / Hospital / Clinic">🏥 Client / Hospital / Clinic</option>
+                                    <option value="🏢 Agency">🏢 Agency</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Contact Person Name *</label>
+                                <input type="text" name="contactPerson" required placeholder="e.g. Mr. Rajesh Singhal" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500 font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Official Mobile / WhatsApp *</label>
+                                <input type="tel" name="mobile" required placeholder="+91 98765 11223" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-mono focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Official Email Address *</label>
+                                <input type="email" name="email" required placeholder="distributor@medilink.com" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">City & State *</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <input type="text" name="city" required placeholder="City" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                                    <input type="text" name="state" required placeholder="State" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Assigned Territory / Zone</label>
+                                <input type="text" name="assignedTerritory" placeholder="e.g. Western UP & NCR Region" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Commercial Discount / Commission Terms</label>
+                                <input type="text" name="commercialTerms" placeholder="e.g. 20% Wholesale Margin • 30 Days Credit" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <!-- Login Credentials Block -->
+                        <div class="bg-blue-50/40 p-4 rounded-xl border border-blue-100 space-y-3">
+                            <span class="text-[10px] font-extrabold text-blue-900 uppercase tracking-wider block">🔑 Dedicated Partner Portal Login</span>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Username / ID *</label>
+                                    <input type="text" name="username" required placeholder="username" class="w-full bg-white border border-gray-200 rounded p-2 text-xs font-mono focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Password *</label>
+                                    <input type="password" name="password" required placeholder="Set password" value="partner123" class="w-full bg-white border border-gray-200 rounded p-2 text-xs font-mono focus:border-blue-500">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">GSTIN Number</label>
+                                <input type="text" name="gstin" placeholder="09AABCM1234F1Z8" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-mono focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Drug License (DL) No.</label>
+                                <input type="text" name="drugLicense" placeholder="DL-UP-20B-8849" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-mono focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Account Status</label>
+                                <select name="accountStatus" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold focus:border-blue-500">
+                                    <option value="🟢 Active">🟢 Active</option>
+                                    <option value="🟡 Pending Verification">🟡 Pending Verification</option>
+                                    <option value="🔴 Inactive">🔴 Inactive</option>
+                                </select>
+                            </div>
                         </div>
 
                         <div class="pt-2 flex justify-end gap-3 border-t border-gray-100">
-                            <button type="button" onclick="window.DisicureMain.closeRBACModal()" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded">
+                            <button type="button" onclick="window.DisicureMain.closeAddPartnerModal()" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded transition-colors">
                                 Cancel
                             </button>
-                            <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded shadow">
-                                Save Role Permissions
+                            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow transition-colors">
+                                Provision Partner Account
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Edit Partner Modal -->
+            <div id="adm-edit-partner-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <div class="absolute inset-0 bg-navy-950/60 backdrop-blur-sm" onclick="window.DisicureMain.closeEditPartnerModal()"></div>
+                <div class="relative bg-white rounded-2xl p-6 md:p-8 max-w-xl w-full mx-4 shadow-2xl z-10 max-h-[90vh] overflow-y-auto">
+                    <button class="absolute top-4 right-4 text-gray-400 hover:text-navy-950 focus:outline-none" onclick="window.DisicureMain.closeEditPartnerModal()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                    <h3 class="text-xl font-extrabold text-navy-950 mb-1">✏️ Edit Partner Profile & Terms</h3>
+                    <p class="text-xs text-gray-500 mb-5 font-normal">Update commercial terms, assigned territory, or reset login password.</p>
+                    
+                    <form id="adm-edit-partner-form" onsubmit="window.DisicureMain.saveEditPartner(event)" class="space-y-4">
+                        <input type="hidden" id="adm-edit-prt-id" name="partnerId">
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Company / Organization *</label>
+                                <input type="text" id="adm-edit-prt-company" name="companyName" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Partner Category *</label>
+                                <select id="adm-edit-prt-type" name="partnerType" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold focus:border-blue-500">
+                                    <option value="🏢 Pharma Distributor">🏢 Pharma Distributor</option>
+                                    <option value="🤝 Business Partner">🤝 Business Partner</option>
+                                    <option value="📢 Marketing Partner">📢 Marketing Partner</option>
+                                    <option value="💼 Freelancer">💼 Freelancer</option>
+                                    <option value="📞 Sales Partner">📞 Sales Partner</option>
+                                    <option value="🏥 Client / Hospital / Clinic">🏥 Client / Hospital / Clinic</option>
+                                    <option value="🏢 Agency">🏢 Agency</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Contact Person *</label>
+                                <input type="text" id="adm-edit-prt-contact" name="contactPerson" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Mobile *</label>
+                                <input type="tel" id="adm-edit-prt-mobile" name="mobile" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-mono focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Territory / Zone</label>
+                                <input type="text" id="adm-edit-prt-territory" name="assignedTerritory" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Commercial Discount / Commission</label>
+                                <input type="text" id="adm-edit-prt-terms" name="commercialTerms" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-3 rounded-lg border border-gray-200">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Account Status</label>
+                                <select id="adm-edit-prt-status" name="accountStatus" class="w-full bg-white border border-gray-200 rounded p-2 text-xs font-bold focus:border-blue-500">
+                                    <option value="🟢 Active">🟢 Active</option>
+                                    <option value="🟡 Pending Verification">🟡 Pending Verification</option>
+                                    <option value="🔴 Inactive">🔴 Inactive</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Reset Password (Optional)</label>
+                                <input type="password" name="newPassword" placeholder="Leave blank to keep current" class="w-full bg-white border border-gray-200 rounded p-2 text-xs font-mono focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <div class="pt-2 flex justify-end gap-3 border-t border-gray-100">
+                            <button type="button" onclick="window.DisicureMain.closeEditPartnerModal()" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded">
+                                Cancel
+                            </button>
+                            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow">
+                                Save Partner Changes
                             </button>
                         </div>
                     </form>
@@ -3254,7 +3556,746 @@ const DisicureRouter = {
             `;
         },
 
-        // --- 13. 404 NOT FOUND TEMPLATE ---
+        // --- 13. PARTNER / CLIENT LOGIN PORTAL TEMPLATE ---
+        partnerLogin: function() {
+            return `
+            <section class="min-h-[85vh] bg-gradient-to-b from-slate-900 via-navy-950 to-blue-950 py-12 px-4 flex flex-col justify-center items-center">
+                <div class="max-w-4xl w-full mx-auto space-y-6">
+                    <!-- Brand Header -->
+                    <div class="text-center space-y-2">
+                        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-extrabold uppercase tracking-wider mb-1">
+                            <span>🔒 Disicure Partner & Client Business Portal</span>
+                        </div>
+                        <h1 class="text-3xl lg:text-4xl font-extrabold text-white tracking-wide">Partner & Client Portal Login</h1>
+                        <p class="text-sm text-blue-200/80 max-w-xl mx-auto font-normal">Direct access for Distributors, Hospital Clients, PCD Partners, Marketing Agencies, Freelancers, and Sales Associates.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                        <!-- Left Column: 1-Click Quick Demo Accounts -->
+                        <div class="lg:col-span-5 bg-slate-900/80 border border-blue-900/50 rounded-2xl p-6 text-white space-y-4 shadow-xl backdrop-blur-md">
+                            <div class="flex items-center justify-between border-b border-blue-800/40 pb-3">
+                                <h3 class="text-xs font-extrabold text-blue-300 uppercase tracking-wider flex items-center gap-2">
+                                    <span>⚡ 1-Click Quick Demo Accounts</span>
+                                </h3>
+                                <span class="text-[10px] text-gray-400 font-mono">Test Drive</span>
+                            </div>
+                            <p class="text-[11px] text-gray-300 font-normal leading-relaxed">
+                                Click any business role below to instantly load credentials and explore their customized dashboard:
+                            </p>
+                            <div class="space-y-2 text-xs" id="prt-demo-accounts-list">
+                                <button onclick="window.DisicureMain.fillPartnerDemo('medilink.dist', 'partner123')" class="w-full text-left p-2.5 rounded-lg bg-blue-950/60 hover:bg-blue-900/60 border border-blue-800/40 transition-colors flex items-center justify-between group">
+                                    <div>
+                                        <span class="font-bold text-white block">🏢 Medilink Pharma Network</span>
+                                        <span class="text-[10px] text-blue-300">Pharma Distributor (Agra / NCR)</span>
+                                    </div>
+                                    <span class="text-[10px] font-mono bg-blue-600/30 text-blue-200 px-2 py-0.5 rounded group-hover:bg-blue-600 group-hover:text-white transition-colors">Select →</span>
+                                </button>
+                                
+                                <button onclick="window.DisicureMain.fillPartnerDemo('apollo.client', 'partner123')" class="w-full text-left p-2.5 rounded-lg bg-rose-950/40 hover:bg-rose-900/50 border border-rose-800/40 transition-colors flex items-center justify-between group">
+                                    <div>
+                                        <span class="font-bold text-white block">🏥 Apollo Hospital Procurement</span>
+                                        <span class="text-[10px] text-rose-300">Institutional Client (Lucknow)</span>
+                                    </div>
+                                    <span class="text-[10px] font-mono bg-rose-600/30 text-rose-200 px-2 py-0.5 rounded group-hover:bg-rose-600 group-hover:text-white transition-colors">Select →</span>
+                                </button>
+
+                                <button onclick="window.DisicureMain.fillPartnerDemo('apex.marketing', 'partner123')" class="w-full text-left p-2.5 rounded-lg bg-purple-950/40 hover:bg-purple-900/50 border border-purple-800/40 transition-colors flex items-center justify-between group">
+                                    <div>
+                                        <span class="font-bold text-white block">📢 Apex Healthcare Media</span>
+                                        <span class="text-[10px] text-purple-300">Marketing Partner (Mumbai)</span>
+                                    </div>
+                                    <span class="text-[10px] font-mono bg-purple-600/30 text-purple-200 px-2 py-0.5 rounded group-hover:bg-purple-600 group-hover:text-white transition-colors">Select →</span>
+                                </button>
+
+                                <button onclick="window.DisicureMain.fillPartnerDemo('manoj.freelance', 'partner123')" class="w-full text-left p-2.5 rounded-lg bg-teal-950/40 hover:bg-teal-900/50 border border-teal-800/40 transition-colors flex items-center justify-between group">
+                                    <div>
+                                        <span class="font-bold text-white block">💼 Dr. Manoj K. Saxena</span>
+                                        <span class="text-[10px] text-teal-300">Freelancer / Field Rep (Dehradun)</span>
+                                    </div>
+                                    <span class="text-[10px] font-mono bg-teal-600/30 text-teal-200 px-2 py-0.5 rounded group-hover:bg-teal-600 group-hover:text-white transition-colors">Select →</span>
+                                </button>
+
+                                <button onclick="window.DisicureMain.fillPartnerDemo('biopharm.partner', 'partner123')" class="w-full text-left p-2.5 rounded-lg bg-indigo-950/40 hover:bg-indigo-900/50 border border-indigo-800/40 transition-colors flex items-center justify-between group">
+                                    <div>
+                                        <span class="font-bold text-white block">🤝 BioPharm Strategic Associates</span>
+                                        <span class="text-[10px] text-indigo-300">Business Partner (PCD Franchise)</span>
+                                    </div>
+                                    <span class="text-[10px] font-mono bg-indigo-600/30 text-indigo-200 px-2 py-0.5 rounded group-hover:bg-indigo-600 group-hover:text-white transition-colors">Select →</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Sign In Form -->
+                        <div class="lg:col-span-7 bg-white rounded-2xl p-8 shadow-2xl space-y-6">
+                            <div class="flex items-center justify-between border-b border-gray-100 pb-4">
+                                <div>
+                                    <h2 class="text-xl font-extrabold text-navy-950">Partner Sign In</h2>
+                                    <p class="text-xs text-gray-500 mt-0.5">Enter your username or registered email.</p>
+                                </div>
+                                <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-extrabold text-lg">
+                                    🤝
+                                </div>
+                            </div>
+
+                            <form id="partner-login-form" onsubmit="window.DisicureMain.handlePartnerLogin(event)" class="space-y-4">
+                                <div id="prt-login-error" class="hidden p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs font-bold text-rose-700"></div>
+
+                                <div>
+                                    <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1.5">Username / Registered Email *</label>
+                                    <input type="text" id="prt-login-username" name="username" required value="medilink.dist" placeholder="e.g. medilink.dist or distributor@medilink.com" class="w-full bg-slate-50 border border-gray-200 rounded-lg p-3 text-xs font-medium focus:outline-none focus:border-blue-500 focus:bg-white shadow-sm font-mono">
+                                </div>
+
+                                <div>
+                                    <div class="flex items-center justify-between mb-1.5">
+                                        <label class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider">Password *</label>
+                                        <span class="text-[10px] text-blue-600 font-bold">Demo: partner123</span>
+                                    </div>
+                                    <input type="password" id="prt-login-password" name="password" required value="partner123" placeholder="••••••••••••" class="w-full bg-slate-50 border border-gray-200 rounded-lg p-3 text-xs font-mono focus:outline-none focus:border-blue-500 focus:bg-white shadow-sm">
+                                </div>
+
+                                <div class="flex items-center justify-between text-xs pt-1">
+                                    <label class="flex items-center gap-2 cursor-pointer select-none text-gray-600 font-medium">
+                                        <input type="checkbox" checked class="w-4 h-4 text-blue-600 rounded border-gray-300">
+                                        <span>Remember active session</span>
+                                    </label>
+                                </div>
+
+                                <button type="submit" id="prt-login-btn" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm rounded-xl shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                                    <span>Access Partner Dashboard</span>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                                </button>
+                            </form>
+
+                            <div class="pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+                                <a href="#/" class="text-blue-600 hover:underline font-bold flex items-center gap-1">← Return to Website</a>
+                                <a href="#/admin" class="text-gray-500 hover:text-navy-950 font-medium">Internal Admin LMS →</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            `;
+        },
+
+        // --- 14. DEDICATED PARTNER DASHBOARD TEMPLATE ---
+        partnerDashboard: function() {
+            const session = (window.DisicurePartner && window.DisicurePartner.getCurrentSession()) || null;
+            
+            if (!session) {
+                return `
+                <section class="min-h-[70vh] bg-slate-50 py-16 px-4 flex flex-col justify-center items-center text-center">
+                    <div class="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl border border-gray-200 space-y-4">
+                        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto text-2xl font-extrabold">
+                            🔒
+                        </div>
+                        <h2 class="text-2xl font-extrabold text-navy-950">Partner Authentication Required</h2>
+                        <p class="text-xs text-gray-500 font-normal leading-relaxed">
+                            You must log in with your authorized distributor, partner, or client credentials to access the Partner Dashboard.
+                        </p>
+                        <div class="pt-2">
+                            <a href="#/partner/login" class="w-full inline-block py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow transition-colors uppercase tracking-wider">
+                                Go to Partner Login
+                            </a>
+                        </div>
+                    </div>
+                </section>
+                `;
+            }
+
+            const p = session;
+            const badgeClass = p.partnerType.includes('Distributor') ? 'bg-blue-100 text-blue-900 border-blue-300' :
+                               p.partnerType.includes('Client') || p.partnerType.includes('Hospital') ? 'bg-rose-100 text-rose-900 border-rose-300' :
+                               p.partnerType.includes('Marketing') ? 'bg-purple-100 text-purple-900 border-purple-300' :
+                               p.partnerType.includes('Freelancer') ? 'bg-teal-100 text-teal-900 border-teal-300' :
+                               p.partnerType.includes('Sales') ? 'bg-emerald-100 text-emerald-900 border-emerald-300' :
+                               'bg-indigo-100 text-indigo-900 border-indigo-300';
+
+            return `
+            <div class="bg-slate-50 min-h-screen">
+                <!-- Partner Portal Header Banner -->
+                <header class="bg-gradient-to-r from-slate-900 via-navy-950 to-blue-950 text-white py-6 px-4 lg:px-8 border-b border-blue-900/50 shadow-md">
+                    <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-2xl bg-white text-blue-700 font-extrabold text-2xl flex items-center justify-center shadow-lg p-1">
+                                <img src="images/logo.jpg" alt="Logo" class="w-full h-full object-contain rounded-xl">
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2.5 flex-wrap">
+                                    <h1 class="text-xl lg:text-2xl font-extrabold text-white" id="prt-hero-company">${p.companyName}</h1>
+                                    <span class="text-xs px-2.5 py-0.5 rounded-full font-bold border ${badgeClass}" id="prt-hero-type">${p.partnerType}</span>
+                                </div>
+                                <p class="text-xs text-blue-200/90 font-medium mt-0.5 flex items-center gap-2 flex-wrap">
+                                    <span>👤 Contact: <strong>${p.contactPerson}</strong></span>
+                                    <span>•</span>
+                                    <span>📍 <strong>${p.assignedTerritory}</strong></span>
+                                    <span>•</span>
+                                    <span class="font-mono text-blue-300">ID: ${p.partnerId}</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Top Header Actions -->
+                        <div class="flex items-center gap-3">
+                            <button onclick="window.DisicureMain.openPartnerOrderModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow transition-all flex items-center gap-1.5 transform hover:-translate-y-0.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                <span>Place Batch Order</span>
+                            </button>
+                            <button onclick="window.DisicureMain.handlePartnerLogout()" class="px-3.5 py-2 bg-slate-800/80 hover:bg-rose-900/60 hover:text-white text-gray-300 text-xs font-bold rounded-lg transition-colors flex items-center gap-1 border border-gray-700">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                                <span>Logout</span>
+                            </button>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Partner Main Content Section -->
+                <main class="max-w-7xl mx-auto px-4 lg:px-8 py-8 space-y-6">
+                    
+                    <!-- 4 Summary KPI Cards -->
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- KPI 1: Active Orders / Runs -->
+                        <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-1">
+                            <span class="text-[11px] font-extrabold text-blue-700 uppercase tracking-wider block">📦 Production Orders</span>
+                            <div class="text-2xl font-extrabold text-navy-950 mt-1" id="prt-kpi-orders">${p.activeOrdersCount || 1} Active Runs</div>
+                            <p class="text-[11px] text-gray-500">${p.completedBatchesCount || 0} Batches Completed</p>
+                        </div>
+
+                        <!-- KPI 2: Total Business Turnover -->
+                        <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-1">
+                            <span class="text-[11px] font-extrabold text-indigo-700 uppercase tracking-wider block">💰 Total Business Turnover</span>
+                            <div class="text-2xl font-extrabold text-navy-950 mt-1" id="prt-kpi-turnover">${p.totalBusinessValue || '₹0'}</div>
+                            <p class="text-[11px] text-emerald-600 font-bold">${p.commercialTerms || 'Standard Terms'}</p>
+                        </div>
+
+                        <!-- KPI 3: Outstanding Balance -->
+                        <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-1">
+                            <span class="text-[11px] font-extrabold text-amber-700 uppercase tracking-wider block">💳 Outstanding Balance</span>
+                            <div class="text-2xl font-extrabold text-amber-600 mt-1" id="prt-kpi-balance">${p.outstandingBalance || '₹0'}</div>
+                            <p class="text-[11px] text-gray-500">Live ledger settlement</p>
+                        </div>
+
+                        <!-- KPI 4: Lead Referrals & Commissions -->
+                        <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-1">
+                            <span class="text-[11px] font-extrabold text-purple-700 uppercase tracking-wider block">🎯 Referrals & Pipeline</span>
+                            <div class="text-2xl font-extrabold text-purple-700 mt-1" id="prt-kpi-referrals">${p.referredLeadsCount || 0} Client Refs</div>
+                            <p class="text-[11px] text-purple-600 font-bold">${p.convertedLeadsCount || 0} Deals Converted</p>
+                        </div>
+                    </div>
+
+                    <!-- Partner Navigation Tabs -->
+                    <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-gray-200 text-xs">
+                        <button onclick="window.DisicureMain.switchPartnerTab('prt-tab-overview')" id="btn-prt-tab-overview" class="prt-tab-btn active px-4 py-2.5 rounded-xl font-extrabold bg-blue-600 text-white shadow-sm transition-all flex items-center gap-2 whitespace-nowrap">
+                            <span>📊 Portal Overview</span>
+                        </button>
+                        <button onclick="window.DisicureMain.switchPartnerTab('prt-tab-orders')" id="btn-prt-tab-orders" class="prt-tab-btn px-4 py-2.5 rounded-xl font-bold bg-white text-gray-700 border border-gray-200 hover:bg-blue-50 transition-all flex items-center gap-2 whitespace-nowrap">
+                            <span>📦 Batch Orders & Tracking</span>
+                        </button>
+                        <button onclick="window.DisicureMain.switchPartnerTab('prt-tab-invoices')" id="btn-prt-tab-invoices" class="prt-tab-btn px-4 py-2.5 rounded-xl font-bold bg-white text-gray-700 border border-gray-200 hover:bg-blue-50 transition-all flex items-center gap-2 whitespace-nowrap">
+                            <span>💳 Invoices & Payments</span>
+                        </button>
+                        <button onclick="window.DisicureMain.switchPartnerTab('prt-tab-documents')" id="btn-prt-tab-documents" class="prt-tab-btn px-4 py-2.5 rounded-xl font-bold bg-white text-gray-700 border border-gray-200 hover:bg-blue-50 transition-all flex items-center gap-2 whitespace-nowrap">
+                            <span>📁 Document Vault & COAs</span>
+                        </button>
+                        <button onclick="window.DisicureMain.switchPartnerTab('prt-tab-referrals')" id="btn-prt-tab-referrals" class="prt-tab-btn px-4 py-2.5 rounded-xl font-bold bg-white text-gray-700 border border-gray-200 hover:bg-blue-50 transition-all flex items-center gap-2 whitespace-nowrap">
+                            <span>🎯 Lead Referrals & Commissions</span>
+                        </button>
+                        <button onclick="window.DisicureMain.switchPartnerTab('prt-tab-profile')" id="btn-prt-tab-profile" class="prt-tab-btn px-4 py-2.5 rounded-xl font-bold bg-white text-gray-700 border border-gray-200 hover:bg-blue-50 transition-all flex items-center gap-2 whitespace-nowrap">
+                            <span>⚙️ Profile & Licenses</span>
+                        </button>
+                    </div>
+
+                    <!-- ========================================================= -->
+                    <!-- SUB-TAB 1: PORTAL OVERVIEW                                -->
+                    <!-- ========================================================= -->
+                    <div id="prt-tab-overview" class="prt-tab-content block space-y-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                            <!-- Left: Dedicated Account Manager Contact Card -->
+                            <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                                    <h3 class="text-xs font-extrabold text-navy-950 uppercase tracking-wider flex items-center gap-2">
+                                        <span>👔 Dedicated Account Manager</span>
+                                    </h3>
+                                    <span class="text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded font-bold">Online</span>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-xl bg-blue-600 text-white font-extrabold text-lg flex items-center justify-center shadow">
+                                        N
+                                    </div>
+                                    <div>
+                                        <h4 class="text-base font-extrabold text-navy-950">${p.accountManager || 'Mr. Nishant Chaturvedi'}</h4>
+                                        <span class="text-xs text-blue-600 font-bold">Managing Director & Key Accounts Desk</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-2 pt-2 text-xs">
+                                    <div class="flex items-center justify-between p-2 rounded bg-slate-50 border border-gray-100">
+                                        <span class="text-gray-500">Official Directorate Helpline:</span>
+                                        <a href="tel:+919792009307" class="font-mono font-bold text-navy-950 hover:text-blue-600">+91 9792009307</a>
+                                    </div>
+                                    <div class="flex items-center justify-between p-2 rounded bg-slate-50 border border-gray-100">
+                                        <span class="text-gray-500">Direct WhatsApp Desk:</span>
+                                        <a href="https://wa.me/919792009307?text=Hello%20Mr.%20Nishant%2C%20regarding%20our%20partner%20account%20${encodeURIComponent(p.companyName)}%3A" target="_blank" class="font-bold text-emerald-700 hover:underline flex items-center gap-1">
+                                            <span>Chat Direct →</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Commercial Agreement & Terms -->
+                            <div class="lg:col-span-7 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                                    <h3 class="text-xs font-extrabold text-navy-950 uppercase tracking-wider flex items-center gap-2">
+                                        <span>📑 Commercial Terms & Territory Rights</span>
+                                    </h3>
+                                    <span class="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded font-bold">FY2026-27 Active</span>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                                    <div class="p-3 bg-slate-50 rounded-xl border border-gray-100">
+                                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Exclusive Territory</span>
+                                        <span class="font-extrabold text-navy-950 text-sm mt-0.5 block">${p.assignedTerritory}</span>
+                                    </div>
+                                    <div class="p-3 bg-slate-50 rounded-xl border border-gray-100">
+                                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Commercial Margins</span>
+                                        <span class="font-extrabold text-indigo-700 text-sm mt-0.5 block">${p.commercialTerms}</span>
+                                    </div>
+                                    <div class="p-3 bg-slate-50 rounded-xl border border-gray-100">
+                                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Drug License Registration</span>
+                                        <span class="font-mono font-bold text-navy-950 mt-0.5 block">${p.drugLicense}</span>
+                                    </div>
+                                    <div class="p-3 bg-slate-50 rounded-xl border border-gray-100">
+                                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Registered GSTIN</span>
+                                        <span class="font-mono font-bold text-navy-950 mt-0.5 block">${p.gstin}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Order Pipeline Preview -->
+                        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                            <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                                <h3 class="text-xs font-extrabold text-navy-950 uppercase tracking-wider flex items-center gap-2">
+                                    <span>📦 Recent Commercial Orders & Live Batch Status</span>
+                                </h3>
+                                <button onclick="window.DisicureMain.switchPartnerTab('prt-tab-orders')" class="text-xs text-blue-600 font-bold hover:underline">
+                                    View All Orders →
+                                </button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-100 text-gray-600 text-[11px] font-extrabold uppercase">
+                                            <th class="p-3">Order ID & Date</th>
+                                            <th class="p-3">Product Formulation</th>
+                                            <th class="p-3">Batch & Quantity</th>
+                                            <th class="p-3">Status</th>
+                                            <th class="p-3">Invoice Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="prt-overview-orders-tbody">
+                                        <!-- Populated dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ========================================================= -->
+                    <!-- SUB-TAB 2: BATCH ORDERS & PRODUCTION TRACKER              -->
+                    <!-- ========================================================= -->
+                    <div id="prt-tab-orders" class="prt-tab-content hidden space-y-6">
+                        <div class="flex items-center justify-between border-b border-gray-200 pb-4">
+                            <div>
+                                <h3 class="text-base font-extrabold text-navy-950">📦 Commercial Batch Order Management</h3>
+                                <p class="text-xs text-gray-500">Track production batches, quality assurance status, and download Certified Batch COAs.</p>
+                            </div>
+                            <button onclick="window.DisicureMain.openPartnerOrderModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow transition-colors flex items-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                <span>+ Place New Batch Order</span>
+                            </button>
+                        </div>
+
+                        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-100 text-gray-600 text-[11px] font-extrabold uppercase">
+                                            <th class="p-3.5">Order ID</th>
+                                            <th class="p-3.5">Product & Formulation</th>
+                                            <th class="p-3.5">Batch Allocation</th>
+                                            <th class="p-3.5">Quantity</th>
+                                            <th class="p-3.5">Production Status</th>
+                                            <th class="p-3.5">Invoice Amount</th>
+                                            <th class="p-3.5 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="prt-full-orders-tbody">
+                                        <!-- Populated dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ========================================================= -->
+                    <!-- SUB-TAB 3: INVOICES & PAYMENTS LEDGER                     -->
+                    <!-- ========================================================= -->
+                    <div id="prt-tab-invoices" class="prt-tab-content hidden space-y-6">
+                        <div class="flex items-center justify-between border-b border-gray-200 pb-4">
+                            <div>
+                                <h3 class="text-base font-extrabold text-navy-950">💳 Invoices & Settlement Ledger</h3>
+                                <p class="text-xs text-gray-500">Review batch commercial invoices, settlement receipts, and submit bank payment UTR slips.</p>
+                            </div>
+                            <button onclick="window.DisicureMain.openPartnerPaymentModal()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow transition-colors flex items-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                <span>+ Submit Payment Proof / UTR</span>
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Total Billed</span>
+                                <span class="text-xl font-extrabold text-navy-950">${p.totalBusinessValue}</span>
+                            </div>
+                            <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-100 shadow-sm">
+                                <span class="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">Total Cleared</span>
+                                <span class="text-xl font-extrabold text-emerald-700">₹${((p.totalBusinessNumeric || 3000000) - (p.outstandingNumeric || 0)).toLocaleString('en-IN')}</span>
+                            </div>
+                            <div class="p-4 bg-amber-50 rounded-xl border border-amber-100 shadow-sm">
+                                <span class="text-[10px] font-bold text-amber-800 uppercase tracking-wider block">Outstanding Due</span>
+                                <span class="text-xl font-extrabold text-amber-700">${p.outstandingBalance}</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-100 text-gray-600 text-[11px] font-extrabold uppercase">
+                                            <th class="p-3.5">Invoice Reference</th>
+                                            <th class="p-3.5">Batch Reference</th>
+                                            <th class="p-3.5">Invoice Date</th>
+                                            <th class="p-3.5">Payment Mode</th>
+                                            <th class="p-3.5">Amount</th>
+                                            <th class="p-3.5">Status</th>
+                                            <th class="p-3.5 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="prt-invoices-tbody">
+                                        <!-- Populated dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ========================================================= -->
+                    <!-- SUB-TAB 4: DOCUMENT VAULT & MARKETING ASSETS             -->
+                    <!-- ========================================================= -->
+                    <div id="prt-tab-documents" class="prt-tab-content hidden space-y-6">
+                        <div class="border-b border-gray-200 pb-4">
+                            <h3 class="text-base font-extrabold text-navy-950">📁 Partner Document Vault & Marketing Collateral</h3>
+                            <p class="text-xs text-gray-500">Download certified distributor agreements, FY2026 price lists, visual aids, and GMP certificates.</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="prt-vault-grid">
+                            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:border-blue-500 transition-colors space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="w-10 h-10 rounded-lg bg-red-50 text-red-600 font-extrabold flex items-center justify-center text-xs">PDF</span>
+                                    <span class="text-[10px] text-gray-400 font-mono">1.8 MB</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-extrabold text-navy-950 text-sm">Disicure_Distributor_Agreement_2026.pdf</h4>
+                                    <p class="text-xs text-gray-500 mt-0.5">Certified Authorized Distribution & Territory Agreement</p>
+                                </div>
+                                <button onclick="alert('Downloading Certified Distributor Agreement...')" class="w-full py-2 bg-slate-100 hover:bg-blue-600 hover:text-white text-gray-700 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                    <span>Download Agreement</span>
+                                </button>
+                            </div>
+
+                            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:border-blue-500 transition-colors space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 font-extrabold flex items-center justify-center text-xs">XLSX</span>
+                                    <span class="text-[10px] text-gray-400 font-mono">2.4 MB</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-extrabold text-navy-950 text-sm">Master_RateCard_AluAlu_2026.xlsx</h4>
+                                    <p class="text-xs text-gray-500 mt-0.5">Wholesale Commercial Rate Card & Packaging Tier Specs</p>
+                                </div>
+                                <button onclick="alert('Downloading Master Wholesale Rate Card...')" class="w-full py-2 bg-slate-100 hover:bg-blue-600 hover:text-white text-gray-700 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                    <span>Download Rate Card</span>
+                                </button>
+                            </div>
+
+                            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:border-blue-500 transition-colors space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 font-extrabold flex items-center justify-center text-xs">PDF</span>
+                                    <span class="text-[10px] text-gray-400 font-mono">5.2 MB</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-extrabold text-navy-950 text-sm">Physician_Visual_Aid_Brochure.pdf</h4>
+                                    <p class="text-xs text-gray-500 mt-0.5">Complete High-Resolution Doctor Detailing Folder</p>
+                                </div>
+                                <button onclick="alert('Downloading Physician Visual Aid Brochure...')" class="w-full py-2 bg-slate-100 hover:bg-blue-600 hover:text-white text-gray-700 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                    <span>Download Visual Aid</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ========================================================= -->
+                    <!-- SUB-TAB 5: LEAD REFERRALS & COMMISSIONS                   -->
+                    <!-- ========================================================= -->
+                    <div id="prt-tab-referrals" class="prt-tab-content hidden space-y-6">
+                        <div class="flex items-center justify-between border-b border-gray-200 pb-4">
+                            <div>
+                                <h3 class="text-base font-extrabold text-navy-950">🎯 Lead Referrals & Commission Tracking</h3>
+                                <p class="text-xs text-gray-500">Register new hospital or pharmacy client enquiries and track conversion commission payouts.</p>
+                            </div>
+                            <button onclick="window.DisicureMain.openPartnerLeadModal()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-lg shadow transition-colors flex items-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                <span>+ Submit Client Lead</span>
+                            </button>
+                        </div>
+
+                        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-100 text-gray-600 text-[11px] font-extrabold uppercase">
+                                            <th class="p-3.5">Referral ID</th>
+                                            <th class="p-3.5">Client & Contact</th>
+                                            <th class="p-3.5">City</th>
+                                            <th class="p-3.5">Requirement</th>
+                                            <th class="p-3.5">Conversion Status</th>
+                                            <th class="p-3.5">Commission Earned</th>
+                                            <th class="p-3.5">Payout Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="prt-referrals-tbody">
+                                        <!-- Populated dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ========================================================= -->
+                    <!-- SUB-TAB 6: PROFILE & DRUG LICENSES                        -->
+                    <!-- ========================================================= -->
+                    <div id="prt-tab-profile" class="prt-tab-content hidden space-y-6">
+                        <div class="border-b border-gray-200 pb-4">
+                            <h3 class="text-base font-extrabold text-navy-950">⚙️ Partner Profile & Registered Licenses</h3>
+                            <p class="text-xs text-gray-500">Manage registered commercial details, GSTIN compliance, and update portal password.</p>
+                        </div>
+
+                        <div class="max-w-2xl bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                            <form id="prt-profile-form" onsubmit="window.DisicureMain.savePartnerSelfProfile(event)" class="space-y-4 text-xs">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Company / Entity Name</label>
+                                        <input type="text" name="companyName" value="${p.companyName}" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold text-navy-950 focus:border-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Contact Person</label>
+                                        <input type="text" name="contactPerson" value="${p.contactPerson}" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Registered Mobile</label>
+                                        <input type="tel" name="mobile" value="${p.mobile}" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-mono focus:border-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Official Email</label>
+                                        <input type="email" name="email" value="${p.email}" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">GSTIN Number</label>
+                                        <input type="text" name="gstin" value="${p.gstin}" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-mono focus:border-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Drug License (DL) Number</label>
+                                        <input type="text" name="drugLicense" value="${p.drugLicense}" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-mono focus:border-blue-500">
+                                    </div>
+                                </div>
+
+                                <div class="p-4 bg-slate-50 rounded-xl border border-gray-200 space-y-2">
+                                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider">Change Portal Password (Optional)</label>
+                                    <input type="password" name="newPassword" placeholder="Leave blank to keep current password" class="w-full bg-white border border-gray-200 rounded p-2 text-xs font-mono focus:border-blue-500">
+                                </div>
+
+                                <div class="pt-2 flex justify-end">
+                                    <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg shadow">
+                                        Update Profile Details
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                </main>
+
+                <!-- Place Batch Order Modal -->
+                <div id="prt-order-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                    <div class="absolute inset-0 bg-navy-950/60 backdrop-blur-sm" onclick="window.DisicureMain.closePartnerOrderModal()"></div>
+                    <div class="relative bg-white rounded-2xl p-6 md:p-8 max-w-xl w-full mx-4 shadow-2xl z-10 max-h-[90vh] overflow-y-auto">
+                        <button class="absolute top-4 right-4 text-gray-400 hover:text-navy-950 focus:outline-none" onclick="window.DisicureMain.closePartnerOrderModal()">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                        <h3 class="text-xl font-extrabold text-navy-950 mb-1">📦 Place Commercial Batch Order</h3>
+                        <p class="text-xs text-gray-500 mb-5 font-normal">Select formulation and dispatch requirements directly into our production queue.</p>
+                        
+                        <form id="prt-new-order-form" onsubmit="window.DisicureMain.savePartnerOrder(event)" class="space-y-4 text-xs">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Product Formulation *</label>
+                                <select name="productName" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold text-navy-950 focus:border-blue-500">
+                                    <option value="DISIZOLE-DSR Capsules (Rabeprazole + Domperidone)">DISIZOLE-DSR Capsules (Rabeprazole + Domperidone)</option>
+                                    <option value="DISIMOL-650 Tablets (Paracetamol 650mg)">DISIMOL-650 Tablets (Paracetamol 650mg)</option>
+                                    <option value="DISIPOD-200 Tablets (Cefpodoxime Proxetil 200mg)">DISIPOD-200 Tablets (Cefpodoxime Proxetil 200mg)</option>
+                                    <option value="DISIKUF-DX Cough Relief Syrup (100ml)">DISIKUF-DX Cough Relief Syrup (100ml)</option>
+                                    <option value="DISIVIT-Z Multivitamin & Zinc Tablets">DISIVIT-Z Multivitamin & Zinc Tablets</option>
+                                    <option value="DISILIV-DS Liver Tonic Syrup (200ml)">DISILIV-DS Liver Tonic Syrup (200ml)</option>
+                                    <option value="Custom Third-Party Formulation Formulation Run">Custom Third-Party Formulation Run</option>
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Order Quantity *</label>
+                                    <input type="text" name="quantity" required placeholder="e.g. 5,000 Strips or 10,000 Boxes" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500 font-bold">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Estimated Invoice Value (₹)</label>
+                                    <input type="text" name="estimatedAmount" placeholder="e.g. ₹2,40,000" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Warehouse Delivery Address</label>
+                                <textarea name="deliveryAddress" rows="2" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500" placeholder="Specify recipient warehouse location..."></textarea>
+                            </div>
+
+                            <div class="pt-2 flex justify-end gap-3 border-t border-gray-100">
+                                <button type="button" onclick="window.DisicureMain.closePartnerOrderModal()" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow">
+                                    Submit Commercial Order
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Submit Payment Proof Modal -->
+                <div id="prt-payment-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                    <div class="absolute inset-0 bg-navy-950/60 backdrop-blur-sm" onclick="window.DisicureMain.closePartnerPaymentModal()"></div>
+                    <div class="relative bg-white rounded-2xl p-6 md:p-8 max-w-lg w-full mx-4 shadow-2xl z-10 max-h-[90vh] overflow-y-auto">
+                        <button class="absolute top-4 right-4 text-gray-400 hover:text-navy-950 focus:outline-none" onclick="window.DisicureMain.closePartnerPaymentModal()">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                        <h3 class="text-xl font-extrabold text-navy-950 mb-1">💳 Submit Payment Settlement</h3>
+                        <p class="text-xs text-gray-500 mb-5 font-normal">Upload bank UTR reference or deposit slip for accounts verification.</p>
+                        
+                        <form id="prt-new-payment-form" onsubmit="window.DisicureMain.savePartnerPaymentProof(event)" class="space-y-4 text-xs">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Invoice Reference ID *</label>
+                                <input type="text" name="invoiceId" required placeholder="e.g. INV-DC-2026-888" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-mono font-bold focus:border-blue-500">
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Amount Paid (₹) *</label>
+                                    <input type="number" name="amountPaid" required min="1" placeholder="₹" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-extrabold text-emerald-700 focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Payment Mode *</label>
+                                    <select name="paymentMode" required class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                                        <option value="NEFT / RTGS">NEFT / RTGS</option>
+                                        <option value="UPI / IMPS">UPI / IMPS</option>
+                                        <option value="Cheque / DD">Cheque / DD</option>
+                                        <option value="Letter of Credit (LC)">Letter of Credit (LC)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Bank UTR / Transaction Ref No. *</label>
+                                <input type="text" name="utrRef" required placeholder="e.g. UTR-HDFC-99281144" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-mono focus:border-blue-500">
+                            </div>
+
+                            <div class="pt-2 flex justify-end gap-3 border-t border-gray-100">
+                                <button type="button" onclick="window.DisicureMain.closePartnerPaymentModal()" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded shadow">
+                                    Submit UTR Settlement
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Submit Client Lead Modal -->
+                <div id="prt-lead-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                    <div class="absolute inset-0 bg-navy-950/60 backdrop-blur-sm" onclick="window.DisicureMain.closePartnerLeadModal()"></div>
+                    <div class="relative bg-white rounded-2xl p-6 md:p-8 max-w-lg w-full mx-4 shadow-2xl z-10 max-h-[90vh] overflow-y-auto">
+                        <button class="absolute top-4 right-4 text-gray-400 hover:text-navy-950 focus:outline-none" onclick="window.DisicureMain.closePartnerLeadModal()">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                        <h3 class="text-xl font-extrabold text-navy-950 mb-1">🎯 Register Referred Client Lead</h3>
+                        <p class="text-xs text-gray-500 mb-5 font-normal">Submit a pharmaceutical client enquiry to claim your referral commission.</p>
+                        
+                        <form id="prt-new-lead-form" onsubmit="window.DisicureMain.savePartnerReferredLead(event)" class="space-y-4 text-xs">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Client Hospital / Firm Name *</label>
+                                <input type="text" name="clientName" required placeholder="e.g. Citycare Hospital" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-bold focus:border-blue-500">
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Contact Person *</label>
+                                    <input type="text" name="contactPerson" required placeholder="e.g. Dr. Verma" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Contact Mobile *</label>
+                                    <input type="tel" name="phone" required placeholder="+91 98000 00000" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-mono focus:border-blue-500">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">City & State</label>
+                                <input type="text" name="city" placeholder="e.g. Varanasi, UP" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Medicine / Manufacturing Requirement *</label>
+                                <textarea name="requirement" rows="2" required placeholder="e.g. Third-party manufacturing 50,000 capsules of Rabeprazole..." class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs focus:border-blue-500"></textarea>
+                            </div>
+
+                            <div class="pt-2 flex justify-end gap-3 border-t border-gray-100">
+                                <button type="button" onclick="window.DisicureMain.closePartnerLeadModal()" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded shadow">
+                                    Submit Lead Referral
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+            `;
+        },
+
+        // --- 15. 404 NOT FOUND TEMPLATE ---
         notFound: function() {
             return `
             <section class="py-12 md:py-8 md:py-12 bg-white text-center min-h-[60vh] flex flex-col justify-center items-center">
