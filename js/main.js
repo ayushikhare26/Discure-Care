@@ -1003,6 +1003,18 @@ const DisicureMain = {
         isFilterOpen: false
     },
 
+    // Notification State (Module 18)
+    notifFilterState: {
+        category: 'all'
+    },
+
+    // Security & Audit Log State (Module 19)
+    secState: {
+        searchQuery: '',
+        categoryFilter: 'all',
+        severityFilter: 'all'
+    },
+
     initAdminPanel: function() {
         if (!window.DisicureLeads && !window.DisicurePayments && !window.DisicureDocuments && !window.DisicureTeam && !window.DisicurePartner) return;
 
@@ -1138,16 +1150,60 @@ const DisicureMain = {
             });
         }
 
+        // Security & Audit Log Listeners (Module 19)
+        const secSearch = document.getElementById('sec-search-input');
+        if (secSearch) {
+            secSearch.addEventListener('input', (e) => {
+                this.secState.searchQuery = e.target.value.toLowerCase().trim();
+                this.renderSecurityAuditTable();
+            });
+        }
+
+        const secCat = document.getElementById('sec-category-filter');
+        if (secCat) {
+            secCat.addEventListener('change', (e) => {
+                this.secState.categoryFilter = e.target.value;
+                this.renderSecurityAuditTable();
+            });
+        }
+
+        const secSev = document.getElementById('sec-severity-filter');
+        if (secSev) {
+            secSev.addEventListener('change', (e) => {
+                this.secState.severityFilter = e.target.value;
+                this.renderSecurityAuditTable();
+            });
+        }
+
+        // Notification Badges & Session Display (Modules 18 & 19)
+        if (window.DisicureNotifications) {
+            window.DisicureNotifications.updateBadgeCounters();
+        }
+        this.updateAdminUserDisplay();
+
         // Initial Full Render
         this.renderAdminLeads();
         this.renderPaymentsTable();
         this.renderDocumentsTable();
         this.renderTeamTable();
         this.renderAdminPartners();
+        this.renderSecurityAuditTable();
+        this.renderSecurityDashboardOverview();
     },
 
-    // Tab Switching Functionality
+    // Tab Switching Functionality with Role-Based Access Control (RBAC) Checks
     switchAdminTab: function(tabId) {
+        // RBAC Permission Check (Module 19)
+        if (window.DisicureSecurity && !window.DisicureSecurity.hasPermission(tabId)) {
+            const session = window.DisicureSecurity.getAdminSession();
+            const roleName = session ? session.role : 'Your Role';
+            this.showToast('error', `⛔ Access Denied: ${roleName} is not permitted to access this module.`);
+            if (window.DisicureSecurity.logActivity) {
+                window.DisicureSecurity.logActivity('RBAC Access Blocked', 'RBAC_CHECK', `Unauthorized attempt to open ${tabId} by ${roleName}.`, session ? session.name : 'Unknown', 'SECURITY');
+            }
+            return;
+        }
+
         const tabContents = document.querySelectorAll('.admin-tab-content');
         tabContents.forEach(tab => {
             tab.classList.add('hidden');
@@ -1190,6 +1246,9 @@ const DisicureMain = {
             this.renderDocumentsTable();
         } else if (tabId === 'tab-team') {
             this.renderTeamTable();
+        } else if (tabId === 'tab-security') {
+            this.renderSecurityAuditTable();
+            this.renderSecurityDashboardOverview();
         }
     },
 
@@ -2498,10 +2557,23 @@ const DisicureMain = {
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
 
-        window.DisicureLeads.addLead({
+        const newLead = window.DisicureLeads.addLead({
             ...data,
             source: data.source || 'Admin Manual Entry'
         });
+
+        // Trigger Notification & Security Audit Log (Modules 18 & 19)
+        if (window.DisicureNotifications) {
+            window.DisicureNotifications.notifyNewLead(newLead);
+        }
+        if (window.DisicureSecurity && window.DisicureSecurity.logActivity) {
+            window.DisicureSecurity.logActivity(
+                'Manual Lead Created',
+                'LEAD_ACTION',
+                `New lead ${newLead.leadId} created for ${newLead.name} (${newLead.productOrService}).`,
+                window.DisicureSecurity.getAdminSession() ? window.DisicureSecurity.getAdminSession().name : 'Admin'
+            );
+        }
 
         this.closeAddLeadModal();
         this.renderAdminLeads();
@@ -3217,7 +3289,21 @@ const DisicureMain = {
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
 
-        window.DisicurePayments.addPayment(data);
+        const newPay = window.DisicurePayments.addPayment(data);
+
+        // Trigger Notification & Security Audit Log (Modules 18 & 19)
+        if (window.DisicureNotifications) {
+            window.DisicureNotifications.notifyPaymentUpdate(newPay);
+        }
+        if (window.DisicureSecurity && window.DisicureSecurity.logActivity) {
+            window.DisicureSecurity.logActivity(
+                'Commercial Payment Recorded',
+                'PAYMENT_ACTION',
+                `Recorded payment of ₹${Number(newPay.amountReceived || 0).toLocaleString('en-IN')} for ${newPay.clientName} (${newPay.invoiceId}).`,
+                window.DisicureSecurity.getAdminSession() ? window.DisicureSecurity.getAdminSession().name : 'Admin'
+            );
+        }
+
         this.closeAddPaymentModal();
         this.renderPaymentsTable();
         this.renderDashboardAnalytics();
@@ -3669,12 +3755,25 @@ const DisicureMain = {
             previewType = 'pdf_summary';
         }
 
-        window.DisicureDocuments.addDocument({
+        const newDoc = window.DisicureDocuments.addDocument({
             ...data,
             previewType: previewType,
             previewUrl: data.fileData || null,
             previewContent: `Document Title: ${data.title}\nCategory: ${data.category}\nTags: ${data.tags || 'General'}\nNotes: ${data.notes || 'Recorded via Disicure DMS.'}`
         });
+
+        // Trigger Notification & Security Audit Log (Modules 18 & 19)
+        if (window.DisicureNotifications) {
+            window.DisicureNotifications.notifyNewDocument(newDoc);
+        }
+        if (window.DisicureSecurity && window.DisicureSecurity.logActivity) {
+            window.DisicureSecurity.logActivity(
+                'Document Uploaded to Vault',
+                'CATALOG_UPDATE',
+                `Uploaded "${newDoc.title}" to category ${newDoc.category}.`,
+                window.DisicureSecurity.getAdminSession() ? window.DisicureSecurity.getAdminSession().name : 'Admin'
+            );
+        }
 
         this.closeUploadDocModal();
         this.renderDocumentsTable();
@@ -5337,7 +5436,22 @@ const DisicureMain = {
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
 
-        window.DisicurePartner.addPartner(data);
+        const newPartner = window.DisicurePartner.addPartner(data);
+
+        // Trigger Notification & Security Audit Log (Modules 18 & 19)
+        if (window.DisicureNotifications) {
+            window.DisicureNotifications.notifyNewPartner(newPartner);
+        }
+        if (window.DisicureSecurity && window.DisicureSecurity.logActivity) {
+            window.DisicureSecurity.logActivity(
+                'Partner Account Provisioned',
+                'PARTNER_ISOLATION',
+                `New partner ${newPartner.companyName} (${newPartner.partnerType}) provisioned for ${newPartner.assignedTerritory || 'Distribution'}.`,
+                window.DisicureSecurity.getAdminSession() ? window.DisicureSecurity.getAdminSession().name : 'Admin',
+                'SECURITY'
+            );
+        }
+
         this.closeAddPartnerModal();
         this.renderAdminPartners();
     },
@@ -5713,6 +5827,20 @@ const DisicureMain = {
             approvalNotes: approvalNotes
         });
 
+        // Trigger Notification & Security Audit Log (Modules 18 & 19)
+        if (window.DisicureNotifications) {
+            window.DisicureNotifications.notifyPartnerLeadUpdate(this.currentCommLead, 'commission_approved');
+        }
+        if (window.DisicureSecurity && window.DisicureSecurity.logActivity) {
+            window.DisicureSecurity.logActivity(
+                'Partner Commission Approved',
+                'COMMISSION_ACTION',
+                `Approved commission for lead ${leadId} (${details}). Approved by ${approvedBy}.`,
+                approvedBy,
+                'SECURITY'
+            );
+        }
+
         this.closeCommissionModal();
         this.renderAdminCommissionsTable();
         this.renderAdminPartners();
@@ -5721,6 +5849,17 @@ const DisicureMain = {
     quickApproveCommission: function(leadId) {
         if (!window.DisicurePartner) return;
         window.DisicurePartner.approveCommission(leadId, 'Mr. Nishant Chaturvedi (Super Admin)', 'Fast 1-Click Approved by Admin');
+
+        if (window.DisicureSecurity && window.DisicureSecurity.logActivity) {
+            window.DisicureSecurity.logActivity(
+                'Partner Commission Quick Approved',
+                'COMMISSION_ACTION',
+                `Fast 1-click approved commission for lead ${leadId}.`,
+                'Mr. Nishant Chaturvedi (Super Admin)',
+                'SECURITY'
+            );
+        }
+
         this.renderAdminCommissionsTable();
         this.renderAdminPartners();
     },
@@ -7881,6 +8020,421 @@ const DisicureMain = {
                 ${signatureBlock}
             </div>
         `;
+    },
+
+    // =========================================================================
+    // --- MODULE 18: ENTERPRISE NOTIFICATION SYSTEM & WHATSAPP GATEWAY -------
+    // =========================================================================
+    openNotificationDrawer: function() {
+        const drawer = document.getElementById('notification-center-drawer');
+        if (drawer) {
+            drawer.classList.remove('hidden');
+            this.renderNotifications();
+            document.body.classList.add('overflow-hidden');
+        }
+    },
+
+    closeNotificationDrawer: function() {
+        const drawer = document.getElementById('notification-center-drawer');
+        if (drawer) {
+            drawer.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    },
+
+    filterNotifications: function(category) {
+        this.notifFilterState.category = category;
+        const btns = document.querySelectorAll('.notif-filter-btn');
+        btns.forEach(btn => {
+            btn.classList.remove('bg-blue-600', 'text-white');
+            btn.classList.add('bg-slate-200', 'text-gray-700');
+        });
+
+        const activeBtn = document.getElementById(`btn-notif-filter-${category}`);
+        if (activeBtn) {
+            activeBtn.classList.remove('bg-slate-200', 'text-gray-700');
+            activeBtn.classList.add('bg-blue-600', 'text-white');
+        }
+
+        this.renderNotifications();
+    },
+
+    renderNotifications: function() {
+        if (!window.DisicureNotifications) return;
+        const allNotifs = window.DisicureNotifications.getAllNotifications();
+        const unreadCount = window.DisicureNotifications.getUnreadCount();
+
+        const countLabel = document.getElementById('notif-count-label');
+        if (countLabel) {
+            countLabel.innerText = unreadCount === 0 
+                ? 'All Caught Up (0 Unread)' 
+                : `${unreadCount} Unread Alert${unreadCount > 1 ? 's' : ''}`;
+        }
+
+        // Filter by category
+        const cat = this.notifFilterState.category;
+        const filtered = cat === 'all' ? allNotifs : allNotifs.filter(n => n.category === cat);
+
+        const container = document.getElementById('notification-list-container');
+        if (!container) return;
+
+        if (filtered.length === 0) {
+            container.innerHTML = `
+                <div class="py-12 text-center text-gray-400">
+                    <div class="w-12 h-12 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-2 text-xl">
+                        🔔
+                    </div>
+                    <p class="text-xs font-bold text-gray-700">No Notifications in this folder</p>
+                    <p class="text-[11px] text-gray-400">You're all caught up with business alerts.</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = filtered.map(n => `
+            <div class="p-3.5 rounded-xl border ${n.read ? 'bg-white border-gray-100 text-gray-600' : 'bg-blue-50/50 border-blue-200 text-navy-950 shadow-sm'} transition-all hover:shadow-md space-y-2">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="flex items-start gap-2.5">
+                        <span class="text-xl p-1.5 rounded-lg ${n.read ? 'bg-gray-100' : 'bg-blue-100'}">${n.icon || '🔔'}</span>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h4 class="text-xs font-extrabold ${n.read ? 'text-gray-800' : 'text-blue-950'}">${n.title}</h4>
+                                ${!n.read ? '<span class="w-2 h-2 rounded-full bg-blue-600 inline-block"></span>' : ''}
+                            </div>
+                            <p class="text-[11px] text-gray-600 leading-relaxed mt-0.5">${n.message}</p>
+                        </div>
+                    </div>
+                    <button onclick="window.DisicureMain.deleteNotificationItem('${n.id}')" class="text-gray-400 hover:text-rose-600 p-1 text-xs" title="Dismiss">
+                        ✕
+                    </button>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t ${n.read ? 'border-gray-50' : 'border-blue-100'} text-[10px]">
+                    <span class="text-gray-400 font-mono">${n.timestamp || n.timeAgo}</span>
+                    <div class="flex items-center gap-2">
+                        ${n.phone ? `
+                            <button onclick="window.DisicureMain.openWhatsAppModal('${n.phone}', 'custom', '${encodeURIComponent(n.whatsappPayload || n.message)}')" class="px-2 py-1 rounded bg-emerald-50 text-emerald-700 font-bold hover:bg-emerald-100 flex items-center gap-1 transition-colors">
+                                <span>💬 WhatsApp</span>
+                            </button>
+                        ` : ''}
+                        <button onclick="window.DisicureMain.handleNotificationAction('${n.id}')" class="px-2.5 py-1 rounded bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors">
+                            ${n.actionLabel || 'Open'} &rarr;
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        window.DisicureNotifications.updateBadgeCounters();
+    },
+
+    markNotificationRead: function(id) {
+        if (window.DisicureNotifications) {
+            window.DisicureNotifications.markAsRead(id);
+            this.renderNotifications();
+        }
+    },
+
+    markAllNotificationsRead: function() {
+        if (window.DisicureNotifications) {
+            window.DisicureNotifications.markAllAsRead();
+            this.renderNotifications();
+            this.showToast('info', 'All notifications marked as read.');
+        }
+    },
+
+    clearAllNotifications: function() {
+        if (window.DisicureNotifications) {
+            window.DisicureNotifications.clearAllNotifications();
+            this.renderNotifications();
+            this.showToast('info', 'Notification box cleared.');
+        }
+    },
+
+    deleteNotificationItem: function(id) {
+        if (window.DisicureNotifications) {
+            window.DisicureNotifications.deleteNotification(id);
+            this.renderNotifications();
+        }
+    },
+
+    handleNotificationAction: function(notifId) {
+        if (!window.DisicureNotifications) return;
+        const allNotifs = window.DisicureNotifications.getAllNotifications();
+        const n = allNotifs.find(item => item.id === notifId);
+        if (!n) return;
+
+        window.DisicureNotifications.markAsRead(notifId);
+        this.closeNotificationDrawer();
+
+        if (n.actionTab) {
+            this.switchAdminTab(n.actionTab);
+        }
+    },
+
+    // --- WHATSAPP BUSINESS GATEWAY CONTROLLER (Module 18) ---
+    openWhatsAppModal: function(recipientPhone, templateKey, customPayload) {
+        const modal = document.getElementById('whatsapp-gateway-modal');
+        const phoneInput = document.getElementById('wa-recipient-phone');
+        const templateSelect = document.getElementById('wa-template-select');
+        const textarea = document.getElementById('wa-message-content');
+
+        if (phoneInput && recipientPhone) {
+            phoneInput.value = recipientPhone;
+        }
+
+        if (templateSelect && templateKey) {
+            templateSelect.value = templateKey;
+        }
+
+        if (textarea) {
+            if (customPayload) {
+                textarea.value = decodeURIComponent(customPayload);
+            } else {
+                textarea.value = this.getWATemplateText(templateKey || 'lead_welcome', phoneInput ? phoneInput.value : '');
+            }
+        }
+
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+    },
+
+    closeWhatsAppModal: function() {
+        const modal = document.getElementById('whatsapp-gateway-modal');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    },
+
+    handleWATemplateChange: function(event) {
+        const key = event.target.value;
+        const phone = document.getElementById('wa-recipient-phone')?.value || '+91 9792009307';
+        const textarea = document.getElementById('wa-message-content');
+        if (textarea) {
+            textarea.value = this.getWATemplateText(key, phone);
+        }
+    },
+
+    getWATemplateText: function(key, phone) {
+        switch (key) {
+            case 'lead_welcome':
+                return `*Greetings from Disicure Care Pvt. Ltd.* 🌿\n\nThank you for reaching out to us regarding our pharmaceutical formulations & manufacturing. Our institutional sales desk is reviewing your specifications and will provide the official quotation shortly.\n\n📞 Direct Hotline: +91 9792009307\n🌐 Portal: https://disicurecare.com`;
+            case 'payment_receipt':
+                return `*Disicure Care — Payment Verification Notice* 🧾\n\nWe confirm receipt of your commercial payment against registered invoice. The funds have been credited and reconciled with our treasury ledger.\n\nThank you for your trusted partnership.\n— Commercial Finance Desk, Disicure Care Pvt. Ltd.`;
+            case 'followup_reminder':
+                return `*Disicure Care Follow-up Reminder* 📅\n\nDear Partner / Client, this is a scheduled touchpoint regarding your ongoing formulation inquiry and bulk purchase requirements. Please let us know a convenient time to finalize batch dispatch terms.\n\nDirector Desk: +91 9792009307`;
+            case 'partner_onboarding':
+                return `*Welcome to Disicure Partner Network!* 🤝\n\nYour dedicated distributor portal account has been activated with territorial exclusivity and wholesale margin terms.\n\nPortal URL: https://disicurecare.com/#/partner-login\nSupport: director@disicurecare.com`;
+            case 'commission_approved':
+                return `*Disicure Partner Commission Approved* 💵\n\nCongratulations! Your referral commission has been verified and approved by Disicure Admin. Disbursement has been scheduled to your registered bank account.\n\n— Executive Directorate, Disicure Care`;
+            case 'document_ready':
+                return `*Disicure Document Vault Notice* 📁\n\nYour requested Certificate of Analysis (COA), Wholesale Price List, or Manufacturing MSA is now available for download from your verified portal dossier.\n\nDisicure Care Pvt. Ltd.`;
+            default:
+                return `Hello from Disicure Care Pvt. Ltd.`;
+        }
+    },
+
+    copyWhatsAppText: function() {
+        const textarea = document.getElementById('wa-message-content');
+        if (textarea) {
+            navigator.clipboard.writeText(textarea.value);
+            this.showToast('success', 'WhatsApp message copied to clipboard!');
+        }
+    },
+
+    sendWhatsAppMessage: function(event) {
+        if (event) event.preventDefault();
+        const phone = document.getElementById('wa-recipient-phone')?.value.replace(/[^0-9]/g, '') || '919792009307';
+        const msg = document.getElementById('wa-message-content')?.value || '';
+        const encoded = encodeURIComponent(msg);
+
+        // Direct WhatsApp Link
+        const waUrl = `https://wa.me/${phone}?text=${encoded}`;
+        window.open(waUrl, '_blank');
+
+        if (window.DisicureSecurity && window.DisicureSecurity.logActivity) {
+            window.DisicureSecurity.logActivity(
+                'WhatsApp Dispatch Triggered',
+                'COMMUNICATION_ACTION',
+                `WhatsApp notification dispatched to recipient +${phone}.`,
+                'Admin User'
+            );
+        }
+
+        this.showToast('success', `WhatsApp Web launcher opened for +${phone}!`);
+        this.closeWhatsAppModal();
+    },
+
+    // =========================================================================
+    // --- MODULE 19: SECURITY, RBAC & AUDIT LOG ENGINE CONTROLLER -------------
+    // =========================================================================
+    openAdminLoginModal: function() {
+        const modal = document.getElementById('admin-login-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+    },
+
+    closeAdminLoginModal: function() {
+        const modal = document.getElementById('admin-login-modal');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            const err = document.getElementById('adm-login-error');
+            if (err) err.classList.add('hidden');
+        }
+    },
+
+    fillAdminDemo: function(username, password) {
+        const u = document.getElementById('adm-login-user');
+        const p = document.getElementById('adm-login-pwd');
+        if (u) u.value = username;
+        if (p) p.value = password;
+    },
+
+    handleAdminLogin: function(event) {
+        event.preventDefault();
+        const u = document.getElementById('adm-login-user')?.value;
+        const p = document.getElementById('adm-login-pwd')?.value;
+        const err = document.getElementById('adm-login-error');
+
+        if (!window.DisicureSecurity) return;
+        const result = window.DisicureSecurity.loginAdmin(u, p);
+
+        if (result.success) {
+            this.closeAdminLoginModal();
+            this.updateAdminUserDisplay();
+            this.renderSecurityAuditTable();
+            this.renderSecurityDashboardOverview();
+            this.showToast('success', `Authenticated successfully as ${result.user.name} (${result.user.role})!`);
+        } else {
+            if (err) {
+                err.innerText = result.message || 'Invalid credentials. Please try again.';
+                err.classList.remove('hidden');
+            }
+        }
+    },
+
+    handleAdminLogout: function() {
+        if (!window.DisicureSecurity) return;
+        if (confirm('Are you sure you want to end your current session?')) {
+            window.DisicureSecurity.logoutAdmin();
+            this.updateAdminUserDisplay();
+            this.renderSecurityAuditTable();
+            this.renderSecurityDashboardOverview();
+            this.showToast('info', 'Logged out successfully. Re-authenticating demo session...');
+            setTimeout(() => {
+                this.openAdminLoginModal();
+            }, 400);
+        }
+    },
+
+    updateAdminUserDisplay: function() {
+        if (!window.DisicureSecurity) return;
+        const session = window.DisicureSecurity.getAdminSession();
+        const el = document.getElementById('admin-user-display');
+        const secUser = document.getElementById('sec-current-user');
+        const secTime = document.getElementById('sec-current-session-time');
+
+        if (session) {
+            if (el) el.innerText = `${session.role || 'Admin'} (${session.name || session.username})`;
+            if (secUser) secUser.innerText = `${session.name} — ${session.role}`;
+            if (secTime) secTime.innerText = `Active Session • Signed in ${new Date(session.loginTime || Date.now()).toLocaleTimeString()}`;
+        } else {
+            if (el) el.innerText = '🔒 Locked Session';
+            if (secUser) secUser.innerText = 'Unauthenticated Session';
+            if (secTime) secTime.innerText = 'Session Expired / Logged Out';
+        }
+    },
+
+    renderSecurityDashboardOverview: function() {
+        if (!window.DisicureSecurity) return;
+        const logs = window.DisicureSecurity.getAllAuditLogs();
+        const totalCount = document.getElementById('sec-total-audit-count');
+        if (totalCount) totalCount.innerText = logs.length;
+        this.updateAdminUserDisplay();
+    },
+
+    renderSecurityAuditTable: function() {
+        if (!window.DisicureSecurity) return;
+        const allLogs = window.DisicureSecurity.getAllAuditLogs();
+        const query = this.secState.searchQuery;
+        const catFilter = this.secState.categoryFilter;
+        const sevFilter = this.secState.severityFilter;
+
+        let filtered = allLogs.filter(l => {
+            const matchesQuery = !query ||
+                (l.action && l.action.toLowerCase().includes(query)) ||
+                (l.user && l.user.toLowerCase().includes(query)) ||
+                (l.detail && l.detail.toLowerCase().includes(query)) ||
+                (l.logId && l.logId.toLowerCase().includes(query)) ||
+                (l.ipAddress && l.ipAddress.toLowerCase().includes(query));
+
+            const matchesCat = catFilter === 'all' || l.category === catFilter;
+            const matchesSev = sevFilter === 'all' || l.severity === sevFilter;
+
+            return matchesQuery && matchesCat && matchesSev;
+        });
+
+        const tbody = document.getElementById('sec-audit-tbody');
+        if (!tbody) return;
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="p-8 text-center text-xs text-gray-500 font-medium">
+                        No audit log records match your search filter criteria.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(l => {
+            const sevBadge = l.severity === 'SECURITY' 
+                ? '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-rose-100 text-rose-800">SECURITY</span>'
+                : l.severity === 'WARNING'
+                ? '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-amber-100 text-amber-800">WARNING</span>'
+                : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">INFO</span>';
+
+            return `
+                <tr class="border-b border-gray-100 hover:bg-slate-50 transition-colors text-xs font-medium">
+                    <td class="p-3.5 whitespace-nowrap">
+                        <span class="font-mono font-bold text-navy-950 block">${l.logId}</span>
+                        <span class="text-[10px] text-gray-400 font-mono">${l.timestamp}</span>
+                    </td>
+                    <td class="p-3.5 whitespace-nowrap">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 text-slate-700">${l.category}</span>
+                    </td>
+                    <td class="p-3.5 whitespace-nowrap">
+                        ${sevBadge}
+                    </td>
+                    <td class="p-3.5">
+                        <span class="font-bold text-gray-800 block">${l.user || 'System'}</span>
+                        <span class="text-[10px] text-gray-400 font-mono">${l.ipAddress || 'Internal'}</span>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="font-extrabold text-navy-950 block">${l.action}</span>
+                        <p class="text-[11px] text-gray-600 font-normal leading-relaxed mt-0.5">${l.detail}</p>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    },
+
+    exportSecurityAuditCSV: function() {
+        if (window.DisicureSecurity && window.DisicureSecurity.exportAuditLogsCSV) {
+            window.DisicureSecurity.exportAuditLogsCSV();
+            this.showToast('success', 'Security & Activity Audit Log CSV exported successfully!');
+        }
     }
 };
 

@@ -326,6 +326,12 @@ const DisicureTeam = {
         }
     },
 
+    getPermissions: function(role) {
+        const rbac = this.getRBACPermissions();
+        if (role && rbac[role]) return rbac[role];
+        return this.DEFAULT_PERMISSIONS[role] || {};
+    },
+
     // Save RBAC Permissions
     saveRBACPermissions: function(perms) {
         try {

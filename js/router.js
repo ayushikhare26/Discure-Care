@@ -1786,18 +1786,38 @@ const DisicureRouter = {
                         
                         <!-- Top Action Buttons -->
                         <div class="flex flex-wrap items-center gap-2.5">
-                            <button onclick="window.DisicureMain.openAddLeadModal()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 uppercase tracking-wider">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                                <span>Add New Lead</span>
+                            <!-- Notification Center Bell with Unread Badge (Module 18) -->
+                            <button id="btn-admin-notifs" onclick="window.DisicureMain.openNotificationDrawer()" class="relative p-2.5 bg-slate-800 hover:bg-slate-700 text-blue-200 hover:text-white rounded-lg border border-slate-700 transition-all flex items-center justify-center group shadow-sm" title="Notification Center">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                                <span id="admin-notif-badge" class="notification-unread-badge absolute -top-1.5 -right-1.5 bg-rose-500 text-white font-extrabold text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-navy-950 animate-pulse">3</span>
                             </button>
-                            <button onclick="window.DisicureMain.exportLeadsCSV()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 uppercase tracking-wider">
+
+                            <!-- WhatsApp Gateway Dispatcher Launcher (Module 18) -->
+                            <button onclick="window.DisicureMain.openWhatsAppModal()" class="px-3.5 py-2.5 bg-emerald-700/80 hover:bg-emerald-600 text-emerald-100 text-xs font-bold rounded-lg border border-emerald-600/50 transition-all flex items-center gap-1.5 shadow-sm" title="WhatsApp Business Gateway">
+                                <span>💬 WhatsApp</span>
+                            </button>
+
+                            <!-- Standard Action Buttons -->
+                            <button onclick="window.DisicureMain.openAddLeadModal()" class="px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 uppercase tracking-wider">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                <span>Add Lead</span>
+                            </button>
+                            <button onclick="window.DisicureMain.exportLeadsCSV()" class="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 uppercase tracking-wider">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                                 <span>Export CSV</span>
                             </button>
-                            <button onclick="window.DisicureMain.resetLeadsData()" class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-gray-300 text-xs font-bold rounded-lg border border-slate-700 transition-all flex items-center gap-1.5" title="Reset Demo Data">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                                <span class="hidden sm:inline">Reset</span>
-                            </button>
+
+                            <!-- User Identity Badge & Session Controls (Module 19) -->
+                            <div class="flex items-center gap-2 bg-slate-900/90 border border-blue-900/60 rounded-lg px-3 py-1.5 text-xs text-blue-200">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                <span id="admin-user-display" class="font-bold text-white">👑 Super Admin</span>
+                                <button onclick="window.DisicureMain.openAdminLoginModal()" class="text-[10px] text-blue-300 hover:text-white font-bold ml-1 border-l border-slate-700 pl-2" title="Switch User / Re-login">
+                                    Switch
+                                </button>
+                                <button onclick="window.DisicureMain.handleAdminLogout()" class="text-[10px] text-rose-400 hover:text-rose-200 font-bold ml-1 border-l border-slate-700 pl-2" title="Sign Out">
+                                    Logout
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -1826,6 +1846,9 @@ const DisicureRouter = {
                         </button>
                         <button onclick="window.DisicureMain.switchAdminTab('tab-documents')" id="btn-tab-documents" class="admin-tab-btn px-4 py-2 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-blue-200 transition-all whitespace-nowrap flex items-center gap-2">
                             <span>📁 Document & Excel Vault</span>
+                        </button>
+                        <button onclick="window.DisicureMain.switchAdminTab('tab-security')" id="btn-tab-security" class="admin-tab-btn px-4 py-2 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-blue-200 transition-all whitespace-nowrap flex items-center gap-2">
+                            <span>🔐 Security & Audit Logs</span>
                         </button>
                     </div>
                 </div>
@@ -3146,6 +3169,158 @@ const DisicureRouter = {
                                 <p class="text-xs text-gray-500 max-w-sm mx-auto mt-1 font-normal leading-relaxed">
                                     No files match your search query or selected category. Upload a new document or reset your filters.
                                 </p>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+            </div>
+
+            <!-- ================================================================= -->
+            <!-- TAB 9: SECURITY, ACCESS CONTROL & AUDIT TRAIL (MODULE 19)        -->
+            <!-- ================================================================= -->
+            <div id="tab-security" class="admin-tab-content hidden">
+                <section class="py-8 bg-white min-h-[75vh]">
+                    <div class="max-w-7xl mx-auto px-4 lg:px-8 space-y-6">
+                        
+                        <!-- Header & Actions Bar -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+                            <div>
+                                <h2 class="text-xl font-extrabold text-navy-950 flex items-center gap-2">
+                                    <span>🔐 Enterprise Security & Activity Audit Governance</span>
+                                    <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">Zero-Trust RBAC & Isolation</span>
+                                </h2>
+                                <p class="text-xs text-gray-500 font-normal mt-0.5">Role-based access governance, tamper-evident activity logs, session security controls, and strict partner data isolation.</p>
+                            </div>
+                            <div class="flex items-center gap-2.5 flex-wrap">
+                                <button onclick="window.DisicureMain.exportSecurityAuditCSV()" class="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-gray-700 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 border border-gray-200 shadow-sm">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                    <span>Export Audit CSV</span>
+                                </button>
+                                <button onclick="window.DisicureMain.openRBACModal()" class="px-3.5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 border border-indigo-200">
+                                    <span>🔒 RBAC Matrix</span>
+                                </button>
+                                <button onclick="window.DisicureMain.openAdminLoginModal()" class="px-4 py-2.5 bg-navy-950 hover:bg-slate-900 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-2">
+                                    <span>🔑 Switch / Re-Auth</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 4 Security KPI Metric Cards -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="bg-blue-50/40 border border-blue-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-blue-700 uppercase tracking-wider block">🔑 Active Session Profile</span>
+                                <div class="text-base font-extrabold text-navy-950 mt-1.5 truncate" id="sec-current-user">👑 Super Admin</div>
+                                <p class="text-[11px] text-gray-500 mt-1" id="sec-current-session-time">2-Hour Protected Session</p>
+                            </div>
+                            <div class="bg-emerald-50/40 border border-emerald-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-emerald-700 uppercase tracking-wider block">🛡️ Partner Data Isolation</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-emerald-600 mt-1.5">100% Strict</div>
+                                <p class="text-[11px] text-emerald-700 font-medium mt-1">Zero cross-partner data leakage</p>
+                            </div>
+                            <div class="bg-indigo-50/40 border border-indigo-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-indigo-700 uppercase tracking-wider block">📜 Audit Log Entries</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-indigo-600 mt-1.5" id="sec-total-audit-count">0</div>
+                                <p class="text-[11px] text-indigo-700 font-medium mt-1">Tamper-evident system trail</p>
+                            </div>
+                            <div class="bg-amber-50/40 border border-amber-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-amber-700 uppercase tracking-wider block">🔐 RBAC Governance</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-amber-600 mt-1.5">5 Tier Roles</div>
+                                <p class="text-[11px] text-amber-700 font-medium mt-1">Super Admin • Admin • Sales • Ops • Partner</p>
+                            </div>
+                        </div>
+
+                        <!-- Partner Data Isolation Architecture Banner -->
+                        <div class="bg-gradient-to-r from-[#05142b] to-[#0a234a] border border-blue-800/80 p-5 rounded-2xl text-white shadow-lg space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="p-2 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-base">🛡️</span>
+                                    <div>
+                                        <h3 class="text-sm font-extrabold text-white">Multi-Tenant Partner Isolation Engine</h3>
+                                        <p class="text-xs text-blue-200/80">Each distributor, PCD partner, and freelance rep operates in a strictly segregated data container.</p>
+                                    </div>
+                                </div>
+                                <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-600/50 text-[11px] font-mono font-bold">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                    Enforced at Model Level
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2 text-xs">
+                                <div class="bg-blue-950/60 p-2.5 rounded-lg border border-blue-800/50">
+                                    <span class="font-bold text-blue-200 block">🔒 Leads Segregation</span>
+                                    <p class="text-[10px] text-gray-300">Partner leads queried solely via <code class="text-blue-300">partnerId</code>.</p>
+                                </div>
+                                <div class="bg-blue-950/60 p-2.5 rounded-lg border border-blue-800/50">
+                                    <span class="font-bold text-emerald-200 block">💰 Earnings & Payouts</span>
+                                    <p class="text-[10px] text-gray-300">Commissions locked strictly to authenticated partner profile.</p>
+                                </div>
+                                <div class="bg-blue-950/60 p-2.5 rounded-lg border border-blue-800/50">
+                                    <span class="font-bold text-purple-200 block">📁 Shared Documents</span>
+                                    <p class="text-[10px] text-gray-300">Private contracts visible only to assigned recipient.</p>
+                                </div>
+                                <div class="bg-blue-950/60 p-2.5 rounded-lg border border-blue-800/50">
+                                    <span class="font-bold text-amber-200 block">📦 Purchase Ledger</span>
+                                    <p class="text-[10px] text-gray-300">Invoices and orders restricted from competitor view.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Audit Log Filter Bar -->
+                        <div class="bg-slate-50 border border-gray-200 p-4 rounded-xl shadow-sm space-y-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                <!-- Search -->
+                                <div class="lg:col-span-2 relative">
+                                    <input type="text" id="sec-search-input" placeholder="Search audit logs by User, Action, Event, or IP..." class="w-full bg-white border border-gray-200 rounded-lg p-2.5 pl-10 text-xs font-medium focus:outline-none focus:border-blue-500 shadow-sm">
+                                    <span class="absolute left-3.5 top-3 text-gray-400">
+                                        ${DisicureRouter.icons.search}
+                                    </span>
+                                </div>
+
+                                <!-- Category Filter -->
+                                <div>
+                                    <select id="sec-category-filter" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-bold text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
+                                        <option value="all">All Audit Categories</option>
+                                        <option value="AUTH_LOGIN">AUTH_LOGIN</option>
+                                        <option value="LEAD_ACTION">LEAD_ACTION</option>
+                                        <option value="PAYMENT_ACTION">PAYMENT_ACTION</option>
+                                        <option value="COMMISSION_ACTION">COMMISSION_ACTION</option>
+                                        <option value="PARTNER_ISOLATION">PARTNER_ISOLATION</option>
+                                        <option value="RBAC_CHECK">RBAC_CHECK</option>
+                                        <option value="CATALOG_UPDATE">CATALOG_UPDATE</option>
+                                        <option value="AUTH_SECURITY">AUTH_SECURITY</option>
+                                    </select>
+                                </div>
+
+                                <!-- Severity Filter -->
+                                <div>
+                                    <select id="sec-severity-filter" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-medium text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm">
+                                        <option value="all">All Severities</option>
+                                        <option value="INFO">INFO</option>
+                                        <option value="SECURITY">SECURITY</option>
+                                        <option value="WARNING">WARNING</option>
+                                        <option value="CRITICAL">CRITICAL</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Audit Logs Data Table -->
+                        <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse" id="sec-audit-table">
+                                    <thead>
+                                        <tr class="bg-slate-100/80 border-b border-gray-200 text-[11px] font-extrabold text-gray-600 uppercase tracking-wider">
+                                            <th class="p-3.5">Log ID & Timestamp</th>
+                                            <th class="p-3.5">Category</th>
+                                            <th class="p-3.5">Severity</th>
+                                            <th class="p-3.5">User & IP Address</th>
+                                            <th class="p-3.5">Action & Event Detail</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sec-audit-tbody">
+                                        <!-- Populated dynamically via window.DisicureMain.renderSecurityAuditTable() -->
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
@@ -5125,6 +5300,198 @@ const DisicureRouter = {
                             </button>
                             <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded shadow flex items-center gap-1.5">
                                 <span>Save & Approve Commission</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ========================================================================= -->
+            <!-- NOTIFICATION CENTER SLIDE-OVER DRAWER (Module 18)                         -->
+            <!-- ========================================================================= -->
+            <div id="notification-center-drawer" class="fixed inset-0 z-50 overflow-hidden hidden" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+                <div class="absolute inset-0 bg-navy-950/70 backdrop-blur-sm transition-opacity" onclick="window.DisicureMain.closeNotificationDrawer()"></div>
+                <div class="fixed inset-y-0 right-0 max-w-full flex pl-10">
+                    <div class="w-screen max-w-md bg-white shadow-2xl flex flex-col">
+                        <!-- Drawer Header -->
+                        <div class="p-5 bg-gradient-to-r from-navy-950 to-blue-900 text-white flex items-center justify-between border-b border-blue-800">
+                            <div class="flex items-center gap-2.5">
+                                <span class="p-2 rounded-xl bg-blue-600/40 text-blue-200 text-base">🔔</span>
+                                <div>
+                                    <h3 class="text-sm font-extrabold text-white">Disicure Notification Center</h3>
+                                    <p class="text-[11px] text-blue-200/80">Real-time alerts & WhatsApp automation</p>
+                                </div>
+                            </div>
+                            <button onclick="window.DisicureMain.closeNotificationDrawer()" class="p-1.5 rounded-lg text-blue-300 hover:text-white hover:bg-blue-800/60 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+
+                        <!-- Filter Tabs & Actions Bar -->
+                        <div class="p-3 bg-slate-50 border-b border-gray-200 space-y-2">
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="font-extrabold text-gray-700" id="notif-count-label">3 Unread Alerts</span>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="window.DisicureMain.markAllNotificationsRead()" class="text-[11px] font-bold text-blue-600 hover:text-blue-800 transition-colors">
+                                        Mark all read
+                                    </button>
+                                    <span class="text-gray-300">•</span>
+                                    <button onclick="window.DisicureMain.clearAllNotifications()" class="text-[11px] font-bold text-gray-400 hover:text-rose-600 transition-colors">
+                                        Clear all
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Category Filter Pills -->
+                            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] font-bold">
+                                <button onclick="window.DisicureMain.filterNotifications('all')" id="btn-notif-filter-all" class="notif-filter-btn px-2.5 py-1 rounded-full bg-blue-600 text-white whitespace-nowrap">All</button>
+                                <button onclick="window.DisicureMain.filterNotifications('leads')" id="btn-notif-filter-leads" class="notif-filter-btn px-2.5 py-1 rounded-full bg-slate-200 text-gray-700 hover:bg-slate-300 whitespace-nowrap">📋 Leads</button>
+                                <button onclick="window.DisicureMain.filterNotifications('payments')" id="btn-notif-filter-payments" class="notif-filter-btn px-2.5 py-1 rounded-full bg-slate-200 text-gray-700 hover:bg-slate-300 whitespace-nowrap">💰 Payments</button>
+                                <button onclick="window.DisicureMain.filterNotifications('partners')" id="btn-notif-filter-partners" class="notif-filter-btn px-2.5 py-1 rounded-full bg-slate-200 text-gray-700 hover:bg-slate-300 whitespace-nowrap">🤝 Partners</button>
+                                <button onclick="window.DisicureMain.filterNotifications('followups')" id="btn-notif-filter-followups" class="notif-filter-btn px-2.5 py-1 rounded-full bg-slate-200 text-gray-700 hover:bg-slate-300 whitespace-nowrap">📅 Follow-ups</button>
+                                <button onclick="window.DisicureMain.filterNotifications('documents')" id="btn-notif-filter-documents" class="notif-filter-btn px-2.5 py-1 rounded-full bg-slate-200 text-gray-700 hover:bg-slate-300 whitespace-nowrap">📁 Docs</button>
+                            </div>
+                        </div>
+
+                        <!-- Notification List -->
+                        <div class="flex-1 overflow-y-auto p-4 space-y-3" id="notification-list-container">
+                            <!-- Populated dynamically via window.DisicureMain.renderNotifications() -->
+                        </div>
+
+                        <!-- Drawer Footer -->
+                        <div class="p-4 bg-slate-50 border-t border-gray-200 flex items-center justify-between">
+                            <button onclick="window.DisicureMain.openWhatsAppModal()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2">
+                                <span>💬 Open WhatsApp Business Dispatcher</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================================= -->
+            <!-- WHATSAPP BUSINESS GATEWAY MODAL (Module 18)                               -->
+            <!-- ========================================================================= -->
+            <div id="whatsapp-gateway-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <div class="absolute inset-0 bg-navy-950/70 backdrop-blur-sm" onclick="window.DisicureMain.closeWhatsAppModal()"></div>
+                <div class="relative bg-white rounded-2xl p-6 md:p-8 max-w-xl w-full mx-4 shadow-2xl z-10 max-h-[92vh] overflow-y-auto">
+                    <button class="absolute top-4 right-4 text-gray-400 hover:text-navy-950 focus:outline-none" onclick="window.DisicureMain.closeWhatsAppModal()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+
+                    <div class="flex items-center gap-3 border-b border-gray-100 pb-4 mb-4">
+                        <div class="w-11 h-11 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center font-extrabold text-2xl shadow-inner">
+                            💬
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-extrabold text-navy-950">WhatsApp Business Integration Gateway</h3>
+                            <p class="text-xs text-gray-500">Dispatch pre-formatted notifications, quotes, receipts & partner updates via WhatsApp.</p>
+                        </div>
+                    </div>
+
+                    <form onsubmit="window.DisicureMain.sendWhatsAppMessage(event)" class="space-y-4">
+                        <!-- Quick Template Selector -->
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1.5">Select Ready Message Template *</label>
+                            <select id="wa-template-select" onchange="window.DisicureMain.handleWATemplateChange(event)" class="w-full bg-slate-50 border border-gray-200 rounded-lg p-2.5 text-xs font-bold text-gray-700 focus:border-emerald-500">
+                                <option value="lead_welcome">📋 New B2B Lead Welcome & Acknowledgement</option>
+                                <option value="payment_receipt">💰 Payment Cleared & Invoicing Confirmation</option>
+                                <option value="followup_reminder">📅 Follow-up Reminder & Product Consultation</option>
+                                <option value="partner_onboarding">🤝 Distributor / Partner Portal Activation</option>
+                                <option value="commission_approved">💵 Partner Commission Approved & Payout</option>
+                                <option value="document_ready">📁 Batch COA / Rate Card Document Ready</option>
+                                <option value="custom">✍️ Custom Message Draft</option>
+                            </select>
+                        </div>
+
+                        <!-- Recipient Mobile -->
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1.5">Recipient Mobile Number (with country code) *</label>
+                            <input type="tel" id="wa-recipient-phone" required value="+91 9792009307" placeholder="+91 98765 43210" class="w-full bg-slate-50 border border-gray-200 rounded-lg p-2.5 text-xs font-mono font-bold focus:border-emerald-500">
+                        </div>
+
+                        <!-- Message Content Preview (Editable) -->
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1.5">Message Content (Preview & Edit) *</label>
+                            <textarea id="wa-message-content" rows="5" required class="w-full bg-emerald-50/30 border border-emerald-200 rounded-lg p-3 text-xs font-medium focus:border-emerald-500 text-gray-800 leading-relaxed" placeholder="Write message to send over WhatsApp..."></textarea>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-2.5 border-t border-gray-100">
+                            <button type="button" onclick="window.DisicureMain.copyWhatsAppText()" class="w-full sm:w-auto px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-gray-700 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5">
+                                <span>📋 Copy Text</span>
+                            </button>
+                            <div class="flex items-center gap-2 w-full sm:w-auto">
+                                <button type="button" onclick="window.DisicureMain.closeWhatsAppModal()" class="w-full sm:w-auto px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1.5 transform hover:-translate-y-0.5">
+                                    <span>🚀 Open WhatsApp Web & Send</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ========================================================================= -->
+            <!-- SECURE SUPER ADMIN & STAFF LOGIN MODAL (Module 19)                       -->
+            <!-- ========================================================================= -->
+            <div id="admin-login-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <div class="absolute inset-0 bg-navy-950/75 backdrop-blur-sm" onclick="window.DisicureMain.closeAdminLoginModal()"></div>
+                <div class="relative bg-white rounded-2xl p-6 md:p-8 max-w-lg w-full mx-4 shadow-2xl z-10 space-y-5">
+                    <button class="absolute top-4 right-4 text-gray-400 hover:text-navy-950 focus:outline-none" onclick="window.DisicureMain.closeAdminLoginModal()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+
+                    <div class="text-center space-y-1">
+                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-2 text-2xl">
+                            🔐
+                        </div>
+                        <h3 class="text-xl font-extrabold text-navy-950">Disicure Enterprise Login</h3>
+                        <p class="text-xs text-gray-500">Sign in with Super Admin or provisioned staff credentials.</p>
+                    </div>
+
+                    <!-- 1-Click Quick Demo User Switcher -->
+                    <div class="bg-slate-50 p-3 rounded-xl border border-gray-200 space-y-2">
+                        <span class="text-[10px] font-extrabold text-navy-950 uppercase tracking-wider block">⚡ Quick Demo Profiles:</span>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <button onclick="window.DisicureMain.fillAdminDemo('admin', 'disicure2026')" class="p-2 bg-white rounded border border-blue-200 text-left hover:border-blue-500 hover:bg-blue-50/50 transition-all">
+                                <strong class="text-blue-900 font-bold block text-[11px]">👑 Super Admin</strong>
+                                <span class="text-[10px] text-gray-500">admin / disicure2026</span>
+                            </button>
+                            <button onclick="window.DisicureMain.fillAdminDemo('vivek.admin', 'admin123')" class="p-2 bg-white rounded border border-gray-200 text-left hover:border-blue-500 hover:bg-blue-50/50 transition-all">
+                                <strong class="text-gray-900 font-bold block text-[11px]">🧑‍💼 Admin (Ops)</strong>
+                                <span class="text-[10px] text-gray-500">vivek.admin / admin123</span>
+                            </button>
+                            <button onclick="window.DisicureMain.fillAdminDemo('mohit.sales', 'admin123')" class="p-2 bg-white rounded border border-gray-200 text-left hover:border-blue-500 hover:bg-blue-50/50 transition-all">
+                                <strong class="text-gray-900 font-bold block text-[11px]">📞 Sales Exec</strong>
+                                <span class="text-[10px] text-gray-500">mohit.sales / admin123</span>
+                            </button>
+                            <button onclick="window.DisicureMain.fillAdminDemo('pooja.qa', 'admin123')" class="p-2 bg-white rounded border border-gray-200 text-left hover:border-blue-500 hover:bg-blue-50/50 transition-all">
+                                <strong class="text-gray-900 font-bold block text-[11px]">👨‍💻 Team (QA)</strong>
+                                <span class="text-[10px] text-gray-500">pooja.qa / admin123</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <form id="admin-login-form" onsubmit="window.DisicureMain.handleAdminLogin(event)" class="space-y-4">
+                        <div id="adm-login-error" class="hidden p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs font-bold text-rose-700"></div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Username / Official Email *</label>
+                            <input type="text" id="adm-login-user" name="username" required value="admin" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-mono font-bold focus:border-blue-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Password *</label>
+                            <input type="password" id="adm-login-pwd" name="password" required value="disicure2026" class="w-full bg-slate-50 border border-gray-200 rounded p-2.5 text-xs font-mono focus:border-blue-500">
+                        </div>
+
+                        <div class="pt-2 flex items-center justify-end gap-2.5 border-t border-gray-100">
+                            <button type="button" onclick="window.DisicureMain.closeAdminLoginModal()" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded">
+                                Cancel
+                            </button>
+                            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow-sm transition-all">
+                                Sign In to Admin Panel
                             </button>
                         </div>
                     </form>
