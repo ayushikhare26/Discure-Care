@@ -7365,6 +7365,522 @@ const DisicureMain = {
         link.click();
         document.body.removeChild(link);
         this.showToast('success', 'Product catalog exported as CSV!');
+    },
+
+    exportTeamCSV: function() {
+        if (!window.DisicureTeam) return;
+        const team = window.DisicureTeam.getAllMembers();
+        if (!team || team.length === 0) {
+            this.showToast('error', 'No team members available to export.');
+            return;
+        }
+
+        const headers = ['Member ID', 'Full Name', 'Department', 'Designation', 'System Role', 'Mobile', 'Email', 'Username', 'Account Status', 'Assigned Leads Count'];
+        const rows = team.map(m => [
+            `"${m.memberId || ''}"`,
+            `"${(m.name || '').replace(/"/g, '""')}"`,
+            `"${(m.dept || '').replace(/"/g, '""')}"`,
+            `"${(m.designation || '').replace(/"/g, '""')}"`,
+            `"${(m.role || '').replace(/"/g, '""')}"`,
+            `"${m.mobile || ''}"`,
+            `"${m.email || ''}"`,
+            `"${m.username || ''}"`,
+            `"${m.accountStatus || ''}"`,
+            `"${m.assignedLeadsCount || 0}"`
+        ].join(','));
+
+        const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows].join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', `Disicure_Team_Roster_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        this.showToast('success', 'Team roster exported to CSV / Excel!');
+    },
+
+    exportPartnersCSV: function() {
+        if (!window.DisicurePartner) return;
+        const partners = window.DisicurePartner.getAllPartners();
+        if (!partners || partners.length === 0) {
+            this.showToast('error', 'No partners available to export.');
+            return;
+        }
+
+        const headers = ['Partner ID', 'Company Name', 'Contact Person', 'Partner Type', 'Mobile', 'Email', 'City', 'State', 'Assigned Territory', 'GSTIN', 'Drug License', 'Business Generated (INR)', 'Commission Earned (INR)', 'Payment Received (INR)', 'Pending Payment (INR)', 'Account Status', 'Account Manager'];
+        const rows = partners.map(p => [
+            `"${p.partnerId || ''}"`,
+            `"${(p.companyName || '').replace(/"/g, '""')}"`,
+            `"${(p.contactPerson || '').replace(/"/g, '""')}"`,
+            `"${(p.partnerType || '').replace(/"/g, '""')}"`,
+            `"${p.mobile || ''}"`,
+            `"${p.email || ''}"`,
+            `"${(p.city || '').replace(/"/g, '""')}"`,
+            `"${(p.state || '').replace(/"/g, '""')}"`,
+            `"${(p.assignedTerritory || '').replace(/"/g, '""')}"`,
+            `"${p.gstin || ''}"`,
+            `"${p.drugLicense || ''}"`,
+            `"${p.businessGeneratedNumeric || p.businessGeneratedFormatted || 0}"`,
+            `"${p.commissionEarnedNumeric || p.commissionEarnedFormatted || 0}"`,
+            `"${p.paymentReceivedNumeric || p.paymentReceivedFormatted || 0}"`,
+            `"${p.pendingPaymentNumeric || p.pendingPaymentFormatted || 0}"`,
+            `"${p.accountStatus || ''}"`,
+            `"${(p.accountManager || '').replace(/"/g, '""')}"`
+        ].join(','));
+
+        const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows].join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', `Disicure_Partners_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        this.showToast('success', 'Partner directory exported to CSV / Excel!');
+    },
+
+    exportBusinessReportExcel: function() {
+        const leads = (window.DisicureLeads && window.DisicureLeads.getAllLeads()) || [];
+        const payments = (window.DisicurePayments && window.DisicurePayments.getAllPayments()) || [];
+        const clients = (window.DisicureClients && window.DisicureClients.getAllClients()) || [];
+        const partners = (window.DisicurePartner && window.DisicurePartner.getAllPartners()) || [];
+        const products = (window.DisicureData && window.DisicureData.getAllProducts()) || [];
+        const team = (window.DisicureTeam && window.DisicureTeam.getAllMembers()) || [];
+
+        const totalRevenue = payments.reduce((acc, p) => acc + (Number(p.amountReceived) || 0), 0);
+        const totalInvoiced = payments.reduce((acc, p) => acc + (Number(p.totalAmount) || 0), 0);
+        const totalPending = payments.reduce((acc, p) => acc + (Number(p.pendingAmount) || 0), 0);
+        const totalPartnersCommission = partners.reduce((acc, p) => acc + (Number(p.commissionEarnedNumeric) || 0), 0);
+
+        let csv = [];
+        csv.push('"DISICURE CARE PRIVATE LIMITED — COMPREHENSIVE BUSINESS AUDIT & PERFORMANCE REPORT"');
+        csv.push(`"Generated Date: ${new Date().toLocaleString('en-IN')}"`);
+        csv.push('"Corporate HQ: Plot No. 12, Industrial Area, Phase-II, Lucknow, Uttar Pradesh 226010, India"');
+        csv.push('""');
+
+        // Section 1: Executive KPI Summary
+        csv.push('"=== 1. EXECUTIVE FINANCIAL & OPERATIONAL KPIs ==="');
+        csv.push('"Metric","Value"');
+        csv.push(`"Total Invoiced Business (INR)","INR ${totalInvoiced.toLocaleString('en-IN')}"`);
+        csv.push(`"Total Realized Collections / Revenue (INR)","INR ${totalRevenue.toLocaleString('en-IN')}"`);
+        csv.push(`"Total Outstanding Receivables (INR)","INR ${totalPending.toLocaleString('en-IN')}"`);
+        csv.push(`"Total Partner Commissions Payable (INR)","INR ${totalPartnersCommission.toLocaleString('en-IN')}"`);
+        csv.push(`"Total Active Client Accounts","${clients.length}"`);
+        csv.push(`"Total Registered Channel Partners","${partners.length}"`);
+        csv.push(`"Total Pipeline Leads","${leads.length}"`);
+        csv.push(`"Total Approved Catalog Formulations","${products.length}"`);
+        csv.push(`"Total Corporate Team Strength","${team.length}"`);
+        csv.push('""');
+
+        // Section 2: Recent Payments & Invoices
+        csv.push('"=== 2. FINANCIAL LEDGER & INVOICE COLLECTIONS ==="');
+        csv.push('"Invoice ID","Client / Partner","Total Amount (INR)","Received (INR)","Pending (INR)","Payment Date","Mode","Status"');
+        payments.forEach(p => {
+            csv.push(`"${p.invoiceId || ''}","${(p.clientName || '').replace(/"/g, '""')}","${p.totalAmount || 0}","${p.amountReceived || 0}","${p.pendingAmount || 0}","${p.paymentDate || ''}","${p.paymentMode || ''}","${p.paymentStatus || ''}"`);
+        });
+        csv.push('""');
+
+        // Section 3: Leads Pipeline Summary
+        csv.push('"=== 3. COMMERCIAL LEADS & PIPELINE STATUS ==="');
+        csv.push('"Lead ID","Name","Mobile","City","Business Type","Requirement","Status","Assigned Person"');
+        leads.forEach(l => {
+            csv.push(`"${l.leadId || ''}","${(l.name || '').replace(/"/g, '""')}","${l.mobile || ''}","${l.city || ''}","${l.businessType || ''}","${(l.productOrService || l.requirementType || '').replace(/"/g, '""')}","${l.leadStatus || ''}","${l.assignedPerson || ''}"`);
+        });
+        csv.push('""');
+
+        // Section 4: Key Client Accounts
+        csv.push('"=== 4. KEY CLIENT ACCOUNTS SUMMARY ==="');
+        csv.push('"Client ID","Company Name","Contact Person","Business Type","City","Account Status","Contract Value"');
+        clients.forEach(c => {
+            csv.push(`"${c.id || ''}","${(c.companyName || '').replace(/"/g, '""')}","${(c.contactPerson || '').replace(/"/g, '""')}","${c.businessType || ''}","${c.location?.city || ''}","${c.accountStatus || ''}","${c.totalBusinessValueFormatted || ''}"`);
+        });
+        csv.push('""');
+
+        // Section 5: Partner Directory & Commissions
+        csv.push('"=== 5. CHANNEL PARTNER PERFORMANCE ==="');
+        csv.push('"Partner ID","Company Name","Partner Type","Territory","Business Done","Commission Earned","Pending Commission"');
+        partners.forEach(prt => {
+            csv.push(`"${prt.partnerId || ''}","${(prt.companyName || '').replace(/"/g, '""')}","${prt.partnerType || ''}","${(prt.assignedTerritory || '').replace(/"/g, '""')}","${prt.businessGeneratedFormatted || ''}","${prt.commissionEarnedFormatted || ''}","${prt.pendingPaymentFormatted || ''}"`);
+        });
+
+        const csvContent = 'data:text/csv;charset=utf-8,' + csv.join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', `Disicure_Executive_Business_Report_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        this.showToast('success', 'Full Disicure Business Report exported to Excel (.CSV)!');
+    },
+
+    openPrintableReportModal: function(reportType, targetId) {
+        const modal = document.getElementById('printable-report-modal');
+        const titleEl = document.getElementById('printable-modal-title');
+        const bodyEl = document.getElementById('printable-report-body');
+        if (!modal || !bodyEl) return;
+
+        const titles = {
+            'executive': 'Disicure Care Executive Business Statement',
+            'leads': 'Commercial Leads & Enquiry Pipeline Report',
+            'payments': 'Corporate Financial Ledger & Invoicing Statement',
+            'partners': 'Channel Partner Performance & Earnings Statement',
+            'products': 'Pharmaceutical Product Formulary & Catalog Statement',
+            'team': 'Corporate Organization & Team Directory Statement',
+            'client': 'Enterprise Client 360° Account Dossier'
+        };
+
+        if (titleEl) {
+            titleEl.innerText = titles[reportType] || 'Disicure Care Corporate Business Report';
+        }
+
+        bodyEl.innerHTML = this.renderPrintableReportContent(reportType, targetId);
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.classList.add('overflow-hidden');
+    },
+
+    closePrintableReportModal: function() {
+        const modal = document.getElementById('printable-report-modal');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    },
+
+    renderPrintableReportContent: function(reportType, targetId) {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+        const refId = `DISI-RPT-${now.getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+        const letterhead = `
+        <div class="border-b-2 border-navy-950 pb-4 mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <img src="images/logo.jpg" alt="Disicure Care" class="h-12 w-auto object-contain" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'48\\' height=\\'48\\' fill=\\'none\\' stroke=\\'%231e3a8a\\' viewBox=\\'0 0 24 24\\"><path stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'2\\' d=\\'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4\\'/></svg>'">
+                    <div>
+                        <h1 class="text-xl font-black text-navy-950 tracking-tight uppercase">DISICURE CARE PRIVATE LIMITED</h1>
+                        <p class="text-[11px] font-bold text-blue-900">Excellence in Pharmaceutical Formulations & Contract Manufacturing</p>
+                    </div>
+                </div>
+                <div class="text-right text-[10px] text-gray-600 font-medium">
+                    <p class="font-bold text-navy-950">CIN / Reg: U24232UP2026PTC123456</p>
+                    <p>Plot No. 12, Industrial Area, Phase-II, Lucknow, UP 226010</p>
+                    <p>Phone: +91 9792009307 | Web: www.disicurecare.com</p>
+                </div>
+            </div>
+            <div class="mt-3 pt-2 border-t border-gray-200 flex items-center justify-between text-[11px] font-bold text-gray-500">
+                <span>Statement Ref: <strong class="text-navy-950 font-mono">${refId}</strong></span>
+                <span>Date of Generation: <strong class="text-navy-950">${dateStr} at ${timeStr}</strong></span>
+            </div>
+        </div>
+        `;
+
+        const signatureBlock = `
+        <div class="mt-8 pt-6 border-t border-gray-200 grid grid-cols-2 gap-8 text-[11px]">
+            <div>
+                <p class="font-bold text-gray-700">Official Verification Note:</p>
+                <p class="text-gray-500 text-[10px] mt-0.5 leading-relaxed">This is a system-generated commercial statement from the Disicure Care Enterprise ERP & Reporting Portal. Digitally certified & verified for internal governance and partner audits.</p>
+            </div>
+            <div class="text-right flex flex-col items-end">
+                <div class="h-10 w-32 border-b border-dashed border-gray-400 mb-1"></div>
+                <p class="font-black text-navy-950">Authorized Signatory</p>
+                <p class="text-gray-500 text-[10px]">Mr. Nishant Chaturvedi (Managing Director)</p>
+                <p class="text-blue-900 text-[10px] font-bold">Disicure Care Pvt. Ltd.</p>
+            </div>
+        </div>
+        `;
+
+        let body = '';
+
+        if (reportType === 'leads') {
+            const leads = (window.DisicureLeads && window.DisicureLeads.getAllLeads()) || [];
+            body = `
+                <div class="mb-4">
+                    <h2 class="text-base font-extrabold text-navy-950">Commercial Leads & Pipeline Statement</h2>
+                    <p class="text-xs text-gray-500">Comprehensive summary of website enquiries, phone leads, and active franchisee negotiations.</p>
+                </div>
+                <div class="grid grid-cols-4 gap-3 mb-6">
+                    <div class="bg-blue-50/60 p-3 rounded-lg border border-blue-100">
+                        <span class="text-[10px] font-bold text-blue-800 uppercase block">Total Leads</span>
+                        <span class="text-xl font-black text-navy-950">${leads.length}</span>
+                    </div>
+                    <div class="bg-emerald-50/60 p-3 rounded-lg border border-emerald-100">
+                        <span class="text-[10px] font-bold text-emerald-800 uppercase block">Converted</span>
+                        <span class="text-xl font-black text-emerald-700">${leads.filter(l => (l.leadStatus || '').includes('Converted')).length}</span>
+                    </div>
+                    <div class="bg-amber-50/60 p-3 rounded-lg border border-amber-100">
+                        <span class="text-[10px] font-bold text-amber-800 uppercase block">In Follow-up / Neg</span>
+                        <span class="text-xl font-black text-amber-700">${leads.filter(l => (l.leadStatus || '').includes('Follow') || (l.leadStatus || '').includes('Negot')).length}</span>
+                    </div>
+                    <div class="bg-purple-50/60 p-3 rounded-lg border border-purple-100">
+                        <span class="text-[10px] font-bold text-purple-800 uppercase block">New Untouched</span>
+                        <span class="text-xl font-black text-purple-700">${leads.filter(l => (l.leadStatus || '').includes('New')).length}</span>
+                    </div>
+                </div>
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-100 border-b border-gray-300 font-extrabold text-navy-950">
+                            <th class="p-2">Lead ID</th>
+                            <th class="p-2">Contact Name & City</th>
+                            <th class="p-2">Mobile / WhatsApp</th>
+                            <th class="p-2">Business Type & Requirement</th>
+                            <th class="p-2">Assigned Executive</th>
+                            <th class="p-2 text-right">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        ${leads.map(l => `
+                            <tr>
+                                <td class="p-2 font-mono text-[11px] font-bold text-blue-900">${l.leadId || '-'}</td>
+                                <td class="p-2 font-bold text-gray-900">${l.name || '-'}<span class="block text-[10px] font-normal text-gray-500">${l.city || ''}, ${l.state || ''}</span></td>
+                                <td class="p-2 font-mono text-[11px] text-gray-700">${l.mobile || '-'}</td>
+                                <td class="p-2 text-gray-800"><span class="font-semibold">${l.businessType || '-'}</span><span class="block text-[10px] text-gray-500">${l.productOrService || l.requirementType || '-'}</span></td>
+                                <td class="p-2 text-gray-700">${l.assignedPerson || '-'}</td>
+                                <td class="p-2 text-right font-bold text-[11px]">${l.leadStatus || '-'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } else if (reportType === 'payments') {
+            const payments = (window.DisicurePayments && window.DisicurePayments.getAllPayments()) || [];
+            const totalInvoiced = payments.reduce((acc, p) => acc + (Number(p.totalAmount) || 0), 0);
+            const totalReceived = payments.reduce((acc, p) => acc + (Number(p.amountReceived) || 0), 0);
+            const totalPending = payments.reduce((acc, p) => acc + (Number(p.pendingAmount) || 0), 0);
+            body = `
+                <div class="mb-4">
+                    <h2 class="text-base font-extrabold text-navy-950">Corporate Financial Ledger & Receivables Statement</h2>
+                    <p class="text-xs text-gray-500">Official ledger detailing customer billing, realized batch payments, and outstanding milestone dues.</p>
+                </div>
+                <div class="grid grid-cols-3 gap-4 mb-6">
+                    <div class="bg-blue-50/60 p-3 rounded-lg border border-blue-100">
+                        <span class="text-[10px] font-bold text-blue-800 uppercase block">Total Billed Business</span>
+                        <span class="text-xl font-black text-navy-950">₹${totalInvoiced.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div class="bg-emerald-50/60 p-3 rounded-lg border border-emerald-100">
+                        <span class="text-[10px] font-bold text-emerald-800 uppercase block">Collections Received</span>
+                        <span class="text-xl font-black text-emerald-700">₹${totalReceived.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div class="bg-amber-50/60 p-3 rounded-lg border border-amber-100">
+                        <span class="text-[10px] font-bold text-amber-800 uppercase block">Outstanding Balance</span>
+                        <span class="text-xl font-black text-amber-700">₹${totalPending.toLocaleString('en-IN')}</span>
+                    </div>
+                </div>
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-100 border-b border-gray-300 font-extrabold text-navy-950">
+                            <th class="p-2">Invoice / Ref ID</th>
+                            <th class="p-2">Client / Partner Name</th>
+                            <th class="p-2">Payment Date & Mode</th>
+                            <th class="p-2 text-right">Invoiced (₹)</th>
+                            <th class="p-2 text-right">Received (₹)</th>
+                            <th class="p-2 text-right">Pending (₹)</th>
+                            <th class="p-2 text-right">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 font-medium">
+                        ${payments.map(p => `
+                            <tr>
+                                <td class="p-2 font-mono text-[11px] font-bold text-blue-900">${p.invoiceId || p.paymentId}</td>
+                                <td class="p-2 font-bold text-gray-900">${p.clientName || '-'}</td>
+                                <td class="p-2 text-gray-600">${p.paymentDate || '-'}<span class="block text-[10px] text-gray-400">${p.paymentMode || ''}</span></td>
+                                <td class="p-2 text-right font-mono font-bold">₹${Number(p.totalAmount || 0).toLocaleString('en-IN')}</td>
+                                <td class="p-2 text-right font-mono font-bold text-emerald-700">₹${Number(p.amountReceived || 0).toLocaleString('en-IN')}</td>
+                                <td class="p-2 text-right font-mono font-bold text-amber-700">₹${Number(p.pendingAmount || 0).toLocaleString('en-IN')}</td>
+                                <td class="p-2 text-right font-bold text-[11px]">${p.paymentStatus || '-'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } else if (reportType === 'partners') {
+            const partners = (window.DisicurePartner && window.DisicurePartner.getAllPartners()) || [];
+            const totalBusiness = partners.reduce((acc, p) => acc + (Number(p.businessGeneratedNumeric) || 0), 0);
+            const totalCommissions = partners.reduce((acc, p) => acc + (Number(p.commissionEarnedNumeric) || 0), 0);
+            const totalPendingComm = partners.reduce((acc, p) => acc + (Number(p.pendingPaymentNumeric) || 0), 0);
+            body = `
+                <div class="mb-4">
+                    <h2 class="text-base font-extrabold text-navy-950">Channel Partner Performance & Commission Statement</h2>
+                    <p class="text-xs text-gray-500">Performance report of authorized distributors, PCD franchisees, and institutional partners.</p>
+                </div>
+                <div class="grid grid-cols-3 gap-4 mb-6">
+                    <div class="bg-purple-50/60 p-3 rounded-lg border border-purple-100">
+                        <span class="text-[10px] font-bold text-purple-800 uppercase block">Total Partner Volume</span>
+                        <span class="text-xl font-black text-navy-950">₹${totalBusiness.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div class="bg-emerald-50/60 p-3 rounded-lg border border-emerald-100">
+                        <span class="text-[10px] font-bold text-emerald-800 uppercase block">Commissions Earned</span>
+                        <span class="text-xl font-black text-emerald-700">₹${totalCommissions.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div class="bg-amber-50/60 p-3 rounded-lg border border-amber-100">
+                        <span class="text-[10px] font-bold text-amber-800 uppercase block">Pending Payouts</span>
+                        <span class="text-xl font-black text-amber-700">₹${totalPendingComm.toLocaleString('en-IN')}</span>
+                    </div>
+                </div>
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-100 border-b border-gray-300 font-extrabold text-navy-950">
+                            <th class="p-2">Partner ID</th>
+                            <th class="p-2">Firm & Contact</th>
+                            <th class="p-2">Partner Type & Territory</th>
+                            <th class="p-2 text-right">Business (₹)</th>
+                            <th class="p-2 text-right">Commission (₹)</th>
+                            <th class="p-2 text-right">Pending (₹)</th>
+                            <th class="p-2 text-right">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 font-medium">
+                        ${partners.map(p => `
+                            <tr>
+                                <td class="p-2 font-mono text-[11px] font-bold text-blue-900">${p.partnerId || '-'}</td>
+                                <td class="p-2 font-bold text-gray-900">${p.companyName || '-'}<span class="block text-[10px] font-normal text-gray-500">${p.contactPerson || ''} (${p.city || ''})</span></td>
+                                <td class="p-2 text-gray-700">${p.partnerType || '-'}<span class="block text-[10px] text-gray-400">${p.assignedTerritory || ''}</span></td>
+                                <td class="p-2 text-right font-mono font-bold">₹${Number(p.businessGeneratedNumeric || 0).toLocaleString('en-IN')}</td>
+                                <td class="p-2 text-right font-mono font-bold text-emerald-700">₹${Number(p.commissionEarnedNumeric || 0).toLocaleString('en-IN')}</td>
+                                <td class="p-2 text-right font-mono font-bold text-amber-700">₹${Number(p.pendingPaymentNumeric || 0).toLocaleString('en-IN')}</td>
+                                <td class="p-2 text-right font-bold text-[11px]">${p.accountStatus || '-'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } else if (reportType === 'products') {
+            const products = (window.DisicureData && window.DisicureData.getAllProducts()) || [];
+            body = `
+                <div class="mb-4">
+                    <h2 class="text-base font-extrabold text-navy-950">Pharmaceutical Product Formulary & Catalog Statement</h2>
+                    <p class="text-xs text-gray-500">Official schedule of approved pharmaceutical formulations, active molecular compositions, and packaging configurations.</p>
+                </div>
+                <div class="grid grid-cols-3 gap-4 mb-6">
+                    <div class="bg-teal-50/60 p-3 rounded-lg border border-teal-100">
+                        <span class="text-[10px] font-bold text-teal-800 uppercase block">Total Formulations</span>
+                        <span class="text-xl font-black text-navy-950">${products.length} Products</span>
+                    </div>
+                    <div class="bg-blue-50/60 p-3 rounded-lg border border-blue-100">
+                        <span class="text-[10px] font-bold text-blue-800 uppercase block">Active In Stock</span>
+                        <span class="text-xl font-black text-blue-700">${products.filter(p => (p.status || 'Active').includes('Active') || (p.status || 'Active').includes('Stock')).length}</span>
+                    </div>
+                    <div class="bg-purple-50/60 p-3 rounded-lg border border-purple-100">
+                        <span class="text-[10px] font-bold text-purple-800 uppercase block">Featured Lines</span>
+                        <span class="text-xl font-black text-purple-700">${products.filter(p => p.isFeatured).length}</span>
+                    </div>
+                </div>
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-100 border-b border-gray-300 font-extrabold text-navy-950">
+                            <th class="p-2">Code</th>
+                            <th class="p-2">Brand Formulation Name</th>
+                            <th class="p-2">Active Molecular Composition (APIs)</th>
+                            <th class="p-2">Therapeutic Segment</th>
+                            <th class="p-2">Packaging Specs</th>
+                            <th class="p-2 text-right">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 font-medium">
+                        ${products.map(p => `
+                            <tr>
+                                <td class="p-2 font-mono text-[11px] font-bold text-blue-900">${p.id || '-'}</td>
+                                <td class="p-2 font-bold text-gray-900">${p.name || '-'}<span class="block text-[10px] font-normal text-gray-500">${p.dosageForm || p.category || ''}</span></td>
+                                <td class="p-2 font-mono text-[11px] text-gray-800 font-semibold">${p.composition || '-'}</td>
+                                <td class="p-2 text-gray-700">${p.therapeuticCategory || '-'}</td>
+                                <td class="p-2 text-gray-600">${p.packaging || '-'}<span class="block text-[10px] text-gray-400">${p.details || ''}</span></td>
+                                <td class="p-2 text-right font-bold text-[11px] text-emerald-700">${p.status || 'Active'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } else if (reportType === 'team') {
+            const team = (window.DisicureTeam && window.DisicureTeam.getAllMembers()) || [];
+            body = `
+                <div class="mb-4">
+                    <h2 class="text-base font-extrabold text-navy-950">Corporate Organization & Team Directory</h2>
+                    <p class="text-xs text-gray-500">Corporate hierarchy, designations, system access levels, and assigned commercial portfolios.</p>
+                </div>
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-100 border-b border-gray-300 font-extrabold text-navy-950">
+                            <th class="p-2">Member ID</th>
+                            <th class="p-2">Full Name & Designation</th>
+                            <th class="p-2">Department</th>
+                            <th class="p-2">System Role</th>
+                            <th class="p-2">Contact Details</th>
+                            <th class="p-2 text-right">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 font-medium">
+                        ${team.map(m => `
+                            <tr>
+                                <td class="p-2 font-mono text-[11px] font-bold text-blue-900">${m.memberId || '-'}</td>
+                                <td class="p-2 font-bold text-gray-900">${m.name || '-'}<span class="block text-[10px] font-normal text-gray-500">${m.designation || ''}</span></td>
+                                <td class="p-2 text-gray-700">${m.dept || '-'}</td>
+                                <td class="p-2 text-gray-800 font-bold">${m.role || '-'}</td>
+                                <td class="p-2 text-gray-600 text-[11px] font-mono">${m.email || ''}<span class="block text-[10px] text-gray-500">${m.mobile || ''}</span></td>
+                                <td class="p-2 text-right font-bold text-[11px] text-emerald-700">${m.accountStatus || 'Active'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } else {
+            // Default: Executive Business Summary
+            const leads = (window.DisicureLeads && window.DisicureLeads.getAllLeads()) || [];
+            const payments = (window.DisicurePayments && window.DisicurePayments.getAllPayments()) || [];
+            const clients = (window.DisicureClients && window.DisicureClients.getAllClients()) || [];
+            const partners = (window.DisicurePartner && window.DisicurePartner.getAllPartners()) || [];
+            const products = (window.DisicureData && window.DisicureData.getAllProducts()) || [];
+            const totalRevenue = payments.reduce((acc, p) => acc + (Number(p.amountReceived) || 0), 0);
+            const totalInvoiced = payments.reduce((acc, p) => acc + (Number(p.totalAmount) || 0), 0);
+            const totalPending = payments.reduce((acc, p) => acc + (Number(p.pendingAmount) || 0), 0);
+
+            body = `
+                <div class="mb-4">
+                    <h2 class="text-base font-extrabold text-navy-950">Executive Business Performance & Audit Statement</h2>
+                    <p class="text-xs text-gray-500">Consolidated executive snapshot of revenue, accounts receivable, client onboarding, and franchise distribution channels.</p>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                    <div class="bg-blue-50/60 p-3 rounded-lg border border-blue-100">
+                        <span class="text-[10px] font-bold text-blue-800 uppercase block">Total Billed Turnover</span>
+                        <span class="text-xl font-black text-navy-950">₹${totalInvoiced.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div class="bg-emerald-50/60 p-3 rounded-lg border border-emerald-100">
+                        <span class="text-[10px] font-bold text-emerald-800 uppercase block">Realized Revenue</span>
+                        <span class="text-xl font-black text-emerald-700">₹${totalRevenue.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div class="bg-amber-50/60 p-3 rounded-lg border border-amber-100">
+                        <span class="text-[10px] font-bold text-amber-800 uppercase block">Pending Receivables</span>
+                        <span class="text-xl font-black text-amber-700">₹${totalPending.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div class="bg-purple-50/60 p-3 rounded-lg border border-purple-100">
+                        <span class="text-[10px] font-bold text-purple-800 uppercase block">Enterprise Clients</span>
+                        <span class="text-xl font-black text-purple-700">${clients.length} Accounts</span>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="border border-gray-200 rounded-lg p-3 bg-slate-50/50">
+                        <h3 class="text-xs font-bold text-navy-950 uppercase tracking-wider mb-2">Key Operational Milestones</h3>
+                        <ul class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                            <li class="p-2 bg-white rounded border border-gray-100"><strong class="text-navy-950 font-bold block">📦 Formulations:</strong> ${products.length} Approved Products</li>
+                            <li class="p-2 bg-white rounded border border-gray-100"><strong class="text-navy-950 font-bold block">🤝 Channel Network:</strong> ${partners.length} Regional Partners</li>
+                            <li class="p-2 bg-white rounded border border-gray-100"><strong class="text-navy-950 font-bold block">🎯 Leads Pipeline:</strong> ${leads.length} Enquiries Tracked</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="space-y-4 text-slate-800">
+                ${letterhead}
+                ${body}
+                ${signatureBlock}
+            </div>
+        `;
     }
 };
 

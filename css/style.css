@@ -446,3 +446,82 @@ h1, h2, h3, h4, h5, h6 {
   animation: intro-float 3s ease-in-out infinite;
 }
 
+/* ==========================================================================
+   Print Stylesheet for Official Reports, Invoices & Statements (Module 17)
+   ========================================================================== */
+@media print {
+  /* Hide non-printable web chrome and UI controls */
+  #navbar-wrapper,
+  header,
+  footer,
+  #preloader,
+  #intro-overlay,
+  #disicure-toast-container,
+  #global-search-flyout,
+  .admin-tab-btn,
+  .admin-header-actions,
+  button:not(.allow-print),
+  .no-print,
+  #global-filters-console,
+  #mobile-drawer {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+    line-height: 1.4 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .printable-page {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 15px !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
+    page-break-after: auto;
+  }
+
+  .print-header {
+    display: block !important;
+    border-bottom: 2px solid #1e3a8a !important;
+    padding-bottom: 10px !important;
+    margin-bottom: 15px !important;
+  }
+
+  .print-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin: 12px 0 !important;
+  }
+
+  .print-table th, 
+  .print-table td {
+    border: 1px solid #cbd5e1 !important;
+    padding: 6px 8px !important;
+    text-align: left !important;
+    font-size: 9pt !important;
+  }
+
+  .print-table th {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+    font-weight: bold !important;
+  }
+
+  .print-footer {
+    display: flex !important;
+    justify-content: space-between !important;
+    margin-top: 25px !important;
+    padding-top: 8px !important;
+    border-top: 1px solid #cbd5e1 !important;
+    font-size: 8pt !important;
+    color: #64748b !important;
+  }
+}
+

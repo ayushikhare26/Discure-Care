@@ -2921,16 +2921,116 @@ const DisicureRouter = {
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
                             <div>
                                 <h2 class="text-xl font-extrabold text-navy-950 flex items-center gap-2">
-                                    <span>📁 Enterprise Document & Excel Management Vault</span>
-                                    <span class="text-[10px] font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">Live DMS</span>
+                                    <span>📁 Enterprise Export, Document & Reporting Center</span>
+                                    <span class="text-[10px] font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">Module 17: Reports & Exports</span>
                                 </h2>
-                                <p class="text-xs text-gray-500 font-normal mt-0.5">Upload, categorize, preview, download, rename, and manage all your spreadsheets, product brochures, contracts, and COAs without developer dependency.</p>
+                                <p class="text-xs text-gray-500 font-normal mt-0.5">Export live operational data to Excel spreadsheets, generate high-resolution printable PDF reports, and manage all corporate document files.</p>
                             </div>
                             <div class="flex items-center gap-2">
-                                <button onclick="window.DisicureMain.openUploadDocModal()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-2 transform hover:-translate-y-0.5">
+                                <button onclick="window.DisicureMain.openPrintableReportModal('executive')" class="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 text-xs font-extrabold rounded-lg shadow-sm transition-all flex items-center gap-2">
+                                    <span>🖨️ Print Executive Report</span>
+                                </button>
+                                <button onclick="window.DisicureMain.openUploadDocModal()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                                     <span>+ Upload Document</span>
                                 </button>
+                            </div>
+                        </div>
+
+                        <!-- ========================================================================= -->
+                        <!-- 1-CLICK EXCEL EXPORT & PRINTABLE REPORTS COMMAND CENTER (Module 17) -->
+                        <!-- ========================================================================= -->
+                        <div class="bg-gradient-to-r from-[#0a1f3d] to-[#07152b] text-white p-6 rounded-2xl shadow-xl border border-blue-800/80 space-y-5">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-blue-800/60 pb-4">
+                                <div>
+                                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-950 border border-cyan-400/40 text-cyan-300 text-[10px] font-bold uppercase tracking-wider mb-2">
+                                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                        <span>Official ERP Data Exporter & Executive Report Hub</span>
+                                    </div>
+                                    <h3 class="text-xl font-extrabold text-white">Live Data Export & Business Statements</h3>
+                                    <p class="text-xs text-blue-200/80 mt-0.5">Download real-time data directly to Excel (.CSV) or generate corporate printable PDF reports with letterhead formatting.</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="window.DisicureMain.exportBusinessReportExcel()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                        <span>Export Full Business Report (Excel)</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- 6 Fast 1-Click Excel Exporters Grid -->
+                            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                                <!-- 1. Leads -> Excel -->
+                                <button onclick="window.DisicureMain.exportLeadsCSV()" class="p-3.5 rounded-xl bg-blue-950/70 border border-blue-700/50 hover:border-cyan-400 hover:bg-blue-900/60 transition-all text-left group">
+                                    <div class="text-xl mb-1 group-hover:scale-110 transition-transform">📊</div>
+                                    <h4 class="text-xs font-bold text-white mb-0.5">Leads to Excel</h4>
+                                    <p class="text-[10px] text-blue-300">Inquiries & LMS data</p>
+                                    <span class="inline-block text-[10px] font-extrabold text-cyan-400 mt-2">Download .CSV &rarr;</span>
+                                </button>
+
+                                <!-- 2. Payments -> Excel -->
+                                <button onclick="window.DisicureMain.exportPaymentsCSV()" class="p-3.5 rounded-xl bg-blue-950/70 border border-blue-700/50 hover:border-emerald-400 hover:bg-blue-900/60 transition-all text-left group">
+                                    <div class="text-xl mb-1 group-hover:scale-110 transition-transform">💰</div>
+                                    <h4 class="text-xs font-bold text-white mb-0.5">Payments to Excel</h4>
+                                    <p class="text-[10px] text-emerald-300">Invoices & receivables</p>
+                                    <span class="inline-block text-[10px] font-extrabold text-emerald-400 mt-2">Download .CSV &rarr;</span>
+                                </button>
+
+                                <!-- 3. Partners -> Excel -->
+                                <button onclick="window.DisicureMain.exportPartnersCSV()" class="p-3.5 rounded-xl bg-blue-950/70 border border-blue-700/50 hover:border-purple-400 hover:bg-blue-900/60 transition-all text-left group">
+                                    <div class="text-xl mb-1 group-hover:scale-110 transition-transform">🤝</div>
+                                    <h4 class="text-xs font-bold text-white mb-0.5">Partners to Excel</h4>
+                                    <p class="text-[10px] text-purple-300">Directory & earnings</p>
+                                    <span class="inline-block text-[10px] font-extrabold text-purple-400 mt-2">Download .CSV &rarr;</span>
+                                </button>
+
+                                <!-- 4. Clients -> Excel -->
+                                <button onclick="window.DisicureMain.exportClientsCSV()" class="p-3.5 rounded-xl bg-blue-950/70 border border-blue-700/50 hover:border-indigo-400 hover:bg-blue-900/60 transition-all text-left group">
+                                    <div class="text-xl mb-1 group-hover:scale-110 transition-transform">🏢</div>
+                                    <h4 class="text-xs font-bold text-white mb-0.5">Clients to Excel</h4>
+                                    <p class="text-[10px] text-indigo-300">360° accounts ledger</p>
+                                    <span class="inline-block text-[10px] font-extrabold text-indigo-400 mt-2">Download .CSV &rarr;</span>
+                                </button>
+
+                                <!-- 5. Team -> Excel -->
+                                <button onclick="window.DisicureMain.exportTeamCSV()" class="p-3.5 rounded-xl bg-blue-950/70 border border-blue-700/50 hover:border-amber-400 hover:bg-blue-900/60 transition-all text-left group">
+                                    <div class="text-xl mb-1 group-hover:scale-110 transition-transform">👥</div>
+                                    <h4 class="text-xs font-bold text-white mb-0.5">Team to Excel</h4>
+                                    <p class="text-[10px] text-amber-300">Staff & assignees</p>
+                                    <span class="inline-block text-[10px] font-extrabold text-amber-400 mt-2">Download .CSV &rarr;</span>
+                                </button>
+
+                                <!-- 6. Products -> Excel -->
+                                <button onclick="window.DisicureMain.exportProductsCSV()" class="p-3.5 rounded-xl bg-blue-950/70 border border-blue-700/50 hover:border-teal-400 hover:bg-blue-900/60 transition-all text-left group">
+                                    <div class="text-xl mb-1 group-hover:scale-110 transition-transform">📦</div>
+                                    <h4 class="text-xs font-bold text-white mb-0.5">Products to Excel</h4>
+                                    <p class="text-[10px] text-teal-300">Catalog & molecules</p>
+                                    <span class="inline-block text-[10px] font-extrabold text-teal-400 mt-2">Download .CSV &rarr;</span>
+                                </button>
+                            </div>
+
+                            <!-- Printable Reports Toolbar Strip -->
+                            <div class="pt-3 border-t border-blue-800/60 flex flex-wrap items-center justify-between gap-3 text-xs">
+                                <span class="text-blue-300 font-bold flex items-center gap-1.5">
+                                    <span>🖨️ Instant Printable Statements & Reports:</span>
+                                </span>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <button onclick="window.DisicureMain.openPrintableReportModal('leads')" class="px-3 py-1.5 rounded-lg bg-blue-950 border border-blue-700 hover:border-cyan-400 text-blue-200 hover:text-white font-bold transition-colors">
+                                        📋 Leads Pipeline Statement
+                                    </button>
+                                    <button onclick="window.DisicureMain.openPrintableReportModal('payments')" class="px-3 py-1.5 rounded-lg bg-blue-950 border border-blue-700 hover:border-emerald-400 text-emerald-200 hover:text-white font-bold transition-colors">
+                                        💰 Financial Ledger & Invoices
+                                    </button>
+                                    <button onclick="window.DisicureMain.openPrintableReportModal('partners')" class="px-3 py-1.5 rounded-lg bg-blue-950 border border-blue-700 hover:border-purple-400 text-purple-200 hover:text-white font-bold transition-colors">
+                                        🤝 Partner Earnings Statement
+                                    </button>
+                                    <button onclick="window.DisicureMain.openPrintableReportModal('products')" class="px-3 py-1.5 rounded-lg bg-blue-950 border border-blue-700 hover:border-teal-400 text-teal-200 hover:text-white font-bold transition-colors">
+                                        💊 Product Formulary & Price Card
+                                    </button>
+                                    <button onclick="window.DisicureMain.openPrintableReportModal('team')" class="px-3 py-1.5 rounded-lg bg-blue-950 border border-blue-700 hover:border-amber-400 text-amber-200 hover:text-white font-bold transition-colors">
+                                        👥 Team Roster
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -3994,6 +4094,38 @@ const DisicureRouter = {
                     </button>
                     <div id="lms-drawer-content">
                         <!-- Populated dynamically by window.DisicureMain.openLeadDrawer(leadId) -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================================= -->
+            <!-- PRINTABLE / PDF CORPORATE REPORT MODAL (Module 17) -->
+            <!-- ========================================================================= -->
+            <div id="printable-report-modal" class="fixed inset-0 z-[100] items-center justify-center hidden bg-navy-950/80 backdrop-blur-sm p-3 sm:p-6 overflow-y-auto">
+                <div class="relative bg-white rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden my-auto border border-gray-200">
+                    <!-- Modal Top Action Header (hidden during print) -->
+                    <div class="no-print bg-[#08172e] text-white px-6 py-4 flex items-center justify-between border-b border-blue-800">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-2xl">🖨️</span>
+                            <div>
+                                <h3 class="text-sm font-extrabold text-white" id="printable-modal-title">Disicure Care Executive Business Report</h3>
+                                <p class="text-[11px] text-blue-300">Corporate document formatted for printing or PDF export</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="window.print()" class="allow-print px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-extrabold text-xs rounded-xl shadow transition-all flex items-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                                <span>Print / Save as PDF</span>
+                            </button>
+                            <button type="button" onclick="window.DisicureMain.closePrintableReportModal()" class="p-2 text-gray-400 hover:text-white rounded-lg transition-colors font-bold text-sm">
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Printable Document Content Body -->
+                    <div id="printable-report-body" class="p-6 sm:p-8 printable-page bg-white text-slate-900 max-h-[80vh] overflow-y-auto">
+                        <!-- Populated dynamically via window.DisicureMain.renderPrintableReportContent() -->
                     </div>
                 </div>
             </div>
