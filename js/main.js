@@ -986,8 +986,28 @@ const DisicureMain = {
         statusFilter: 'all'
     },
 
+    // Global Search & 9-Dimensional Multi-Filter State (Module 16)
+    globalSearchState: {
+        globalQuery: '',
+        name: '',
+        mobile: '',
+        company: '',
+        city: '',
+        product: '',
+        partner: '',
+        leadStatus: 'all',
+        paymentStatus: 'all',
+        dateFrom: '',
+        dateTo: '',
+        datePreset: 'all',
+        isFilterOpen: false
+    },
+
     initAdminPanel: function() {
         if (!window.DisicureLeads && !window.DisicurePayments && !window.DisicureDocuments && !window.DisicureTeam && !window.DisicurePartner) return;
+
+        // Initialize Global Omnibar Search & 9-Point Multi-Filter (Module 16)
+        this.initGlobalSearchAndFilters();
 
         // LMS Search Input
         const searchInput = document.getElementById('lms-search-input');
@@ -1173,6 +1193,695 @@ const DisicureMain = {
         }
     },
 
+    // =========================================================================
+    // --- GLOBAL SEARCH & 9-DIMENSIONAL MULTI-FILTER CONTROLLER (Module 16) ---
+    // =========================================================================
+    initGlobalSearchAndFilters: function() {
+        // Ctrl + K or Meta + K keyboard shortcut to focus global omnibar
+        window.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+                e.preventDefault();
+                const searchInput = document.getElementById('global-omnibar-search');
+                if (searchInput) {
+                    searchInput.focus();
+                    searchInput.select();
+                    this.openGlobalSearchFlyout();
+                }
+            }
+        });
+
+        // Click outside flyout to close
+        document.addEventListener('click', (e) => {
+            const flyout = document.getElementById('global-search-flyout');
+            const searchInput = document.getElementById('global-omnibar-search');
+            if (flyout && !flyout.contains(e.target) && e.target !== searchInput) {
+                this.closeGlobalSearchFlyout();
+            }
+        });
+
+        this.updateGlobalFilterStats();
+    },
+
+    handleGlobalSearchInput: function(event) {
+        const query = (event.target.value || '').trim();
+        this.globalSearchState.globalQuery = query.toLowerCase();
+
+        const clearBtn = document.getElementById('btn-clear-global-search');
+        if (clearBtn) {
+            if (query) clearBtn.classList.remove('hidden');
+            else clearBtn.classList.add('hidden');
+        }
+
+        this.renderGlobalSearchResults();
+        this.updateGlobalFilterStats();
+        this.syncAllAdminViews();
+    },
+
+    openGlobalSearchFlyout: function() {
+        const flyout = document.getElementById('global-search-flyout');
+        if (!flyout) return;
+        this.renderGlobalSearchResults();
+        flyout.classList.remove('hidden');
+    },
+
+    closeGlobalSearchFlyout: function() {
+        const flyout = document.getElementById('global-search-flyout');
+        if (flyout) flyout.classList.add('hidden');
+    },
+
+    clearGlobalSearch: function() {
+        const input = document.getElementById('global-omnibar-search');
+        if (input) input.value = '';
+        this.globalSearchState.globalQuery = '';
+        const clearBtn = document.getElementById('btn-clear-global-search');
+        if (clearBtn) clearBtn.classList.add('hidden');
+        this.closeGlobalSearchFlyout();
+        this.updateGlobalFilterStats();
+        this.syncAllAdminViews();
+    },
+
+    toggleGlobalFilterDrawer: function() {
+        const consoleEl = document.getElementById('global-filters-console');
+        if (!consoleEl) return;
+        const isHidden = consoleEl.classList.contains('hidden');
+        if (isHidden) {
+            consoleEl.classList.remove('hidden');
+            this.globalSearchState.isFilterOpen = true;
+        } else {
+            consoleEl.classList.add('hidden');
+            this.globalSearchState.isFilterOpen = false;
+        }
+        this.updateGlobalFilterStats();
+    },
+
+    handleFilterChange: function(field, value) {
+        this.globalSearchState[field] = value;
+        this.updateGlobalFilterStats();
+        this.syncAllAdminViews();
+    },
+
+    applyFilterPreset: function(preset) {
+        // Reset all 9 fields first
+        this.globalSearchState.name = '';
+        this.globalSearchState.mobile = '';
+        this.globalSearchState.company = '';
+        this.globalSearchState.city = '';
+        this.globalSearchState.product = '';
+        this.globalSearchState.partner = '';
+        this.globalSearchState.leadStatus = 'all';
+        this.globalSearchState.paymentStatus = 'all';
+        this.globalSearchState.dateFrom = '';
+        this.globalSearchState.dateTo = '';
+        this.globalSearchState.datePreset = preset;
+
+        // Reset inputs in DOM
+        const ids = ['gfilter-name', 'gfilter-mobile', 'gfilter-company', 'gfilter-city', 'gfilter-product', 'gfilter-partner', 'gfilter-lead-status', 'gfilter-payment-status', 'gfilter-date-from', 'gfilter-date-to'];
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                if (el.tagName === 'SELECT') el.value = el.options[0].value;
+                else el.value = '';
+            }
+        });
+
+        // Set preset values
+        if (preset === 'new_leads') {
+            this.globalSearchState.leadStatus = '🟢 New';
+            const el = document.getElementById('gfilter-lead-status');
+            if (el) el.value = '🟢 New';
+            this.switchAdminTab('tab-leads');
+        } else if (preset === 'pending_payments') {
+            this.globalSearchState.paymentStatus = 'Pending';
+            const el = document.getElementById('gfilter-payment-status');
+            if (el) el.value = 'Pending';
+            this.switchAdminTab('tab-financials');
+        } else if (preset === 'hospital_clients') {
+            this.globalSearchState.company = 'Hospital';
+            const el = document.getElementById('gfilter-company');
+            if (el) el.value = 'Hospital';
+            this.switchAdminTab('tab-clients');
+        } else if (preset === 'active_partners') {
+            this.globalSearchState.partner = 'Medilink';
+            const el = document.getElementById('gfilter-partner');
+            if (el) el.value = 'Medilink';
+            this.switchAdminTab('tab-partners');
+        } else if (preset === 'disimol_products') {
+            this.globalSearchState.product = 'DISIMOL-SP';
+            const el = document.getElementById('gfilter-product');
+            if (el) el.value = 'DISIMOL-SP';
+            this.switchAdminTab('tab-products');
+        } else if (preset === 'today') {
+            const todayStr = new Date().toISOString().substring(0, 10);
+            this.globalSearchState.dateFrom = todayStr;
+            this.globalSearchState.dateTo = todayStr;
+            const elFrom = document.getElementById('gfilter-date-from');
+            const elTo = document.getElementById('gfilter-date-to');
+            if (elFrom) elFrom.value = todayStr;
+            if (elTo) elTo.value = todayStr;
+        }
+
+        this.updateGlobalFilterStats();
+        this.syncAllAdminViews();
+    },
+
+    resetAllGlobalFilters: function() {
+        this.clearGlobalSearch();
+        this.applyFilterPreset('all');
+        this.showToast('success', 'All 9 search filters have been reset to default.');
+    },
+
+    applyGlobalFiltersAndClose: function() {
+        this.toggleGlobalFilterDrawer();
+        this.syncAllAdminViews();
+        this.showToast('success', 'Global filters applied across all ERP modules!');
+    },
+
+    syncAllAdminViews: function() {
+        this.renderAdminLeads();
+        this.renderClientsTable();
+        this.renderAdminPartners();
+        this.renderAdminProductsTable();
+        this.renderPaymentsTable();
+    },
+
+    getActiveFilterCount: function() {
+        const s = this.globalSearchState;
+        let count = 0;
+        if (s.globalQuery) count++;
+        if (s.name) count++;
+        if (s.mobile) count++;
+        if (s.company) count++;
+        if (s.city) count++;
+        if (s.product) count++;
+        if (s.partner) count++;
+        if (s.leadStatus && s.leadStatus !== 'all') count++;
+        if (s.paymentStatus && s.paymentStatus !== 'all') count++;
+        if (s.dateFrom || s.dateTo) count++;
+        return count;
+    },
+
+    updateGlobalFilterStats: function() {
+        const activeCount = this.getActiveFilterCount();
+        const badge = document.getElementById('global-filter-badge-count');
+        if (badge) {
+            if (activeCount > 0) {
+                badge.innerText = activeCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        const matches = this.getGlobalFilterMatches();
+        const matchCountEl = document.getElementById('global-filter-match-count');
+        if (matchCountEl) {
+            matchCountEl.innerText = `Matching: ${matches.total} records across ERP`;
+        }
+
+        const statsEl = document.getElementById('global-breakdown-stats');
+        if (statsEl) {
+            statsEl.innerHTML = `
+                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-blue-900/60 border border-blue-600/40 text-cyan-300 font-bold">
+                    📋 ${matches.leads.length} Leads
+                </span>
+                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-indigo-900/60 border border-indigo-600/40 text-indigo-300 font-bold">
+                    🏢 ${matches.clients.length} Clients
+                </span>
+                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-purple-900/60 border border-purple-600/40 text-purple-300 font-bold">
+                    🤝 ${matches.partners.length} Partners
+                </span>
+                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-900/60 border border-emerald-600/40 text-emerald-300 font-bold">
+                    💊 ${matches.products.length} Products
+                </span>
+                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-amber-900/60 border border-amber-600/40 text-amber-300 font-bold">
+                    💳 ${matches.payments.length} Payments
+                </span>
+            `;
+        }
+    },
+
+    getGlobalFilterMatches: function() {
+        const gf = this.globalSearchState;
+        const gq = (gf.globalQuery || '').toLowerCase().trim();
+
+        // 1. Leads
+        const allLeads = (window.DisicureLeads && window.DisicureLeads.getAllLeads()) || [];
+        const leads = allLeads.filter(lead => {
+            if (gq) {
+                const matchesGq = 
+                    (lead.name && lead.name.toLowerCase().includes(gq)) ||
+                    (lead.leadId && lead.leadId.toLowerCase().includes(gq)) ||
+                    (lead.mobile && lead.mobile.toLowerCase().includes(gq)) ||
+                    (lead.whatsapp && lead.whatsapp.toLowerCase().includes(gq)) ||
+                    (lead.email && lead.email.toLowerCase().includes(gq)) ||
+                    (lead.city && lead.city.toLowerCase().includes(gq)) ||
+                    (lead.state && lead.state.toLowerCase().includes(gq)) ||
+                    (lead.productOrService && lead.productOrService.toLowerCase().includes(gq)) ||
+                    (lead.businessType && lead.businessType.toLowerCase().includes(gq)) ||
+                    (lead.source && lead.source.toLowerCase().includes(gq)) ||
+                    (lead.assignedPerson && lead.assignedPerson.toLowerCase().includes(gq));
+                if (!matchesGq) return false;
+            }
+            if (gf.name && !(lead.name && lead.name.toLowerCase().includes(gf.name.toLowerCase().trim()))) return false;
+            if (gf.mobile && !((lead.mobile && lead.mobile.includes(gf.mobile.trim())) || (lead.whatsapp && lead.whatsapp.includes(gf.mobile.trim())))) return false;
+            if (gf.company && !((lead.name && lead.name.toLowerCase().includes(gf.company.toLowerCase().trim())) || (lead.businessType && lead.businessType.toLowerCase().includes(gf.company.toLowerCase().trim())))) return false;
+            if (gf.city && !((lead.city && lead.city.toLowerCase().includes(gf.city.toLowerCase().trim())) || (lead.state && lead.state.toLowerCase().includes(gf.city.toLowerCase().trim())))) return false;
+            if (gf.product && !((lead.productOrService && lead.productOrService.toLowerCase().includes(gf.product.toLowerCase().trim())) || (lead.requirementType && lead.requirementType.toLowerCase().includes(gf.product.toLowerCase().trim())))) return false;
+            if (gf.partner) {
+                const pf = gf.partner.toLowerCase().trim();
+                const matchesP = (lead.source && lead.source.toLowerCase().includes(pf)) ||
+                    (lead.assignedPerson && lead.assignedPerson.toLowerCase().includes(pf)) ||
+                    (lead.email && lead.email.toLowerCase().includes(pf)) ||
+                    (lead.notes && lead.notes.toLowerCase().includes(pf)) ||
+                    (lead.name && lead.name.toLowerCase().includes(pf)) ||
+                    (lead.businessType && lead.businessType.toLowerCase().includes(pf));
+                if (!matchesP) return false;
+            }
+            if (gf.leadStatus && gf.leadStatus !== 'all') {
+                const cleanStatus = gf.leadStatus.replace(/[^\w]/g, '').toLowerCase();
+                const leadCleanStatus = (lead.leadStatus || '').replace(/[^\w]/g, '').toLowerCase();
+                if (leadCleanStatus !== cleanStatus && !leadCleanStatus.includes(cleanStatus)) return false;
+            }
+            if (gf.paymentStatus && gf.paymentStatus !== 'all') {
+                if (gf.paymentStatus === 'high_value' && !(lead.value >= 500000)) return false;
+            }
+            if (gf.dateFrom) {
+                const lDate = (lead.createdDate || '').substring(0, 10);
+                const lFollow = (lead.followUpDate || '');
+                if (lDate < gf.dateFrom && (!lFollow || lFollow < gf.dateFrom)) return false;
+            }
+            if (gf.dateTo) {
+                const lDate = (lead.createdDate || '').substring(0, 10);
+                const lFollow = (lead.followUpDate || '');
+                if (lDate > gf.dateTo && (!lFollow || lFollow > gf.dateTo)) return false;
+            }
+            return true;
+        });
+
+        // 2. Clients
+        const allClients = (window.DisicureClients && window.DisicureClients.getAllClients()) || [];
+        const clients = allClients.filter(c => {
+            if (gq) {
+                const matchesGq = 
+                    (c.companyName && c.companyName.toLowerCase().includes(gq)) ||
+                    (c.contactPerson && c.contactPerson.toLowerCase().includes(gq)) ||
+                    (c.mobile && c.mobile.toLowerCase().includes(gq)) ||
+                    (c.email && c.email.toLowerCase().includes(gq)) ||
+                    (c.id && c.id.toLowerCase().includes(gq)) ||
+                    (c.location && ((c.location.city && c.location.city.toLowerCase().includes(gq)) || (c.location.state && c.location.state.toLowerCase().includes(gq)))) ||
+                    (c.businessType && c.businessType.toLowerCase().includes(gq));
+                if (!matchesGq) return false;
+            }
+            if (gf.name && !((c.contactPerson && c.contactPerson.toLowerCase().includes(gf.name.toLowerCase().trim())) || (c.companyName && c.companyName.toLowerCase().includes(gf.name.toLowerCase().trim())))) return false;
+            if (gf.mobile && !((c.mobile && c.mobile.includes(gf.mobile.trim())) || (c.whatsapp && c.whatsapp.includes(gf.mobile.trim())))) return false;
+            if (gf.company && !(c.companyName && c.companyName.toLowerCase().includes(gf.company.toLowerCase().trim()))) return false;
+            if (gf.city && !(c.location && ((c.location.city && c.location.city.toLowerCase().includes(gf.city.toLowerCase().trim())) || (c.location.state && c.location.state.toLowerCase().includes(gf.city.toLowerCase().trim())) || (c.location.address && c.location.address.toLowerCase().includes(gf.city.toLowerCase().trim()))))) return false;
+            if (gf.product) {
+                const prodMatch = (c.productsServices && c.productsServices.some(p => p.name && p.name.toLowerCase().includes(gf.product.toLowerCase().trim()))) ||
+                                  (c.requirements && c.requirements.some(r => (r.specifications && r.specifications.toLowerCase().includes(gf.product.toLowerCase().trim())) || (r.title && r.title.toLowerCase().includes(gf.product.toLowerCase().trim()))));
+                if (!prodMatch) return false;
+            }
+            if (gf.partner && !((c.businessType && c.businessType.toLowerCase().includes(gf.partner.toLowerCase().trim())) || (c.accountManager && c.accountManager.toLowerCase().includes(gf.partner.toLowerCase().trim())))) return false;
+            if (gf.leadStatus && gf.leadStatus !== 'all') {
+                const cleanStatus = gf.leadStatus.replace(/[^\w]/g, '').toLowerCase();
+                const accStatus = (c.accountStatus || '').replace(/[^\w]/g, '').toLowerCase();
+                if (!accStatus.includes(cleanStatus) && cleanStatus !== 'converted' && cleanStatus !== 'new') return false;
+            }
+            if (gf.paymentStatus && gf.paymentStatus !== 'all') {
+                if (gf.paymentStatus === 'Pending') {
+                    const hasPending = c.payments && c.payments.some(p => p.status === 'Pending' || p.status === 'Unpaid');
+                    if (!hasPending && !c.creditLimit) return false;
+                } else if (gf.paymentStatus === 'Paid') {
+                    const allPaid = !c.payments || c.payments.every(p => p.status === 'Paid');
+                    if (!allPaid) return false;
+                }
+            }
+            if (gf.dateFrom) {
+                const cDate = (c.createdDate || c.orders?.[0]?.date || '').substring(0, 10);
+                if (cDate && cDate < gf.dateFrom) return false;
+            }
+            if (gf.dateTo) {
+                const cDate = (c.createdDate || c.orders?.[0]?.date || '').substring(0, 10);
+                if (cDate && cDate > gf.dateTo) return false;
+            }
+            return true;
+        });
+
+        // 3. Partners
+        const allPartners = (window.DisicurePartner && window.DisicurePartner.getAllPartners()) || [];
+        const partners = allPartners.filter(p => {
+            if (gq) {
+                const matchesGq = 
+                    (p.companyName && p.companyName.toLowerCase().includes(gq)) ||
+                    (p.contactPerson && p.contactPerson.toLowerCase().includes(gq)) ||
+                    (p.partnerType && p.partnerType.toLowerCase().includes(gq)) ||
+                    (p.email && p.email.toLowerCase().includes(gq)) ||
+                    (p.mobile && p.mobile.toLowerCase().includes(gq)) ||
+                    (p.city && p.city.toLowerCase().includes(gq)) ||
+                    (p.state && p.state.toLowerCase().includes(gq)) ||
+                    (p.assignedTerritory && p.assignedTerritory.toLowerCase().includes(gq)) ||
+                    (p.partnerId && p.partnerId.toLowerCase().includes(gq));
+                if (!matchesGq) return false;
+            }
+            if (gf.name && !((p.contactPerson && p.contactPerson.toLowerCase().includes(gf.name.toLowerCase().trim())) || (p.companyName && p.companyName.toLowerCase().includes(gf.name.toLowerCase().trim())))) return false;
+            if (gf.mobile && !((p.mobile && p.mobile.includes(gf.mobile.trim())) || (p.whatsapp && p.whatsapp.includes(gf.mobile.trim())))) return false;
+            if (gf.company && !(p.companyName && p.companyName.toLowerCase().includes(gf.company.toLowerCase().trim()))) return false;
+            if (gf.city && !((p.city && p.city.toLowerCase().includes(gf.city.toLowerCase().trim())) || (p.state && p.state.toLowerCase().includes(gf.city.toLowerCase().trim())) || (p.assignedTerritory && p.assignedTerritory.toLowerCase().includes(gf.city.toLowerCase().trim())))) return false;
+            if (gf.product && !((p.assignedTerritory && p.assignedTerritory.toLowerCase().includes(gf.product.toLowerCase().trim())) || (p.commercialTerms && p.commercialTerms.toLowerCase().includes(gf.product.toLowerCase().trim())))) return false;
+            if (gf.partner && !((p.companyName && p.companyName.toLowerCase().includes(gf.partner.toLowerCase().trim())) || (p.partnerType && p.partnerType.toLowerCase().includes(gf.partner.toLowerCase().trim())) || (p.partnerId && p.partnerId.toLowerCase().includes(gf.partner.toLowerCase().trim())))) return false;
+            if (gf.leadStatus && gf.leadStatus !== 'all') {
+                const cleanStatus = gf.leadStatus.replace(/[^\w]/g, '').toLowerCase();
+                const pStatus = (p.accountStatus || '').replace(/[^\w]/g, '').toLowerCase();
+                if (!pStatus.includes(cleanStatus)) return false;
+            }
+            if (gf.paymentStatus && gf.paymentStatus !== 'all') {
+                if (gf.paymentStatus === 'Pending' && !(p.pendingPaymentNumeric > 0 || (p.pendingPaymentFormatted && !p.pendingPaymentFormatted.includes('All Clear')))) return false;
+                if (gf.paymentStatus === 'Paid' && !(p.pendingPaymentNumeric === 0 || (p.pendingPaymentFormatted && p.pendingPaymentFormatted.includes('All Clear')))) return false;
+            }
+            if (gf.dateFrom) {
+                const pDate = (p.createdDate || '').substring(0, 10);
+                if (pDate && pDate < gf.dateFrom) return false;
+            }
+            if (gf.dateTo) {
+                const pDate = (p.createdDate || '').substring(0, 10);
+                if (pDate && pDate > gf.dateTo) return false;
+            }
+            return true;
+        });
+
+        // 4. Products
+        const allProducts = (window.DisicureData && window.DisicureData.getAllProducts()) || [];
+        const products = allProducts.filter(p => {
+            if (gq) {
+                const matchesGq = 
+                    (p.name && p.name.toLowerCase().includes(gq)) ||
+                    (p.composition && p.composition.toLowerCase().includes(gq)) ||
+                    (p.therapeuticCategory && p.therapeuticCategory.toLowerCase().includes(gq)) ||
+                    (p.packaging && p.packaging.toLowerCase().includes(gq)) ||
+                    (p.details && p.details.toLowerCase().includes(gq)) ||
+                    (p.category && p.category.toLowerCase().includes(gq)) ||
+                    (p.id && p.id.toLowerCase().includes(gq));
+                if (!matchesGq) return false;
+            }
+            if (gf.name && !(p.name && p.name.toLowerCase().includes(gf.name.toLowerCase().trim()))) return false;
+            if (gf.product && !((p.name && p.name.toLowerCase().includes(gf.product.toLowerCase().trim())) || (p.composition && p.composition.toLowerCase().includes(gf.product.toLowerCase().trim())) || (p.category && p.category.toLowerCase().includes(gf.product.toLowerCase().trim())))) return false;
+            if (gf.leadStatus && gf.leadStatus !== 'all') {
+                const cleanStatus = gf.leadStatus.replace(/[^\w]/g, '').toLowerCase();
+                const pStatus = (p.status || '').replace(/[^\w]/g, '').toLowerCase();
+                if (!pStatus.includes(cleanStatus)) return false;
+            }
+            return true;
+        });
+
+        // 5. Payments
+        const allPayments = (window.DisicurePayments && window.DisicurePayments.getAllPayments()) || [];
+        const payments = allPayments.filter(pay => {
+            if (gq) {
+                const matchesGq = 
+                    (pay.clientName && pay.clientName.toLowerCase().includes(gq)) ||
+                    (pay.invoiceId && pay.invoiceId.toLowerCase().includes(gq)) ||
+                    (pay.paymentId && pay.paymentId.toLowerCase().includes(gq)) ||
+                    (pay.notes && pay.notes.toLowerCase().includes(gq)) ||
+                    (pay.productOrService && pay.productOrService.toLowerCase().includes(gq)) ||
+                    (pay.paymentStatus && pay.paymentStatus.toLowerCase().includes(gq));
+                if (!matchesGq) return false;
+            }
+            if (gf.name && !(pay.clientName && pay.clientName.toLowerCase().includes(gf.name.toLowerCase().trim()))) return false;
+            if (gf.mobile && !(pay.mobile && pay.mobile.includes(gf.mobile.trim()))) return false;
+            if (gf.company && !((pay.clientName && pay.clientName.toLowerCase().includes(gf.company.toLowerCase().trim())) || (pay.companyName && pay.companyName.toLowerCase().includes(gf.company.toLowerCase().trim())))) return false;
+            if (gf.city && !(pay.city && pay.city.toLowerCase().includes(gf.city.toLowerCase().trim()))) return false;
+            if (gf.product && !((pay.productOrService && pay.productOrService.toLowerCase().includes(gf.product.toLowerCase().trim())) || (pay.notes && pay.notes.toLowerCase().includes(gf.product.toLowerCase().trim())))) return false;
+            if (gf.partner && !((pay.partnerName && pay.partnerName.toLowerCase().includes(gf.partner.toLowerCase().trim())) || (pay.clientName && pay.clientName.toLowerCase().includes(gf.partner.toLowerCase().trim())))) return false;
+            if (gf.paymentStatus && gf.paymentStatus !== 'all') {
+                if (gf.paymentStatus === 'high_value') {
+                    const amt = pay.amountNumeric || pay.amount || 0;
+                    if (amt < 500000) return false;
+                } else if (pay.paymentStatus !== gf.paymentStatus) {
+                    return false;
+                }
+            }
+            if (gf.dateFrom) {
+                const pDate = (pay.paymentDate || pay.date || '').substring(0, 10);
+                if (pDate && pDate < gf.dateFrom) return false;
+            }
+            if (gf.dateTo) {
+                const pDate = (pay.paymentDate || pay.date || '').substring(0, 10);
+                if (pDate && pDate > gf.dateTo) return false;
+            }
+            return true;
+        });
+
+        const total = leads.length + clients.length + partners.length + products.length + payments.length;
+        return { total, leads, clients, partners, products, payments };
+    },
+
+    renderGlobalSearchResults: function() {
+        const flyout = document.getElementById('global-search-flyout');
+        if (!flyout) return;
+
+        const matches = this.getGlobalFilterMatches();
+        const query = (this.globalSearchState.globalQuery || '').trim();
+        const activeFilterCount = this.getActiveFilterCount();
+
+        if (!query && activeFilterCount === 0) {
+            flyout.innerHTML = `
+            <div class="p-5 text-center space-y-3">
+                <div class="w-10 h-10 rounded-full bg-blue-950 border border-blue-500/40 text-cyan-400 flex items-center justify-center mx-auto text-base">
+                    🔎
+                </div>
+                <h4 class="text-sm font-extrabold text-white">Global Search & 9-Point ERP Filter Engine</h4>
+                <p class="text-xs text-blue-200/70 max-w-md mx-auto">
+                    Type a keyword above to search instantly across <strong>Leads, Clients, Partners, Products, and Invoices</strong>, or select a Quick Preset.
+                </p>
+                <div class="flex items-center justify-center gap-2 pt-2 text-[11px] font-bold">
+                    <button onclick="window.DisicureMain.applyFilterPreset('new_leads')" class="px-3 py-1.5 rounded-lg bg-blue-600/30 hover:bg-blue-600 text-blue-200 hover:text-white border border-blue-500/40 transition-colors">🟢 New Leads</button>
+                    <button onclick="window.DisicureMain.applyFilterPreset('pending_payments')" class="px-3 py-1.5 rounded-lg bg-amber-600/30 hover:bg-amber-600 text-amber-200 hover:text-white border border-amber-500/40 transition-colors">💰 Pending Payments</button>
+                    <button onclick="window.DisicureMain.applyFilterPreset('hospital_clients')" class="px-3 py-1.5 rounded-lg bg-rose-600/30 hover:bg-rose-600 text-rose-200 hover:text-white border border-rose-500/40 transition-colors">🏥 Hospital Clients</button>
+                </div>
+            </div>
+            `;
+            return;
+        }
+
+        if (matches.total === 0) {
+            flyout.innerHTML = `
+            <div class="p-6 text-center space-y-3">
+                <div class="w-10 h-10 rounded-full bg-rose-950 border border-rose-500/40 text-rose-400 flex items-center justify-center mx-auto text-base">
+                    ✕
+                </div>
+                <h4 class="text-sm font-extrabold text-white">No Matching Records Found</h4>
+                <p class="text-xs text-blue-200/70 max-w-sm mx-auto">
+                    No results matched your search <em>"${query || 'active filters'}"</em> across Leads, Clients, Partners, Products, or Invoices.
+                </p>
+                <div class="pt-2">
+                    <button onclick="window.DisicureMain.resetAllGlobalFilters()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition-colors">
+                        Reset All Filters
+                    </button>
+                </div>
+            </div>
+            `;
+            return;
+        }
+
+        let html = `
+        <div class="p-3 border-b border-blue-800/80 bg-[#051124] flex items-center justify-between text-xs">
+            <span class="font-extrabold text-cyan-300">Found ${matches.total} matching records across ERP</span>
+            <span class="text-[10px] text-gray-400">Click any record to jump directly</span>
+        </div>
+        <div class="overflow-y-auto max-h-[380px] divide-y divide-blue-900/40 p-2 space-y-3">
+        `;
+
+        // 1. Leads Group
+        if (matches.leads.length > 0) {
+            html += `
+            <div>
+                <div class="text-[10px] font-extrabold text-cyan-400 uppercase tracking-wider px-2 py-1 flex items-center justify-between">
+                    <span>📋 Leads & Enquiries (${matches.leads.length})</span>
+                    <button onclick="window.DisicureMain.switchAdminTab('tab-leads'); window.DisicureMain.closeGlobalSearchFlyout();" class="text-blue-300 hover:text-white hover:underline text-[10px] font-bold">View All &rarr;</button>
+                </div>
+                <div class="space-y-1 mt-1">
+                    ${matches.leads.slice(0, 4).map(l => `
+                    <div onclick="window.DisicureMain.jumpToSearchResult('lead', '${l.leadId}', 'tab-leads')" class="p-2.5 rounded-xl hover:bg-blue-950/70 cursor-pointer transition-colors flex items-center justify-between gap-3 text-xs border border-transparent hover:border-blue-600/40">
+                        <div class="space-y-0.5">
+                            <div class="font-bold text-white flex items-center gap-2">
+                                <span>${l.name}</span>
+                                <span class="text-[10px] font-mono font-bold text-cyan-300 px-1.5 py-0.2 bg-blue-900/60 rounded">${l.leadId}</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded font-bold ${l.leadStatus.includes('New') ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40' : 'bg-blue-950 text-blue-300 border border-blue-500/40'}">${l.leadStatus}</span>
+                            </div>
+                            <div class="text-[11px] text-blue-200/80 flex items-center gap-3">
+                                <span>📱 ${l.mobile}</span>
+                                <span>📍 ${l.city}, ${l.state}</span>
+                                <span class="text-amber-300 font-medium truncate max-w-xs">📦 ${l.productOrService}</span>
+                            </div>
+                        </div>
+                        <div class="shrink-0">
+                            <span class="px-2.5 py-1 bg-blue-600 text-white rounded-lg text-[10px] font-bold shadow-sm">Open LMS &rarr;</span>
+                        </div>
+                    </div>
+                    `).join('')}
+                </div>
+            </div>
+            `;
+        }
+
+        // 2. Clients Group
+        if (matches.clients.length > 0) {
+            html += `
+            <div class="pt-2">
+                <div class="text-[10px] font-extrabold text-indigo-400 uppercase tracking-wider px-2 py-1 flex items-center justify-between">
+                    <span>🏢 Clients & Customers (${matches.clients.length})</span>
+                    <button onclick="window.DisicureMain.switchAdminTab('tab-clients'); window.DisicureMain.closeGlobalSearchFlyout();" class="text-indigo-300 hover:text-white hover:underline text-[10px] font-bold">View All &rarr;</button>
+                </div>
+                <div class="space-y-1 mt-1">
+                    ${matches.clients.slice(0, 3).map(c => `
+                    <div onclick="window.DisicureMain.jumpToSearchResult('client', '${c.id}', 'tab-clients')" class="p-2.5 rounded-xl hover:bg-blue-950/70 cursor-pointer transition-colors flex items-center justify-between gap-3 text-xs border border-transparent hover:border-indigo-600/40">
+                        <div class="space-y-0.5">
+                            <div class="font-bold text-white flex items-center gap-2">
+                                <span>${c.companyName}</span>
+                                <span class="text-[10px] font-mono font-bold text-indigo-300 px-1.5 py-0.2 bg-indigo-900/60 rounded">${c.id}</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded font-bold bg-indigo-950 text-indigo-300 border border-indigo-500/40">${c.accountStatus}</span>
+                            </div>
+                            <div class="text-[11px] text-blue-200/80 flex items-center gap-3">
+                                <span>👤 ${c.contactPerson}</span>
+                                <span>📱 ${c.mobile}</span>
+                                <span>📍 ${c.location?.city || ''}</span>
+                            </div>
+                        </div>
+                        <div class="shrink-0">
+                            <span class="px-2.5 py-1 bg-indigo-600 text-white rounded-lg text-[10px] font-bold shadow-sm">View 360° Profile &rarr;</span>
+                        </div>
+                    </div>
+                    `).join('')}
+                </div>
+            </div>
+            `;
+        }
+
+        // 3. Partners Group
+        if (matches.partners.length > 0) {
+            html += `
+            <div class="pt-2">
+                <div class="text-[10px] font-extrabold text-purple-400 uppercase tracking-wider px-2 py-1 flex items-center justify-between">
+                    <span>🤝 Active Partners (${matches.partners.length})</span>
+                    <button onclick="window.DisicureMain.switchAdminTab('tab-partners'); window.DisicureMain.closeGlobalSearchFlyout();" class="text-purple-300 hover:text-white hover:underline text-[10px] font-bold">View All &rarr;</button>
+                </div>
+                <div class="space-y-1 mt-1">
+                    ${matches.partners.slice(0, 3).map(p => `
+                    <div onclick="window.DisicureMain.jumpToSearchResult('partner', '${p.partnerId}', 'tab-partners')" class="p-2.5 rounded-xl hover:bg-blue-950/70 cursor-pointer transition-colors flex items-center justify-between gap-3 text-xs border border-transparent hover:border-purple-600/40">
+                        <div class="space-y-0.5">
+                            <div class="font-bold text-white flex items-center gap-2">
+                                <span>${p.companyName}</span>
+                                <span class="text-[10px] font-mono font-bold text-purple-300 px-1.5 py-0.2 bg-purple-900/60 rounded">${p.partnerId}</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded font-bold bg-purple-950 text-purple-300 border border-purple-500/40">${p.partnerType}</span>
+                            </div>
+                            <div class="text-[11px] text-blue-200/80 flex items-center gap-3">
+                                <span>👤 ${p.contactPerson}</span>
+                                <span>📱 ${p.mobile}</span>
+                                <span>📍 ${p.city}</span>
+                            </div>
+                        </div>
+                        <div class="shrink-0">
+                            <span class="px-2.5 py-1 bg-purple-600 text-white rounded-lg text-[10px] font-bold shadow-sm">Manage Partner &rarr;</span>
+                        </div>
+                    </div>
+                    `).join('')}
+                </div>
+            </div>
+            `;
+        }
+
+        // 4. Products Group
+        if (matches.products.length > 0) {
+            html += `
+            <div class="pt-2">
+                <div class="text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider px-2 py-1 flex items-center justify-between">
+                    <span>💊 Formulations & Catalog (${matches.products.length})</span>
+                    <button onclick="window.DisicureMain.switchAdminTab('tab-products'); window.DisicureMain.closeGlobalSearchFlyout();" class="text-emerald-300 hover:text-white hover:underline text-[10px] font-bold">View All &rarr;</button>
+                </div>
+                <div class="space-y-1 mt-1">
+                    ${matches.products.slice(0, 3).map(prod => `
+                    <div onclick="window.DisicureMain.jumpToSearchResult('product', '${prod.id}', 'tab-products')" class="p-2.5 rounded-xl hover:bg-blue-950/70 cursor-pointer transition-colors flex items-center justify-between gap-3 text-xs border border-transparent hover:border-emerald-600/40">
+                        <div class="space-y-0.5">
+                            <div class="font-bold text-white flex items-center gap-2">
+                                <span>${prod.name}</span>
+                                <span class="text-[10px] font-bold text-emerald-300 px-1.5 py-0.2 bg-emerald-900/60 rounded">${prod.dosageForm || prod.packaging}</span>
+                            </div>
+                            <div class="text-[11px] text-blue-200/80 truncate max-w-md">
+                                <span>🔬 ${prod.composition}</span>
+                            </div>
+                        </div>
+                        <div class="shrink-0">
+                            <span class="px-2.5 py-1 bg-emerald-600 text-white rounded-lg text-[10px] font-bold shadow-sm">Edit Formulation &rarr;</span>
+                        </div>
+                    </div>
+                    `).join('')}
+                </div>
+            </div>
+            `;
+        }
+
+        // 5. Payments Group
+        if (matches.payments.length > 0) {
+            html += `
+            <div class="pt-2">
+                <div class="text-[10px] font-extrabold text-amber-400 uppercase tracking-wider px-2 py-1 flex items-center justify-between">
+                    <span>💳 Payments & Invoices (${matches.payments.length})</span>
+                    <button onclick="window.DisicureMain.switchAdminTab('tab-financials'); window.DisicureMain.closeGlobalSearchFlyout();" class="text-amber-300 hover:text-white hover:underline text-[10px] font-bold">View All &rarr;</button>
+                </div>
+                <div class="space-y-1 mt-1">
+                    ${matches.payments.slice(0, 3).map(pay => `
+                    <div onclick="window.DisicureMain.jumpToSearchResult('payment', '${pay.paymentId}', 'tab-financials')" class="p-2.5 rounded-xl hover:bg-blue-950/70 cursor-pointer transition-colors flex items-center justify-between gap-3 text-xs border border-transparent hover:border-amber-600/40">
+                        <div class="space-y-0.5">
+                            <div class="font-bold text-white flex items-center gap-2">
+                                <span>${pay.clientName}</span>
+                                <span class="text-[10px] font-mono font-bold text-amber-300 px-1.5 py-0.2 bg-amber-900/60 rounded">${pay.invoiceId}</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded font-bold ${pay.paymentStatus === 'Paid' ? 'bg-emerald-950 text-emerald-300' : 'bg-amber-950 text-amber-300'}">${pay.paymentStatus}</span>
+                            </div>
+                            <div class="text-[11px] text-blue-200/80 flex items-center gap-3">
+                                <span>💰 ${pay.amountFormatted}</span>
+                                <span>📅 ${pay.paymentDate || pay.date}</span>
+                                <span>🏦 ${pay.paymentMode}</span>
+                            </div>
+                        </div>
+                        <div class="shrink-0">
+                            <span class="px-2.5 py-1 bg-amber-600 text-white rounded-lg text-[10px] font-bold shadow-sm">View Ledger &rarr;</span>
+                        </div>
+                    </div>
+                    `).join('')}
+                </div>
+            </div>
+            `;
+        }
+
+        html += `
+        </div>
+        <div class="p-2.5 bg-[#051124] border-t border-blue-800/80 text-center text-[10px] text-gray-400">
+            Press <kbd class="px-1 py-0.5 bg-blue-950 text-blue-300 rounded">Esc</kbd> or click outside to close
+        </div>
+        `;
+
+        flyout.innerHTML = html;
+    },
+
+    jumpToSearchResult: function(type, id, tabId) {
+        this.closeGlobalSearchFlyout();
+        if (tabId) this.switchAdminTab(tabId);
+
+        setTimeout(() => {
+            if (type === 'lead' && typeof this.openLeadDrawer === 'function') {
+                this.openLeadDrawer(id);
+            } else if (type === 'client' && typeof this.openClient360Modal === 'function') {
+                this.openClient360Modal(id);
+            } else if (type === 'partner' && typeof this.openEditPartnerModal === 'function') {
+                this.openEditPartnerModal(id);
+            } else if (type === 'product' && typeof this.openEditProductModal === 'function') {
+                this.openEditProductModal(id);
+            } else if (type === 'payment' && typeof this.openPaymentDrawer === 'function') {
+                this.openPaymentDrawer(id);
+            }
+        }, 250);
+    },
+
     renderAdminLeads: function() {
         if (!window.DisicureLeads) return;
         const allLeads = window.DisicureLeads.getAllLeads();
@@ -1180,10 +1889,80 @@ const DisicureMain = {
         // 1. Calculate and update dashboard analytics & charts
         this.renderDashboardAnalytics();
 
-        // 2. Filter & Sort Leads for the LMS table
+        // 2. Filter & Sort Leads for the LMS table with 9-Dimensional Multi-Filters
+        const gf = this.globalSearchState;
         const total = allLeads.length;
         let filtered = allLeads.filter(lead => {
-            // Search Query
+            // Global Query
+            const gq = (gf.globalQuery || '').toLowerCase().trim();
+            if (gq) {
+                const matchesGq = 
+                    (lead.name && lead.name.toLowerCase().includes(gq)) ||
+                    (lead.leadId && lead.leadId.toLowerCase().includes(gq)) ||
+                    (lead.mobile && lead.mobile.toLowerCase().includes(gq)) ||
+                    (lead.whatsapp && lead.whatsapp.toLowerCase().includes(gq)) ||
+                    (lead.email && lead.email.toLowerCase().includes(gq)) ||
+                    (lead.city && lead.city.toLowerCase().includes(gq)) ||
+                    (lead.state && lead.state.toLowerCase().includes(gq)) ||
+                    (lead.productOrService && lead.productOrService.toLowerCase().includes(gq)) ||
+                    (lead.businessType && lead.businessType.toLowerCase().includes(gq)) ||
+                    (lead.source && lead.source.toLowerCase().includes(gq)) ||
+                    (lead.assignedPerson && lead.assignedPerson.toLowerCase().includes(gq));
+                if (!matchesGq) return false;
+            }
+
+            // 1. Name Filter
+            if (gf.name && !(lead.name && lead.name.toLowerCase().includes(gf.name.toLowerCase().trim()))) return false;
+
+            // 2. Mobile Filter
+            if (gf.mobile && !((lead.mobile && lead.mobile.includes(gf.mobile.trim())) || (lead.whatsapp && lead.whatsapp.includes(gf.mobile.trim())))) return false;
+
+            // 3. Company Filter
+            if (gf.company && !((lead.name && lead.name.toLowerCase().includes(gf.company.toLowerCase().trim())) || (lead.businessType && lead.businessType.toLowerCase().includes(gf.company.toLowerCase().trim())))) return false;
+
+            // 4. City Filter
+            if (gf.city && !((lead.city && lead.city.toLowerCase().includes(gf.city.toLowerCase().trim())) || (lead.state && lead.state.toLowerCase().includes(gf.city.toLowerCase().trim())))) return false;
+
+            // 5. Product Filter
+            if (gf.product && !((lead.productOrService && lead.productOrService.toLowerCase().includes(gf.product.toLowerCase().trim())) || (lead.requirementType && lead.requirementType.toLowerCase().includes(gf.product.toLowerCase().trim())))) return false;
+
+            // 6. Partner Filter
+            if (gf.partner) {
+                const pf = gf.partner.toLowerCase().trim();
+                const matchesP = (lead.source && lead.source.toLowerCase().includes(pf)) ||
+                    (lead.assignedPerson && lead.assignedPerson.toLowerCase().includes(pf)) ||
+                    (lead.email && lead.email.toLowerCase().includes(pf)) ||
+                    (lead.notes && lead.notes.toLowerCase().includes(pf)) ||
+                    (lead.name && lead.name.toLowerCase().includes(pf)) ||
+                    (lead.businessType && lead.businessType.toLowerCase().includes(pf));
+                if (!matchesP) return false;
+            }
+
+            // 7. Lead Status Filter
+            if (gf.leadStatus && gf.leadStatus !== 'all') {
+                const cleanStatus = gf.leadStatus.replace(/[^\w]/g, '').toLowerCase();
+                const leadCleanStatus = (lead.leadStatus || '').replace(/[^\w]/g, '').toLowerCase();
+                if (leadCleanStatus !== cleanStatus && !leadCleanStatus.includes(cleanStatus)) return false;
+            }
+
+            // 8. Payment Status Filter
+            if (gf.paymentStatus && gf.paymentStatus !== 'all') {
+                if (gf.paymentStatus === 'high_value' && !(lead.value >= 500000)) return false;
+            }
+
+            // 9. Date Filter
+            if (gf.dateFrom) {
+                const lDate = (lead.createdDate || '').substring(0, 10);
+                const lFollow = (lead.followUpDate || '');
+                if (lDate < gf.dateFrom && (!lFollow || lFollow < gf.dateFrom)) return false;
+            }
+            if (gf.dateTo) {
+                const lDate = (lead.createdDate || '').substring(0, 10);
+                const lFollow = (lead.followUpDate || '');
+                if (lDate > gf.dateTo && (!lFollow || lFollow > gf.dateTo)) return false;
+            }
+
+            // Local LMS Tab Filters
             const query = (this.lmsState.searchQuery || '').toLowerCase().trim();
             const matchesQuery = !query || 
                 (lead.name && lead.name.toLowerCase().includes(query)) ||
@@ -1195,13 +1974,8 @@ const DisicureMain = {
                 (lead.state && lead.state.toLowerCase().includes(query)) ||
                 (lead.productOrService && lead.productOrService.toLowerCase().includes(query));
 
-            // Status Filter
             const matchesStatus = this.lmsState.statusFilter === 'all' || lead.leadStatus === this.lmsState.statusFilter;
-
-            // Business Filter
             const matchesBusiness = this.lmsState.businessFilter === 'all' || lead.businessType === this.lmsState.businessFilter;
-
-            // Source Filter
             const matchesSource = this.lmsState.sourceFilter === 'all' || (lead.source && lead.source.includes(this.lmsState.sourceFilter));
 
             return matchesQuery && matchesStatus && matchesBusiness && matchesSource;
@@ -2177,9 +2951,62 @@ const DisicureMain = {
         setElText('pms-total-pending', summary.totalPendingFormatted);
         setElText('pms-total-overdue', summary.overdueAmountFormatted);
 
-        // Filter Payments
-        const query = this.pmsState.searchQuery;
+        // Filter Payments with 9-Point Global Filters
+        const gf = this.globalSearchState;
+        const gq = (gf.globalQuery || '').toLowerCase().trim();
+        const query = (this.pmsState.searchQuery || '').toLowerCase().trim();
+
         let filtered = allPayments.filter(pay => {
+            if (gq) {
+                const matchesGq = 
+                    (pay.clientName && pay.clientName.toLowerCase().includes(gq)) ||
+                    (pay.invoiceId && pay.invoiceId.toLowerCase().includes(gq)) ||
+                    (pay.paymentId && pay.paymentId.toLowerCase().includes(gq)) ||
+                    (pay.notes && pay.notes.toLowerCase().includes(gq)) ||
+                    (pay.productOrService && pay.productOrService.toLowerCase().includes(gq)) ||
+                    (pay.paymentStatus && pay.paymentStatus.toLowerCase().includes(gq));
+                if (!matchesGq) return false;
+            }
+
+            // 1. Name Filter
+            if (gf.name && !(pay.clientName && pay.clientName.toLowerCase().includes(gf.name.toLowerCase().trim()))) return false;
+
+            // 2. Mobile Filter
+            if (gf.mobile && !(pay.mobile && pay.mobile.includes(gf.mobile.trim()))) return false;
+
+            // 3. Company Filter
+            if (gf.company && !((pay.clientName && pay.clientName.toLowerCase().includes(gf.company.toLowerCase().trim())) || (pay.companyName && pay.companyName.toLowerCase().includes(gf.company.toLowerCase().trim())))) return false;
+
+            // 4. City Filter
+            if (gf.city && !(pay.city && pay.city.toLowerCase().includes(gf.city.toLowerCase().trim()))) return false;
+
+            // 5. Product Filter
+            if (gf.product && !((pay.productOrService && pay.productOrService.toLowerCase().includes(gf.product.toLowerCase().trim())) || (pay.notes && pay.notes.toLowerCase().includes(gf.product.toLowerCase().trim())))) return false;
+
+            // 6. Partner Filter
+            if (gf.partner && !((pay.partnerName && pay.partnerName.toLowerCase().includes(gf.partner.toLowerCase().trim())) || (pay.clientName && pay.clientName.toLowerCase().includes(gf.partner.toLowerCase().trim())))) return false;
+
+            // 8. Payment Status Filter
+            if (gf.paymentStatus && gf.paymentStatus !== 'all') {
+                if (gf.paymentStatus === 'high_value') {
+                    const amt = pay.amountNumeric || pay.amount || 0;
+                    if (amt < 500000) return false;
+                } else if (!pay.paymentStatus.toLowerCase().includes(gf.paymentStatus.toLowerCase())) {
+                    return false;
+                }
+            }
+
+            // 9. Date Filter
+            if (gf.dateFrom) {
+                const pDate = (pay.paymentDate || pay.date || '').substring(0, 10);
+                if (pDate && pDate < gf.dateFrom) return false;
+            }
+            if (gf.dateTo) {
+                const pDate = (pay.paymentDate || pay.date || '').substring(0, 10);
+                if (pDate && pDate > gf.dateTo) return false;
+            }
+
+            // Local PMS Filter
             const matchesQuery = !query || 
                 (pay.clientName && pay.clientName.toLowerCase().includes(query)) ||
                 (pay.invoiceId && pay.invoiceId.toLowerCase().includes(query)) ||
@@ -4266,9 +5093,68 @@ const DisicureMain = {
         // Render Type Filter Pills
         this.renderPartnerTypePills(summary);
 
-        // Filter Partners
-        const query = this.admPartnerState.searchQuery;
+        // Filter Partners with 9-Point Global Filters
+        const gf = this.globalSearchState;
+        const gq = (gf.globalQuery || '').toLowerCase().trim();
+        const query = (this.admPartnerState.searchQuery || '').toLowerCase().trim();
+
         let filtered = allPartners.filter(p => {
+            if (gq) {
+                const matchesGq = 
+                    (p.companyName && p.companyName.toLowerCase().includes(gq)) ||
+                    (p.contactPerson && p.contactPerson.toLowerCase().includes(gq)) ||
+                    (p.partnerType && p.partnerType.toLowerCase().includes(gq)) ||
+                    (p.email && p.email.toLowerCase().includes(gq)) ||
+                    (p.mobile && p.mobile.toLowerCase().includes(gq)) ||
+                    (p.city && p.city.toLowerCase().includes(gq)) ||
+                    (p.state && p.state.toLowerCase().includes(gq)) ||
+                    (p.assignedTerritory && p.assignedTerritory.toLowerCase().includes(gq)) ||
+                    (p.partnerId && p.partnerId.toLowerCase().includes(gq));
+                if (!matchesGq) return false;
+            }
+
+            // 1. Name Filter
+            if (gf.name && !((p.contactPerson && p.contactPerson.toLowerCase().includes(gf.name.toLowerCase().trim())) || (p.companyName && p.companyName.toLowerCase().includes(gf.name.toLowerCase().trim())))) return false;
+
+            // 2. Mobile Filter
+            if (gf.mobile && !((p.mobile && p.mobile.includes(gf.mobile.trim())) || (p.whatsapp && p.whatsapp.includes(gf.mobile.trim())))) return false;
+
+            // 3. Company Filter
+            if (gf.company && !(p.companyName && p.companyName.toLowerCase().includes(gf.company.toLowerCase().trim()))) return false;
+
+            // 4. City Filter
+            if (gf.city && !((p.city && p.city.toLowerCase().includes(gf.city.toLowerCase().trim())) || (p.state && p.state.toLowerCase().includes(gf.city.toLowerCase().trim())) || (p.assignedTerritory && p.assignedTerritory.toLowerCase().includes(gf.city.toLowerCase().trim())))) return false;
+
+            // 5. Product Filter
+            if (gf.product && !((p.assignedTerritory && p.assignedTerritory.toLowerCase().includes(gf.product.toLowerCase().trim())) || (p.commercialTerms && p.commercialTerms.toLowerCase().includes(gf.product.toLowerCase().trim())))) return false;
+
+            // 6. Partner Filter
+            if (gf.partner && !((p.companyName && p.companyName.toLowerCase().includes(gf.partner.toLowerCase().trim())) || (p.partnerType && p.partnerType.toLowerCase().includes(gf.partner.toLowerCase().trim())) || (p.partnerId && p.partnerId.toLowerCase().includes(gf.partner.toLowerCase().trim())))) return false;
+
+            // 7. Lead / Account Status Filter
+            if (gf.leadStatus && gf.leadStatus !== 'all') {
+                const cleanStatus = gf.leadStatus.replace(/[^\w]/g, '').toLowerCase();
+                const pStatus = (p.accountStatus || '').replace(/[^\w]/g, '').toLowerCase();
+                if (!pStatus.includes(cleanStatus)) return false;
+            }
+
+            // 8. Payment Status Filter
+            if (gf.paymentStatus && gf.paymentStatus !== 'all') {
+                if (gf.paymentStatus === 'Pending' && !(p.pendingPaymentNumeric > 0 || (p.pendingPaymentFormatted && !p.pendingPaymentFormatted.includes('All Clear')))) return false;
+                if (gf.paymentStatus === 'Paid' && !(p.pendingPaymentNumeric === 0 || (p.pendingPaymentFormatted && p.pendingPaymentFormatted.includes('All Clear')))) return false;
+            }
+
+            // 9. Date Filter
+            if (gf.dateFrom) {
+                const pDate = (p.createdDate || '').substring(0, 10);
+                if (pDate && pDate < gf.dateFrom) return false;
+            }
+            if (gf.dateTo) {
+                const pDate = (p.createdDate || '').substring(0, 10);
+                if (pDate && pDate > gf.dateTo) return false;
+            }
+
+            // Local Partner Filters
             const matchesQuery = !query ||
                 (p.companyName && p.companyName.toLowerCase().includes(query)) ||
                 (p.contactPerson && p.contactPerson.toLowerCase().includes(query)) ||
@@ -4922,13 +5808,78 @@ const DisicureMain = {
         setElText('cli-kpi-orders', kpis.totalBusinessFormatted);
         setElText('cli-kpi-dues', kpis.totalOutstandingFormatted);
 
-        // 2. Filter & Sort Clients
+        // 2. Filter & Sort Clients with 9-Point Global Filters
+        const gf = this.globalSearchState;
+        const gq = (gf.globalQuery || '').toLowerCase().trim();
         const query = (this.clientState.searchQuery || '').toLowerCase().trim();
         const typeF = this.clientState.typeFilter;
         const statusF = this.clientState.statusFilter;
         const sortF = this.clientState.sortFilter;
 
         let filtered = allClients.filter(c => {
+            if (gq) {
+                const matchesGq = 
+                    (c.companyName && c.companyName.toLowerCase().includes(gq)) ||
+                    (c.contactPerson && c.contactPerson.toLowerCase().includes(gq)) ||
+                    (c.mobile && c.mobile.toLowerCase().includes(gq)) ||
+                    (c.email && c.email.toLowerCase().includes(gq)) ||
+                    (c.id && c.id.toLowerCase().includes(gq)) ||
+                    (c.location && ((c.location.city && c.location.city.toLowerCase().includes(gq)) || (c.location.state && c.location.state.toLowerCase().includes(gq)))) ||
+                    (c.businessType && c.businessType.toLowerCase().includes(gq));
+                if (!matchesGq) return false;
+            }
+
+            // 1. Name Filter
+            if (gf.name && !((c.contactPerson && c.contactPerson.toLowerCase().includes(gf.name.toLowerCase().trim())) || (c.companyName && c.companyName.toLowerCase().includes(gf.name.toLowerCase().trim())))) return false;
+
+            // 2. Mobile Filter
+            if (gf.mobile && !((c.mobile && c.mobile.includes(gf.mobile.trim())) || (c.whatsapp && c.whatsapp.includes(gf.mobile.trim())))) return false;
+
+            // 3. Company Filter
+            if (gf.company && !(c.companyName && c.companyName.toLowerCase().includes(gf.company.toLowerCase().trim()))) return false;
+
+            // 4. City Filter
+            if (gf.city && !(c.location && ((c.location.city && c.location.city.toLowerCase().includes(gf.city.toLowerCase().trim())) || (c.location.state && c.location.state.toLowerCase().includes(gf.city.toLowerCase().trim())) || (c.location.address && c.location.address.toLowerCase().includes(gf.city.toLowerCase().trim()))))) return false;
+
+            // 5. Product Filter
+            if (gf.product) {
+                const prodMatch = (c.productsServices && c.productsServices.some(p => p.name && p.name.toLowerCase().includes(gf.product.toLowerCase().trim()))) ||
+                                  (c.requirements && c.requirements.some(r => (r.specifications && r.specifications.toLowerCase().includes(gf.product.toLowerCase().trim())) || (r.title && r.title.toLowerCase().includes(gf.product.toLowerCase().trim()))));
+                if (!prodMatch) return false;
+            }
+
+            // 6. Partner Filter
+            if (gf.partner && !((c.businessType && c.businessType.toLowerCase().includes(gf.partner.toLowerCase().trim())) || (c.accountManager && c.accountManager.toLowerCase().includes(gf.partner.toLowerCase().trim())))) return false;
+
+            // 7. Lead / Account Status Filter
+            if (gf.leadStatus && gf.leadStatus !== 'all') {
+                const cleanStatus = gf.leadStatus.replace(/[^\w]/g, '').toLowerCase();
+                const accStatus = (c.accountStatus || '').replace(/[^\w]/g, '').toLowerCase();
+                if (!accStatus.includes(cleanStatus) && cleanStatus !== 'converted' && cleanStatus !== 'new') return false;
+            }
+
+            // 8. Payment Status Filter
+            if (gf.paymentStatus && gf.paymentStatus !== 'all') {
+                if (gf.paymentStatus === 'Pending') {
+                    const hasPending = c.payments && c.payments.some(p => p.status === 'Pending' || p.status === 'Unpaid');
+                    if (!hasPending && !c.creditLimit) return false;
+                } else if (gf.paymentStatus === 'Paid') {
+                    const allPaid = !c.payments || c.payments.every(p => p.status === 'Paid');
+                    if (!allPaid) return false;
+                }
+            }
+
+            // 9. Date Filter
+            if (gf.dateFrom) {
+                const cDate = (c.createdDate || c.orders?.[0]?.date || '').substring(0, 10);
+                if (cDate && cDate < gf.dateFrom) return false;
+            }
+            if (gf.dateTo) {
+                const cDate = (c.createdDate || c.orders?.[0]?.date || '').substring(0, 10);
+                if (cDate && cDate > gf.dateTo) return false;
+            }
+
+            // Local Client Tab Filters
             const matchesQuery = !query ||
                 (c.companyName && c.companyName.toLowerCase().includes(query)) ||
                 (c.contactPerson && c.contactPerson.toLowerCase().includes(query)) ||
@@ -6020,13 +6971,42 @@ const DisicureMain = {
         setElText('adm-prod-kpi-featured', featured);
         setElText('adm-prod-kpi-cats', uniqueCategories);
 
-        // 2. Filter & Sort Products
+        // 2. Filter & Sort Products with 9-Point Global Filters
+        const gf = this.globalSearchState;
+        const gq = (gf.globalQuery || '').toLowerCase().trim();
         const query = (this.productState.searchQuery || '').toLowerCase().trim();
         const catF = this.productState.categoryFilter;
         const statusF = this.productState.statusFilter;
         const sortF = this.productState.sortFilter;
 
         let filtered = allProducts.filter(p => {
+            if (gq) {
+                const matchesGq = 
+                    (p.name && p.name.toLowerCase().includes(gq)) ||
+                    (p.composition && p.composition.toLowerCase().includes(gq)) ||
+                    (p.therapeuticCategory && p.therapeuticCategory.toLowerCase().includes(gq)) ||
+                    (p.packaging && p.packaging.toLowerCase().includes(gq)) ||
+                    (p.details && p.details.toLowerCase().includes(gq)) ||
+                    (p.category && p.category.toLowerCase().includes(gq)) ||
+                    (p.id && p.id.toLowerCase().includes(gq)) ||
+                    (p.slug && p.slug.toLowerCase().includes(gq));
+                if (!matchesGq) return false;
+            }
+
+            // 1. Name Filter
+            if (gf.name && !(p.name && p.name.toLowerCase().includes(gf.name.toLowerCase().trim()))) return false;
+
+            // 5. Product Filter
+            if (gf.product && !((p.name && p.name.toLowerCase().includes(gf.product.toLowerCase().trim())) || (p.composition && p.composition.toLowerCase().includes(gf.product.toLowerCase().trim())) || (p.category && p.category.toLowerCase().includes(gf.product.toLowerCase().trim())))) return false;
+
+            // 7. Status Filter
+            if (gf.leadStatus && gf.leadStatus !== 'all') {
+                const cleanStatus = gf.leadStatus.replace(/[^\w]/g, '').toLowerCase();
+                const pStatus = (p.status || '').replace(/[^\w]/g, '').toLowerCase();
+                if (!pStatus.includes(cleanStatus)) return false;
+            }
+
+            // Local Product Filters
             const matchesQuery = !query ||
                 (p.name && p.name.toLowerCase().includes(query)) ||
                 (p.composition && p.composition.toLowerCase().includes(query)) ||

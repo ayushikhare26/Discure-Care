@@ -1831,6 +1831,246 @@ const DisicureRouter = {
                 </div>
             </section>
 
+            <!-- ========================================================================= -->
+            <!-- GLOBAL SEARCH & 9-DIMENSIONAL MULTI-FILTER COMMAND BAR (Module 16) -->
+            <!-- ========================================================================= -->
+            <section class="bg-gradient-to-b from-[#0d2346] to-[#0a1b36] border-b border-blue-900/80 text-white py-3.5 px-4 lg:px-8 shadow-inner relative z-30">
+                <div class="max-w-7xl mx-auto space-y-3">
+                    <!-- Top Row: Omnibar Search + Quick Actions -->
+                    <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                        <!-- Global Search Input with Auto-Flyout Results -->
+                        <div class="relative flex-1">
+                            <div class="relative flex items-center">
+                                <span class="absolute left-3.5 text-blue-400 pointer-events-none">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                </span>
+                                <input 
+                                    type="text" 
+                                    id="global-omnibar-search" 
+                                    oninput="window.DisicureMain.handleGlobalSearchInput(event)"
+                                    onfocus="window.DisicureMain.openGlobalSearchFlyout()"
+                                    placeholder="🔎 Global Search: Type Name, Mobile, Company, City, Product, Partner, Status (or press Ctrl+K)..." 
+                                    class="w-full bg-[#051124] border border-blue-600/50 hover:border-cyan-400 focus:border-cyan-400 text-white placeholder-blue-300/60 text-xs sm:text-sm rounded-xl pl-10 pr-24 py-2.5 outline-none transition-all shadow-inner font-medium">
+                                
+                                <div class="absolute right-2.5 flex items-center gap-1.5">
+                                    <button type="button" id="btn-clear-global-search" onclick="window.DisicureMain.clearGlobalSearch()" class="hidden p-1 text-gray-400 hover:text-white rounded-md transition-colors text-xs font-bold" title="Clear Search">
+                                        ✕
+                                    </button>
+                                    <kbd class="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono font-bold bg-blue-950 border border-blue-700/60 text-blue-300 rounded shadow-sm">Ctrl+K</kbd>
+                                </div>
+                            </div>
+
+                            <!-- Instant Live Omnisearch Categorized Results Dropdown Flyout -->
+                            <div id="global-search-flyout" class="hidden absolute top-full left-0 right-0 mt-2 bg-[#091830] border border-blue-600/60 rounded-2xl shadow-2xl overflow-hidden z-[999] max-h-[500px] flex flex-col backdrop-blur-xl">
+                                <!-- Populated dynamically by window.DisicureMain.renderGlobalSearchResults() -->
+                            </div>
+                        </div>
+
+                        <!-- Filter Controls & Preset Badges -->
+                        <div class="flex items-center gap-2 shrink-0">
+                            <!-- Toggle Advanced 9-Filters Panel -->
+                            <button 
+                                type="button" 
+                                id="btn-toggle-global-filters" 
+                                onclick="window.DisicureMain.toggleGlobalFilterDrawer()" 
+                                class="px-4 py-2.5 bg-blue-600 hover:bg-cyan-600 text-white text-xs font-extrabold rounded-xl shadow transition-all flex items-center gap-2 border border-blue-400/40">
+                                <svg class="w-4 h-4 text-cyan-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                                <span>9-Point Filters</span>
+                                <span id="global-filter-badge-count" class="hidden px-2 py-0.5 rounded-full bg-amber-400 text-slate-900 text-[10px] font-black">0</span>
+                            </button>
+
+                            <!-- Reset All Button -->
+                            <button 
+                                type="button" 
+                                onclick="window.DisicureMain.resetAllGlobalFilters()" 
+                                class="px-3.5 py-2.5 bg-slate-800 hover:bg-rose-900/60 text-gray-300 hover:text-rose-200 text-xs font-bold rounded-xl border border-slate-700 transition-all flex items-center gap-1.5" 
+                                title="Reset All 9 Filters">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                <span>Reset</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Filter Preset Chips -->
+                    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] font-bold scrollbar-thin">
+                        <span class="text-blue-400 text-[10px] uppercase tracking-wider font-extrabold mr-1 shrink-0">Presets:</span>
+                        <button onclick="window.DisicureMain.applyFilterPreset('all')" class="gpreset-chip px-2.5 py-1 rounded-lg bg-blue-500 text-white hover:bg-blue-400 transition-colors whitespace-nowrap">🌐 All Records</button>
+                        <button onclick="window.DisicureMain.applyFilterPreset('new_leads')" class="gpreset-chip px-2.5 py-1 rounded-lg bg-slate-800 text-blue-200 hover:bg-slate-700 transition-colors whitespace-nowrap">🟢 New Enquiries</button>
+                        <button onclick="window.DisicureMain.applyFilterPreset('pending_payments')" class="gpreset-chip px-2.5 py-1 rounded-lg bg-slate-800 text-amber-300 hover:bg-slate-700 transition-colors whitespace-nowrap">💰 Pending Payments</button>
+                        <button onclick="window.DisicureMain.applyFilterPreset('hospital_clients')" class="gpreset-chip px-2.5 py-1 rounded-lg bg-slate-800 text-rose-300 hover:bg-slate-700 transition-colors whitespace-nowrap">🏥 Hospital Chains</button>
+                        <button onclick="window.DisicureMain.applyFilterPreset('active_partners')" class="gpreset-chip px-2.5 py-1 rounded-lg bg-slate-800 text-purple-300 hover:bg-slate-700 transition-colors whitespace-nowrap">🤝 Active Partners</button>
+                        <button onclick="window.DisicureMain.applyFilterPreset('disimol_products')" class="gpreset-chip px-2.5 py-1 rounded-lg bg-slate-800 text-cyan-300 hover:bg-slate-700 transition-colors whitespace-nowrap">💊 Disimol Formulations</button>
+                        <button onclick="window.DisicureMain.applyFilterPreset('today')" class="gpreset-chip px-2.5 py-1 rounded-lg bg-slate-800 text-emerald-300 hover:bg-slate-700 transition-colors whitespace-nowrap">📅 Today's Activity</button>
+                    </div>
+
+                    <!-- Expandable Global Multi-Filter Console (All 9 Criteria) -->
+                    <div id="global-filters-console" class="hidden bg-[#061427]/95 border border-blue-500/40 rounded-2xl p-4 sm:p-5 mt-2 space-y-4 backdrop-blur-md shadow-2xl transition-all">
+                        <div class="flex items-center justify-between border-b border-blue-800/60 pb-3">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                                <h3 class="text-xs sm:text-sm font-extrabold text-white tracking-wide uppercase">
+                                    ⚡ 9-Point Multi-Filter System
+                                </h3>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span id="global-filter-match-count" class="text-xs text-cyan-300 font-bold">Matching: 0 records</span>
+                                <button type="button" onclick="window.DisicureMain.toggleGlobalFilterDrawer()" class="text-gray-400 hover:text-white p-1">✕</button>
+                            </div>
+                        </div>
+
+                        <!-- 9-Point Filter Grid -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3">
+                            <!-- 1. 🔎 Name Filter -->
+                            <div>
+                                <label class="block text-[10px] font-bold text-blue-300 uppercase tracking-wider mb-1">🔎 Name (Contact / Lead / Client / Partner)</label>
+                                <input 
+                                    type="text" 
+                                    id="gfilter-name" 
+                                    oninput="window.DisicureMain.handleFilterChange('name', this.value)"
+                                    placeholder="e.g. Rajesh, Dr. Arvind, Anand..." 
+                                    class="w-full bg-[#0a1d38] border border-blue-700/60 rounded-lg p-2 text-xs text-white placeholder-gray-400 focus:border-cyan-400 outline-none">
+                            </div>
+
+                            <!-- 2. 📱 Mobile Filter -->
+                            <div>
+                                <label class="block text-[10px] font-bold text-blue-300 uppercase tracking-wider mb-1">📱 Mobile / WhatsApp</label>
+                                <input 
+                                    type="text" 
+                                    id="gfilter-mobile" 
+                                    oninput="window.DisicureMain.handleFilterChange('mobile', this.value)"
+                                    placeholder="e.g. 98112, 98201, 98765..." 
+                                    class="w-full bg-[#0a1d38] border border-blue-700/60 rounded-lg p-2 text-xs text-white placeholder-gray-400 focus:border-cyan-400 outline-none font-mono">
+                            </div>
+
+                            <!-- 3. 🏢 Company Filter -->
+                            <div>
+                                <label class="block text-[10px] font-bold text-blue-300 uppercase tracking-wider mb-1">🏢 Company / Hospital / Enterprise</label>
+                                <input 
+                                    type="text" 
+                                    id="gfilter-company" 
+                                    oninput="window.DisicureMain.handleFilterChange('company', this.value)"
+                                    placeholder="e.g. Maxcure, Medilink, Apollo..." 
+                                    class="w-full bg-[#0a1d38] border border-blue-700/60 rounded-lg p-2 text-xs text-white placeholder-gray-400 focus:border-cyan-400 outline-none">
+                            </div>
+
+                            <!-- 4. 📍 City / Location Filter -->
+                            <div>
+                                <label class="block text-[10px] font-bold text-blue-300 uppercase tracking-wider mb-1">📍 City / Location</label>
+                                <input 
+                                    type="text" 
+                                    id="gfilter-city" 
+                                    oninput="window.DisicureMain.handleFilterChange('city', this.value)"
+                                    placeholder="e.g. Agra, Mumbai, Lucknow, Dehradun..." 
+                                    class="w-full bg-[#0a1d38] border border-blue-700/60 rounded-lg p-2 text-xs text-white placeholder-gray-400 focus:border-cyan-400 outline-none">
+                            </div>
+
+                            <!-- 5. 📦 Product / Formulation Filter -->
+                            <div>
+                                <label class="block text-[10px] font-bold text-blue-300 uppercase tracking-wider mb-1">📦 Product / Formulation</label>
+                                <select 
+                                    id="gfilter-product" 
+                                    onchange="window.DisicureMain.handleFilterChange('product', this.value)"
+                                    class="w-full bg-[#0a1d38] border border-blue-700/60 rounded-lg p-2 text-xs text-white focus:border-cyan-400 outline-none font-medium">
+                                    <option value="">All Products & Formulations</option>
+                                    <option value="DISIMOL-SP">DISIMOL-SP Tablets</option>
+                                    <option value="DISIZOLE-DSR">DISIZOLE-DSR Capsules</option>
+                                    <option value="Bons Cure">Bons Cure Tablets</option>
+                                    <option value="DISICEF-1000">DISICEF-1000 Injections</option>
+                                    <option value="DISIVOL-AQ">DISIVOL-AQ Injections</option>
+                                    <option value="DISIVIT-M">DISIVIT-M Capsules</option>
+                                    <option value="DISIMOL-P">DISIMOL-P Tablets</option>
+                                    <option value="DISIPOD-200">DISIPOD-200 Tablets</option>
+                                </select>
+                            </div>
+
+                            <!-- 6. 👤 Partner / Channel Filter -->
+                            <div>
+                                <label class="block text-[10px] font-bold text-blue-300 uppercase tracking-wider mb-1">👤 Partner / Lead Source</label>
+                                <select 
+                                    id="gfilter-partner" 
+                                    onchange="window.DisicureMain.handleFilterChange('partner', this.value)"
+                                    class="w-full bg-[#0a1d38] border border-blue-700/60 rounded-lg p-2 text-xs text-white focus:border-cyan-400 outline-none font-medium">
+                                    <option value="">All Partners & Origin Channels</option>
+                                    <option value="Medilink">Medilink Pharma Network</option>
+                                    <option value="Apollo">Apollo Hospital Procurement</option>
+                                    <option value="Apex">Apex Healthcare Media</option>
+                                    <option value="Gujarat">Gujarat Pharma Distributor</option>
+                                    <option value="Website">Website Direct Inquiries</option>
+                                    <option value="WhatsApp">WhatsApp Inbound</option>
+                                </select>
+                            </div>
+
+                            <!-- 7. 📊 Lead Status Filter -->
+                            <div>
+                                <label class="block text-[10px] font-bold text-blue-300 uppercase tracking-wider mb-1">📊 Lead Status</label>
+                                <select 
+                                    id="gfilter-lead-status" 
+                                    onchange="window.DisicureMain.handleFilterChange('leadStatus', this.value)"
+                                    class="w-full bg-[#0a1d38] border border-blue-700/60 rounded-lg p-2 text-xs text-white focus:border-cyan-400 outline-none font-bold">
+                                    <option value="all">All Lead Statuses</option>
+                                    <option value="🟢 New">🟢 New</option>
+                                    <option value="🔵 Contacted">🔵 Contacted</option>
+                                    <option value="🟡 Follow-up">🟡 Follow-up</option>
+                                    <option value="🟠 Negotiation">🟠 Negotiation</option>
+                                    <option value="🟣 Converted">🟣 Converted</option>
+                                    <option value="🔴 Lost">🔴 Lost</option>
+                                    <option value="⚫ On Hold">⚫ On Hold</option>
+                                </select>
+                            </div>
+
+                            <!-- 8. 💰 Payment Status Filter -->
+                            <div>
+                                <label class="block text-[10px] font-bold text-blue-300 uppercase tracking-wider mb-1">💰 Payment Status</label>
+                                <select 
+                                    id="gfilter-payment-status" 
+                                    onchange="window.DisicureMain.handleFilterChange('paymentStatus', this.value)"
+                                    class="w-full bg-[#0a1d38] border border-blue-700/60 rounded-lg p-2 text-xs text-white focus:border-cyan-400 outline-none font-bold">
+                                    <option value="all">All Payment Statuses</option>
+                                    <option value="Paid">🟢 Paid / Settled</option>
+                                    <option value="Pending">🟡 Pending / Unpaid</option>
+                                    <option value="Partially Paid">🟠 Partially Paid</option>
+                                    <option value="Overdue">🔴 Overdue</option>
+                                    <option value="high_value">💎 High-Value (>₹5,00,000)</option>
+                                </select>
+                            </div>
+
+                            <!-- 9. 📅 Date Filter -->
+                            <div>
+                                <label class="block text-[10px] font-bold text-blue-300 uppercase tracking-wider mb-1">📅 Date Range (From - To)</label>
+                                <div class="flex items-center gap-1.5">
+                                    <input 
+                                        type="date" 
+                                        id="gfilter-date-from" 
+                                        onchange="window.DisicureMain.handleFilterChange('dateFrom', this.value)"
+                                        class="w-1/2 bg-[#0a1d38] border border-blue-700/60 rounded-lg p-1.5 text-xs text-white focus:border-cyan-400 outline-none">
+                                    <span class="text-blue-400 text-xs">to</span>
+                                    <input 
+                                        type="date" 
+                                        id="gfilter-date-to" 
+                                        onchange="window.DisicureMain.handleFilterChange('dateTo', this.value)"
+                                        class="w-1/2 bg-[#0a1d38] border border-blue-700/60 rounded-lg p-1.5 text-xs text-white focus:border-cyan-400 outline-none">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Action Footer -->
+                        <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-blue-800/60 text-xs">
+                            <div id="global-breakdown-stats" class="flex items-center gap-3 text-blue-200/90 flex-wrap">
+                                <!-- Populated dynamically: X Leads • Y Clients • Z Partners • P Products • Q Payments -->
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="window.DisicureMain.resetAllGlobalFilters()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-gray-300 rounded-lg font-bold transition-colors">
+                                    Reset All Filters
+                                </button>
+                                <button type="button" onclick="window.DisicureMain.applyGlobalFiltersAndClose()" class="px-5 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white rounded-lg font-extrabold shadow-md transition-all">
+                                    Apply & Close Console
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- ================================================================= -->
             <!-- TAB 1: EXECUTIVE DASHBOARD (10 KPI Metrics + 6 Interactive Charts) -->
             <!-- ================================================================= -->
