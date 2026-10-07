@@ -3617,6 +3617,144 @@ const DisicureRouter = {
                             </div>
                         </div>
 
+                        <!-- Module 22: Enterprise PostgreSQL Cloud Database & BaaS Engine -->
+                        <div class="bg-gradient-to-r from-slate-900 via-navy-950 to-slate-900 border border-slate-800 rounded-3xl p-6 lg:p-8 text-white shadow-2xl space-y-6">
+                            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                                            MODULE 22: LIVE BACKEND & DATABASE ENGINE
+                                        </span>
+                                        <span id="backend-status-pill" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                            <span>PostgreSQL Active</span>
+                                        </span>
+                                    </div>
+                                    <h3 class="text-xl font-black text-white">Enterprise Scalable Backend Architecture</h3>
+                                    <p class="text-xs text-slate-400">Netlify Static Frontend decoupled from Managed Cloud PostgreSQL (Supabase / AWS RDS / Node.js) with Row-Level Security (RLS).</p>
+                                </div>
+
+                                <div class="flex flex-wrap items-center gap-2.5">
+                                    <button onclick="window.DisicureMain.handleViewPostgresSQL()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5">
+                                        <span>📜 View PostgreSQL DDL</span>
+                                    </button>
+                                    <button onclick="window.DisicureMain.handleDownloadMigrationSQL()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5">
+                                        <span>💾 Export .sql Migration</span>
+                                    </button>
+                                    <button onclick="window.DisicureMain.handleSyncLocalToCloudDB()" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-extrabold rounded-xl transition-all shadow-lg shadow-cyan-500/20 flex items-center gap-1.5">
+                                        <span>🚀 Sync Local to Cloud DB</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Backend Provider & Credentials Configuration -->
+                            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                                <div class="lg:col-span-7 bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                                            <span>⚙️ Cloud Database Connection Parameters</span>
+                                        </h4>
+                                        <span class="text-[10px] text-slate-400">JWT / PostgREST Handshake</span>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Backend Technology Stack</label>
+                                            <select id="backend-provider-select" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs font-bold text-white focus:border-cyan-400">
+                                                <option value="supabase">Supabase (PostgreSQL 15 + RLS + PostgREST) - Recommended</option>
+                                                <option value="custom_rest">Custom Node.js / NestJS + PostgreSQL REST API</option>
+                                                <option value="local">Local Storage Fallback Mode (Demo / Offline)</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Database Region</label>
+                                            <input type="text" id="backend-region-input" value="ap-south-1 (Mumbai, India)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs font-medium text-slate-300">
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">API Endpoint URL</label>
+                                        <input type="text" id="backend-url-input" value="https://xyzcompany.supabase.co" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs font-mono text-cyan-300 focus:border-cyan-400">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Public Anon / Client API Key</label>
+                                        <input type="password" id="backend-key-input" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5eiIsInJvbGUiOiJhbm9uIn0" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs font-mono text-slate-300 focus:border-cyan-400">
+                                    </div>
+
+                                    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                                        <button onclick="window.DisicureMain.handleSaveBackendConfig()" class="w-full sm:w-auto px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold rounded-lg transition-colors">
+                                            💾 Save Settings
+                                        </button>
+                                        <button onclick="window.DisicureMain.handleTestDatabaseConnection()" class="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-md">
+                                            <span>⚡ Test Live DB Handshake</span>
+                                        </button>
+                                    </div>
+
+                                    <div id="backend-test-result" class="hidden p-3 rounded-lg text-xs font-mono border"></div>
+                                </div>
+
+                                <!-- Right: Database Table Ledger & RLS Isolation Status -->
+                                <div class="lg:col-span-5 bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                                            <span>🛡️ Schema Tables & RLS Status</span>
+                                        </h4>
+                                        <span class="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">8 Core Tables</span>
+                                    </div>
+
+                                    <div class="space-y-2 text-xs">
+                                        <div class="flex items-center justify-between p-2.5 bg-slate-900/80 rounded-lg border border-slate-800">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-cyan-400 font-mono font-bold">public.profiles</span>
+                                                <span class="text-[10px] text-slate-400">(Users/Auth)</span>
+                                            </div>
+                                            <span class="text-[10px] font-bold text-emerald-400">RLS Active</span>
+                                        </div>
+                                        <div class="flex items-center justify-between p-2.5 bg-slate-900/80 rounded-lg border border-slate-800">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-cyan-400 font-mono font-bold">public.partners</span>
+                                                <span class="text-[10px] text-slate-400">(Franchisees)</span>
+                                            </div>
+                                            <span class="text-[10px] font-bold text-emerald-400">RLS Active</span>
+                                        </div>
+                                        <div class="flex items-center justify-between p-2.5 bg-slate-900/80 rounded-lg border border-slate-800">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-cyan-400 font-mono font-bold">public.leads</span>
+                                                <span class="text-[10px] text-slate-400">(CRM Inquiries)</span>
+                                            </div>
+                                            <span class="text-[10px] font-bold text-emerald-400">RLS Active</span>
+                                        </div>
+                                        <div class="flex items-center justify-between p-2.5 bg-slate-900/80 rounded-lg border border-slate-800">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-cyan-400 font-mono font-bold">public.payments</span>
+                                                <span class="text-[10px] text-slate-400">(Transactions)</span>
+                                            </div>
+                                            <span class="text-[10px] font-bold text-emerald-400">RLS Active</span>
+                                        </div>
+                                        <div class="flex items-center justify-between p-2.5 bg-slate-900/80 rounded-lg border border-slate-800">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-cyan-400 font-mono font-bold">public.inventory_batches</span>
+                                                <span class="text-[10px] text-slate-400">(OMS Stock)</span>
+                                            </div>
+                                            <span class="text-[10px] font-bold text-emerald-400">Admin Only</span>
+                                        </div>
+                                        <div class="flex items-center justify-between p-2.5 bg-slate-900/80 rounded-lg border border-slate-800">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-cyan-400 font-mono font-bold">public.audit_logs</span>
+                                                <span class="text-[10px] text-slate-400">(Compliance)</span>
+                                            </div>
+                                            <span class="text-[10px] font-bold text-amber-400">Append Only</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="p-3 bg-cyan-950/40 rounded-xl border border-cyan-800/40 text-[11px] text-cyan-200">
+                                        💡 <strong>Multi-Tenant Partner Isolation:</strong> Every partner query automatically applies <code class="bg-cyan-900/50 px-1 py-0.5 rounded text-cyan-100">partner_id = auth.uid()</code> at the database kernel level so no partner can ever access another partner's records.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Live Pub/Sub Event Bus Diagnostic Feed -->
                         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-white shadow-xl space-y-4">
                             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -5816,6 +5954,43 @@ const DisicureRouter = {
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+
+            <!-- ========================================================================= -->
+            <!-- BACKEND & DATABASE SQL SCHEMA VIEWER / EXPORTER MODAL (Module 22)        -->
+            <!-- ========================================================================= -->
+            <div id="backend-sql-modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+                <div class="absolute inset-0 bg-navy-950/80 backdrop-blur-sm" onclick="window.DisicureMain.closeBackendSQLModal()"></div>
+                <div class="relative bg-slate-900 border border-slate-700 rounded-3xl p-6 lg:p-8 max-w-4xl w-full mx-4 shadow-2xl z-10 max-h-[92vh] overflow-hidden flex flex-col text-white">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">🐘</span>
+                            <div>
+                                <h3 class="text-base font-extrabold text-white" id="backend-sql-modal-title">PostgreSQL DDL Database Schema & RLS Policies</h3>
+                                <p class="text-xs text-slate-400">Production-ready SQL migration for Supabase, AWS RDS, Neon, or Railway PostgreSQL.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="window.DisicureMain.copyBackendSQLToClipboard()" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1">
+                                <span>📋 Copy SQL</span>
+                            </button>
+                            <button onclick="window.DisicureMain.closeBackendSQLModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto bg-slate-950 rounded-xl p-4 border border-slate-800">
+                        <pre id="backend-sql-modal-code" class="text-xs font-mono text-cyan-300 leading-relaxed whitespace-pre-wrap select-all"></pre>
+                    </div>
+
+                    <div class="pt-4 mt-2 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                        <span>Compatible with Supabase SQL Editor, psql, DBeaver, Prisma & TypeORM.</span>
+                        <button onclick="window.DisicureMain.closeBackendSQLModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-lg transition-colors">
+                            Close
+                        </button>
+                    </div>
                 </div>
             </div>
             `;

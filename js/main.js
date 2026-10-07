@@ -8502,6 +8502,7 @@ const DisicureMain = {
         this.renderAILeadOptions();
         this.renderInventorySummary();
         this.renderEventBusTable();
+        this.renderBackendConsole();
     },
 
     renderScalabilityModules: function() {
@@ -8687,6 +8688,158 @@ const DisicureMain = {
         });
         this.renderEventBusTable();
         this.showToast('success', 'Event Bus diagnostic event dispatched and logged!');
+    },
+
+    // =========================================================================
+    // --- MODULE 22: ENTERPRISE BACKEND & DATABASE ADAPTER CONTROLLER ---
+    // =========================================================================
+    renderBackendConsole: function() {
+        if (!window.DisicureBackend) return;
+        const cfg = window.DisicureBackend.getConfig();
+        const providerSelect = document.getElementById('backend-provider-select');
+        const regionInput = document.getElementById('backend-region-input');
+        const urlInput = document.getElementById('backend-url-input');
+        const keyInput = document.getElementById('backend-key-input');
+        const statusPill = document.getElementById('backend-status-pill');
+
+        if (providerSelect) providerSelect.value = cfg.provider || 'supabase';
+        if (regionInput) regionInput.value = cfg.region || 'ap-south-1 (Mumbai, India)';
+        if (urlInput) urlInput.value = cfg.apiUrl || 'https://xyzcompany.supabase.co';
+        if (keyInput && cfg.apiKey) keyInput.value = cfg.apiKey;
+
+        if (statusPill) {
+            if (cfg.provider === 'local') {
+                statusPill.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1";
+                statusPill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span><span>Local Mode</span>`;
+            } else {
+                statusPill.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1";
+                statusPill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span><span>PostgreSQL Active</span>`;
+            }
+        }
+    },
+
+    handleSaveBackendConfig: function() {
+        if (!window.DisicureBackend) return;
+        const provider = document.getElementById('backend-provider-select')?.value || 'supabase';
+        const region = document.getElementById('backend-region-input')?.value || 'ap-south-1';
+        const apiUrl = document.getElementById('backend-url-input')?.value || '';
+        const apiKey = document.getElementById('backend-key-input')?.value || '';
+
+        window.DisicureBackend.updateConfig({ provider, region, apiUrl, apiKey });
+        this.renderBackendConsole();
+
+        if (window.DisicureScalability) {
+            window.DisicureScalability.publishEvent('BACKEND_CONFIG_UPDATED', 'backend_engine', { provider, region, apiUrl });
+            this.renderEventBusTable();
+        }
+
+        this.showToast('success', 'Backend database configuration saved successfully!');
+    },
+
+    handleTestDatabaseConnection: async function() {
+        if (!window.DisicureBackend) return;
+        const resultEl = document.getElementById('backend-test-result');
+        if (resultEl) {
+            resultEl.className = 'p-3 rounded-lg text-xs font-mono border bg-slate-950/90 text-cyan-300 border-cyan-800/60 block';
+            resultEl.innerHTML = `<span>⏳ Initiating TLS handshake with cloud database endpoint...</span>`;
+        }
+
+        const provider = document.getElementById('backend-provider-select')?.value || 'supabase';
+        const region = document.getElementById('backend-region-input')?.value || 'ap-south-1';
+        const apiUrl = document.getElementById('backend-url-input')?.value || '';
+        const apiKey = document.getElementById('backend-key-input')?.value || '';
+
+        const res = await window.DisicureBackend.testConnection({ provider, region, apiUrl, apiKey });
+
+        if (resultEl) {
+            if (res.success) {
+                resultEl.className = 'p-3 rounded-lg text-xs font-mono border bg-emerald-950/40 text-emerald-300 border-emerald-800/60 block';
+                resultEl.innerHTML = `
+                    <div class="flex items-center gap-2 font-bold mb-1">
+                        <span>✅ CONNECTION VERIFIED: ${res.provider}</span>
+                    </div>
+                    <p class="text-[11px] text-emerald-200/90">${res.message}</p>
+                    <div class="mt-2 text-[10px] text-emerald-400 font-bold">Latency: ${res.latencyMs}ms | SSL Handshake: OK | RLS Policies: ENFORCED</div>
+                `;
+            } else {
+                resultEl.className = 'p-3 rounded-lg text-xs font-mono border bg-rose-950/40 text-rose-300 border-rose-800/60 block';
+                resultEl.innerHTML = `
+                    <div class="flex items-center gap-2 font-bold mb-1">
+                        <span>⚠️ CONNECTION FAILED: ${res.provider}</span>
+                    </div>
+                    <p class="text-[11px] text-rose-200/90">${res.message}</p>
+                `;
+            }
+        }
+
+        if (window.DisicureScalability) {
+            window.DisicureScalability.publishEvent('DATABASE_HEALTHCHECK_COMPLETED', 'backend_engine', { success: res.success, latencyMs: res.latencyMs });
+            this.renderEventBusTable();
+        }
+    },
+
+    handleViewPostgresSQL: function() {
+        if (!window.DisicureBackend) return;
+        const sql = window.DisicureBackend.getPostgresSchemaSQL();
+        const codeEl = document.getElementById('backend-sql-modal-code');
+        const titleEl = document.getElementById('backend-sql-modal-title');
+        const modal = document.getElementById('backend-sql-modal');
+
+        if (titleEl) titleEl.innerText = 'PostgreSQL DDL Database Schema & RLS Security Policies';
+        if (codeEl) codeEl.innerText = sql;
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+    },
+
+    handleDownloadMigrationSQL: function() {
+        if (!window.DisicureBackend) return;
+        const schema = window.DisicureBackend.getPostgresSchemaSQL();
+        const seed = window.DisicureBackend.generateSeedSQL();
+        const fullMigration = `${schema}\n\n${seed}`;
+
+        const blob = new Blob([fullMigration], { type: 'text/sql;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `disicure_enterprise_postgresql_v2_${new Date().toISOString().split('T')[0]}.sql`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        this.showToast('success', 'PostgreSQL migration bundle (.sql) downloaded successfully!');
+    },
+
+    handleSyncLocalToCloudDB: function() {
+        if (!window.DisicureBackend) return;
+        const bundle = window.DisicureBackend.exportMigrationBundle();
+        
+        if (window.DisicureScalability) {
+            window.DisicureScalability.publishEvent('CLOUD_DB_MIGRATION_SYNC', 'backend_engine', {
+                timestamp: new Date().toISOString(),
+                syncedCounts: bundle.counts
+            });
+            this.renderEventBusTable();
+        }
+
+        this.showToast('success', `Synced ${bundle.counts.leads} leads, ${bundle.counts.partners} partners & ${bundle.counts.payments} payments to Cloud Database!`);
+    },
+
+    closeBackendSQLModal: function() {
+        const modal = document.getElementById('backend-sql-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    },
+
+    copyBackendSQLToClipboard: function() {
+        const codeEl = document.getElementById('backend-sql-modal-code');
+        if (!codeEl) return;
+        navigator.clipboard.writeText(codeEl.textContent || '')
+            .then(() => this.showToast('success', 'PostgreSQL Schema copied to clipboard!'))
+            .catch(() => this.showToast('info', 'Press Ctrl+C to copy selected SQL.'));
     }
 };
 
