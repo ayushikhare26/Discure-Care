@@ -2615,6 +2615,60 @@ const DisicureMain = {
         this.renderPartnersDirectory(data.partnerPerformance);
         this.renderTeamDirectory(data.teamMembers);
         this.renderFinancialsAging(data.pendingAging);
+        this.renderDashboardRecentLeads();
+    },
+
+    // Render Recent Inbound Leads Table on Executive Dashboard
+    renderDashboardRecentLeads: function() {
+        const tbody = document.getElementById('dash-recent-leads-tbody');
+        if (!tbody || !window.DisicureLeads) return;
+        const allLeads = window.DisicureLeads.getAllLeads() || [];
+        const recent = allLeads.slice(0, 5);
+
+        if (recent.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="p-8 text-center text-xs text-gray-500 font-medium">
+                        No recent inquiries logged in system.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = recent.map(l => {
+            const statusBadge = l.leadStatus.includes('New') 
+                ? '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">🟢 New</span>'
+                : l.leadStatus.includes('Converted')
+                ? '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-200">🟣 Converted</span>'
+                : l.leadStatus.includes('Follow')
+                ? '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">🟡 Follow-up</span>'
+                : `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">${l.leadStatus}</span>`;
+
+            return `
+                <tr class="border-b border-gray-100 hover:bg-slate-50/80 transition-colors text-xs font-medium">
+                    <td class="p-3.5 whitespace-nowrap">
+                        <span class="font-extrabold text-navy-950 block">${l.name}</span>
+                        <span class="text-[10px] text-gray-400 font-mono">${l.leadId} • ${l.createdDate ? l.createdDate.substring(0, 10) : ''}</span>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="font-bold text-blue-900 block truncate max-w-xs">${l.productOrService || 'Pharmaceutical Supply'}</span>
+                        <span class="text-[10px] text-gray-500">${l.businessType || 'Healthcare'} • ${l.city || 'India'}</span>
+                    </td>
+                    <td class="p-3.5 whitespace-nowrap font-mono font-bold text-gray-700">
+                        ${l.mobile || '—'}
+                    </td>
+                    <td class="p-3.5 whitespace-nowrap">
+                        ${statusBadge}
+                    </td>
+                    <td class="p-3.5 text-right whitespace-nowrap">
+                        <button onclick="window.DisicureMain.openLeadDrawer('${l.leadId}')" class="px-3 py-1 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white rounded-lg text-xs font-bold transition-all shadow-sm">
+                            Manage &rarr;
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
     },
 
     // Chart 1: Monthly Leads (Bar Chart SVG)

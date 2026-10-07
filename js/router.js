@@ -2097,107 +2097,165 @@ const DisicureRouter = {
             <!-- ================================================================= -->
             <!-- TAB 1: EXECUTIVE DASHBOARD (10 KPI Metrics + 6 Interactive Charts) -->
             <!-- ================================================================= -->
+            <!-- ================================================================= -->
+            <!-- TAB 1: EXECUTIVE DASHBOARD (10 KPI Metrics + 6 Charts + Live Feed) -->
+            <!-- ================================================================= -->
             <div id="tab-dashboard" class="admin-tab-content block">
+                <!-- Executive Pharmaceutical Corporate Health Bar -->
+                <section class="bg-gradient-to-r from-blue-950 via-slate-900 to-[#071d3d] text-white py-4 px-4 lg:px-8 border-b border-blue-900/60 shadow-md">
+                    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 flex items-center justify-center text-lg">
+                                💊
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-sm font-extrabold text-white tracking-wide uppercase">Corporate Pharmaceutical Overview</h3>
+                                    <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-400/30 flex items-center gap-1">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                        WHO-GMP Compliant Operations
+                                    </span>
+                                </div>
+                                <p class="text-[11px] text-blue-200/70 font-medium">Real-time telemetry across B2B formulation pipeline, commercial distribution, and collections.</p>
+                            </div>
+                        </div>
+
+                        <!-- 4 Health Micro-Badges -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs w-full md:w-auto">
+                            <div class="bg-blue-950/70 border border-blue-800/60 px-3 py-1.5 rounded-xl text-center">
+                                <span class="text-[10px] text-blue-300 font-bold block uppercase">⚡ Avg Response SLA</span>
+                                <span class="text-xs font-extrabold text-white">1.8 Hours</span>
+                            </div>
+                            <div class="bg-blue-950/70 border border-blue-800/60 px-3 py-1.5 rounded-xl text-center">
+                                <span class="text-[10px] text-emerald-300 font-bold block uppercase">🚚 Batch Dispatch</span>
+                                <span class="text-xs font-extrabold text-emerald-400">96.4% On-Time</span>
+                            </div>
+                            <div class="bg-blue-950/70 border border-blue-800/60 px-3 py-1.5 rounded-xl text-center">
+                                <span class="text-[10px] text-purple-300 font-bold block uppercase">⭐ Quality Index</span>
+                                <span class="text-xs font-extrabold text-purple-300">99.8% QC Score</span>
+                            </div>
+                            <div class="bg-blue-950/70 border border-blue-800/60 px-3 py-1.5 rounded-xl text-center">
+                                <span class="text-[10px] text-amber-300 font-bold block uppercase">🤝 Partner Nodes</span>
+                                <span class="text-xs font-extrabold text-amber-300">42 Districts</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 <!-- 10 Primary Metric KPI Cards -->
                 <section class="py-6 bg-slate-50 border-b border-gray-200">
-                    <div class="max-w-7xl mx-auto px-4 lg:px-8">
-                        <div class="mb-3 flex items-center justify-between">
-                            <span class="text-xs font-extrabold text-gray-500 uppercase tracking-wider">Business Key Performance Indicators</span>
-                            <span class="text-[11px] text-blue-600 font-bold">Real-time Pipeline Sync</span>
+                    <div class="max-w-7xl mx-auto px-4 lg:px-8 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-extrabold text-navy-950 uppercase tracking-wider">Business Key Performance Indicators</span>
+                                <span class="text-[10px] font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Live ERP Stream</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-xs font-bold text-gray-500">
+                                <span>Updated: Just Now</span>
+                                <button onclick="window.DisicureMain.renderDashboardAnalytics()" class="p-1 hover:text-blue-600 rounded transition-colors" title="Refresh Dashboard">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                </button>
+                            </div>
                         </div>
                         
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5">
                             <!-- 1. 📊 Total Leads -->
-                            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                            <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all hover:border-blue-300 group">
                                 <div class="flex items-center justify-between text-[11px] font-extrabold text-gray-500 uppercase tracking-wider">
                                     <span>📊 Total Leads</span>
+                                    <span class="p-1 rounded-lg bg-blue-50 text-blue-600 text-xs">📋</span>
                                 </div>
-                                <div class="text-2xl font-extrabold text-navy-950 mt-2" id="kpi-total-leads">0</div>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-navy-950 mt-2" id="kpi-total-leads">0</div>
                                 <span class="text-[10px] text-gray-400 font-medium">All capture channels</span>
                             </div>
 
                             <!-- 2. 📈 New Leads -->
-                            <div class="bg-white p-4 rounded-xl border border-emerald-200 shadow-sm hover:shadow-md transition-shadow bg-emerald-50/15">
+                            <div class="bg-white p-4 rounded-2xl border border-emerald-200 shadow-sm hover:shadow-md transition-all hover:border-emerald-400 bg-emerald-50/15 group">
                                 <div class="flex items-center justify-between text-[11px] font-extrabold text-emerald-700 uppercase tracking-wider">
                                     <span>📈 New Leads</span>
-                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                                 </div>
-                                <div class="text-2xl font-extrabold text-emerald-600 mt-2" id="kpi-new-leads">0</div>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-emerald-600 mt-2" id="kpi-new-leads">0</div>
                                 <span class="text-[10px] text-emerald-600 font-medium">Awaiting first contact</span>
                             </div>
 
                             <!-- 3. 📞 Follow-ups -->
-                            <div class="bg-white p-4 rounded-xl border border-amber-200 shadow-sm hover:shadow-md transition-shadow bg-amber-50/15">
+                            <div class="bg-white p-4 rounded-2xl border border-amber-200 shadow-sm hover:shadow-md transition-all hover:border-amber-400 bg-amber-50/15 group">
                                 <div class="flex items-center justify-between text-[11px] font-extrabold text-amber-700 uppercase tracking-wider">
                                     <span>📞 Follow-ups</span>
                                     <span class="w-2 h-2 rounded-full bg-amber-500"></span>
                                 </div>
-                                <div class="text-2xl font-extrabold text-amber-600 mt-2" id="kpi-followup-leads">0</div>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-amber-600 mt-2" id="kpi-followup-leads">0</div>
                                 <span class="text-[10px] text-amber-600 font-medium">Action scheduled</span>
                             </div>
 
                             <!-- 4. ✅ Converted Leads -->
-                            <div class="bg-white p-4 rounded-xl border border-purple-200 shadow-sm hover:shadow-md transition-shadow bg-purple-50/15">
+                            <div class="bg-white p-4 rounded-2xl border border-purple-200 shadow-sm hover:shadow-md transition-all hover:border-purple-400 bg-purple-50/15 group">
                                 <div class="flex items-center justify-between text-[11px] font-extrabold text-purple-700 uppercase tracking-wider">
                                     <span>✅ Converted</span>
                                     <span class="w-2 h-2 rounded-full bg-purple-500"></span>
                                 </div>
-                                <div class="text-2xl font-extrabold text-purple-600 mt-2" id="kpi-converted-leads">0</div>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-purple-600 mt-2" id="kpi-converted-leads">0</div>
                                 <span class="text-[10px] text-purple-600 font-medium" id="kpi-conversion-rate">0% Won</span>
                             </div>
 
                             <!-- 5. ❌ Lost Leads -->
-                            <div class="bg-white p-4 rounded-xl border border-rose-200 shadow-sm hover:shadow-md transition-shadow bg-rose-50/15">
+                            <div class="bg-white p-4 rounded-2xl border border-rose-200 shadow-sm hover:shadow-md transition-all hover:border-rose-400 bg-rose-50/15 group">
                                 <div class="flex items-center justify-between text-[11px] font-extrabold text-rose-700 uppercase tracking-wider">
                                     <span>❌ Lost Leads</span>
                                     <span class="w-2 h-2 rounded-full bg-rose-500"></span>
                                 </div>
-                                <div class="text-2xl font-extrabold text-rose-600 mt-2" id="kpi-lost-leads">0</div>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-rose-600 mt-2" id="kpi-lost-leads">0</div>
                                 <span class="text-[10px] text-rose-600 font-medium">Closed lost</span>
                             </div>
 
                             <!-- 6. 💰 Total Business Value -->
-                            <div class="bg-white p-4 rounded-xl border border-blue-200 shadow-sm hover:shadow-md transition-shadow bg-blue-50/15">
+                            <div class="bg-white p-4 rounded-2xl border border-blue-200 shadow-sm hover:shadow-md transition-all hover:border-blue-400 bg-blue-50/15 group">
                                 <div class="flex items-center justify-between text-[11px] font-extrabold text-blue-700 uppercase tracking-wider">
                                     <span>💰 Business Value</span>
+                                    <span class="text-xs">💼</span>
                                 </div>
-                                <div class="text-2xl font-extrabold text-blue-700 mt-2" id="kpi-business-value">₹48,50,000</div>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-blue-700 mt-2" id="kpi-business-value">₹48,50,000</div>
                                 <span class="text-[10px] text-blue-600 font-medium">Total pipeline & orders</span>
                             </div>
 
                             <!-- 7. 💳 Payments Received -->
-                            <div class="bg-white p-4 rounded-xl border border-teal-200 shadow-sm hover:shadow-md transition-shadow bg-teal-50/15">
+                            <div class="bg-white p-4 rounded-2xl border border-teal-200 shadow-sm hover:shadow-md transition-all hover:border-teal-400 bg-teal-50/15 group">
                                 <div class="flex items-center justify-between text-[11px] font-extrabold text-teal-700 uppercase tracking-wider">
                                     <span>💳 Received</span>
+                                    <span class="text-xs">🏦</span>
                                 </div>
-                                <div class="text-2xl font-extrabold text-teal-700 mt-2" id="kpi-payments-received">₹32,80,000</div>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-teal-700 mt-2" id="kpi-payments-received">₹32,80,000</div>
                                 <span class="text-[10px] text-teal-600 font-medium">Cleared collections</span>
                             </div>
 
                             <!-- 8. ⏳ Pending Payments -->
-                            <div class="bg-white p-4 rounded-xl border border-orange-200 shadow-sm hover:shadow-md transition-shadow bg-orange-50/15">
+                            <div class="bg-white p-4 rounded-2xl border border-orange-200 shadow-sm hover:shadow-md transition-all hover:border-orange-400 bg-orange-50/15 group">
                                 <div class="flex items-center justify-between text-[11px] font-extrabold text-orange-700 uppercase tracking-wider">
                                     <span>⏳ Pending</span>
+                                    <span class="text-xs">⏳</span>
                                 </div>
-                                <div class="text-2xl font-extrabold text-orange-600 mt-2" id="kpi-pending-payments">₹15,70,000</div>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-orange-600 mt-2" id="kpi-pending-payments">₹15,70,000</div>
                                 <span class="text-[10px] text-orange-600 font-medium">Outstanding receivables</span>
                             </div>
 
                             <!-- 9. 🤝 Active Partners -->
-                            <div class="bg-white p-4 rounded-xl border border-indigo-200 shadow-sm hover:shadow-md transition-shadow bg-indigo-50/15">
+                            <div class="bg-white p-4 rounded-2xl border border-indigo-200 shadow-sm hover:shadow-md transition-all hover:border-indigo-400 bg-indigo-50/15 group">
                                 <div class="flex items-center justify-between text-[11px] font-extrabold text-indigo-700 uppercase tracking-wider">
                                     <span>🤝 Active Partners</span>
+                                    <span class="text-xs">🌐</span>
                                 </div>
-                                <div class="text-2xl font-extrabold text-indigo-700 mt-2" id="kpi-active-partners">42</div>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-indigo-700 mt-2" id="kpi-active-partners">42</div>
                                 <span class="text-[10px] text-indigo-600 font-medium">Distributors & PCD</span>
                             </div>
 
                             <!-- 10. 👥 Team Members -->
-                            <div class="bg-white p-4 rounded-xl border border-cyan-200 shadow-sm hover:shadow-md transition-shadow bg-cyan-50/15">
+                            <div class="bg-white p-4 rounded-2xl border border-cyan-200 shadow-sm hover:shadow-md transition-all hover:border-cyan-400 bg-cyan-50/15 group">
                                 <div class="flex items-center justify-between text-[11px] font-extrabold text-cyan-800 uppercase tracking-wider">
                                     <span>👥 Team Members</span>
+                                    <span class="text-xs">👥</span>
                                 </div>
-                                <div class="text-2xl font-extrabold text-cyan-800 mt-2" id="kpi-team-members">8</div>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-cyan-800 mt-2" id="kpi-team-members">8</div>
                                 <span class="text-[10px] text-cyan-700 font-medium">Representatives & Staff</span>
                             </div>
                         </div>
@@ -2211,7 +2269,7 @@ const DisicureRouter = {
                         <!-- Row 1: Monthly Leads (Bar/Trend) & Conversion Funnel -->
                         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                             <!-- Chart 1: Monthly Leads -->
-                            <div class="lg:col-span-7 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                            <div class="lg:col-span-7 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4 hover:shadow-md transition-shadow">
                                 <div class="flex items-center justify-between border-b border-gray-100 pb-3">
                                     <div>
                                         <h3 class="text-base font-extrabold text-navy-950 flex items-center gap-2">
@@ -2228,7 +2286,7 @@ const DisicureRouter = {
                             </div>
 
                             <!-- Chart 2: Conversion Funnel & Status Breakdown -->
-                            <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                            <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4 hover:shadow-md transition-shadow">
                                 <div class="flex items-center justify-between border-b border-gray-100 pb-3">
                                     <div>
                                         <h3 class="text-base font-extrabold text-navy-950 flex items-center gap-2">
@@ -2247,7 +2305,7 @@ const DisicureRouter = {
                         <!-- Row 2: Monthly Revenue & Pending Payments Aging -->
                         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                             <!-- Chart 3: Monthly Revenue Trajectory -->
-                            <div class="lg:col-span-7 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                            <div class="lg:col-span-7 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4 hover:shadow-md transition-shadow">
                                 <div class="flex items-center justify-between border-b border-gray-100 pb-3">
                                     <div>
                                         <h3 class="text-base font-extrabold text-navy-950 flex items-center gap-2">
@@ -2263,7 +2321,7 @@ const DisicureRouter = {
                             </div>
 
                             <!-- Chart 4: Pending Payments Aging Breakdown -->
-                            <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                            <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4 hover:shadow-md transition-shadow">
                                 <div class="flex items-center justify-between border-b border-gray-100 pb-3">
                                     <div>
                                         <h3 class="text-base font-extrabold text-navy-950 flex items-center gap-2">
@@ -2282,7 +2340,7 @@ const DisicureRouter = {
                         <!-- Row 3: Lead Sources Distribution & Partner Performance Leaderboard -->
                         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                             <!-- Chart 5: Lead Sources Distribution -->
-                            <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                            <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4 hover:shadow-md transition-shadow">
                                 <div class="flex items-center justify-between border-b border-gray-100 pb-3">
                                     <div>
                                         <h3 class="text-base font-extrabold text-navy-950 flex items-center gap-2">
@@ -2297,7 +2355,7 @@ const DisicureRouter = {
                             </div>
 
                             <!-- Chart 6: Partner Performance Leaderboard -->
-                            <div class="lg:col-span-7 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                            <div class="lg:col-span-7 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4 hover:shadow-md transition-shadow">
                                 <div class="flex items-center justify-between border-b border-gray-100 pb-3">
                                     <div>
                                         <h3 class="text-base font-extrabold text-navy-950 flex items-center gap-2">
@@ -2310,6 +2368,41 @@ const DisicureRouter = {
                                 <div id="chart-partner-performance" class="w-full overflow-x-auto">
                                     <!-- Populated dynamically via table in main.js -->
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Row 4: Live Recent Enquiries Activity Feed & Quick Action Station -->
+                        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                        <h3 class="text-base font-extrabold text-navy-950">📋 Live Recent Inbound Inquiries & Procurement Demands</h3>
+                                    </div>
+                                    <p class="text-xs text-gray-500 font-normal mt-0.5">Most recent B2B product requirements captured via contact forms, WhatsApp CTA, and catalog interactions.</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="window.DisicureMain.switchAdminTab('tab-leads')" class="px-3.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-bold transition-colors">
+                                        Open Full LMS Pipeline &rarr;
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse" id="dash-recent-leads-table">
+                                    <thead>
+                                        <tr class="bg-slate-50 text-[11px] font-extrabold text-gray-600 uppercase tracking-wider border-b border-gray-200">
+                                            <th class="p-3.5">Prospect & Lead ID</th>
+                                            <th class="p-3.5">Product & Segment</th>
+                                            <th class="p-3.5">Contact Number</th>
+                                            <th class="p-3.5">Status</th>
+                                            <th class="p-3.5 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dash-recent-leads-tbody">
+                                        <!-- Populated dynamically via window.DisicureMain.renderDashboardRecentLeads() -->
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
