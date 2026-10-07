@@ -1249,6 +1249,8 @@ const DisicureMain = {
         } else if (tabId === 'tab-security') {
             this.renderSecurityAuditTable();
             this.renderSecurityDashboardOverview();
+        } else if (tabId === 'tab-scalability') {
+            this.renderScalabilityHub();
         }
     },
 
@@ -8489,6 +8491,202 @@ const DisicureMain = {
             window.DisicureSecurity.exportAuditLogsCSV();
             this.showToast('success', 'Security & Activity Audit Log CSV exported successfully!');
         }
+    },
+
+    // =========================================================================
+    // --- ENTERPRISE SCALABILITY & EXTENSION HUB (MODULE 21) ---
+    // =========================================================================
+    renderScalabilityHub: function() {
+        if (!window.DisicureScalability) return;
+        this.renderScalabilityModules();
+        this.renderAILeadOptions();
+        this.renderInventorySummary();
+        this.renderEventBusTable();
+    },
+
+    renderScalabilityModules: function() {
+        if (!window.DisicureScalability) return;
+        const grid = document.getElementById('scalability-modules-grid');
+        if (!grid) return;
+
+        const modules = window.DisicureScalability.getAllModules();
+        grid.innerHTML = modules.map(m => `
+            <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all hover:border-indigo-300 flex flex-col justify-between space-y-3 group">
+                <div>
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">${m.icon}</span>
+                            <span class="text-[10px] font-mono font-bold text-gray-400 uppercase">${m.version}</span>
+                        </div>
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${m.badgeColor}">${m.status}</span>
+                    </div>
+                    <h4 class="text-sm font-extrabold text-navy-950">${m.name}</h4>
+                    <span class="inline-block text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded uppercase tracking-wider my-1.5">${m.category}</span>
+                    <p class="text-xs text-gray-600 font-normal leading-relaxed mt-1">${m.description}</p>
+                </div>
+
+                <div class="pt-3 border-t border-gray-100 space-y-2">
+                    <div class="text-[10px] text-gray-400 font-mono truncate">
+                        Endpoints: <code class="text-indigo-600 font-bold">${m.endpoints[0]}</code>
+                    </div>
+                    <div class="flex items-center justify-between pt-1">
+                        <span class="text-[10px] text-gray-500 font-medium">Events: ${m.events.length} Topics</span>
+                        <button onclick="window.DisicureMain.inspectModuleAPI('${m.id}')" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:underline">
+                            Inspect Specs &rarr;
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    renderAILeadOptions: function() {
+        const select = document.getElementById('ai-lead-select');
+        if (!select || !window.DisicureLeads) return;
+
+        const leads = window.DisicureLeads.getAllLeads() || [];
+        select.innerHTML = leads.map(l => `
+            <option value="${l.leadId}">${l.name} (${l.productOrService || 'General'}) — ${l.leadId}</option>
+        `).join('');
+
+        if (leads.length > 0) {
+            this.handleAILeadSelected(leads[0].leadId);
+        }
+    },
+
+    handleAILeadSelected: function(leadId) {
+        if (!window.DisicureLeads || !window.DisicureScalability) return;
+        const lead = window.DisicureLeads.getAllLeads().find(l => l.leadId === leadId);
+        if (!lead) return;
+
+        const ai = window.DisicureScalability.calculateAILeadScore(lead);
+        const scoreEl = document.getElementById('ai-score-display');
+        const badgeEl = document.getElementById('ai-tier-badge');
+        const recoEl = document.getElementById('ai-recommendation-text');
+
+        if (scoreEl) scoreEl.innerText = `${ai.score} / 100`;
+        if (badgeEl) {
+            badgeEl.innerText = ai.tier;
+            badgeEl.className = `px-3 py-1 rounded-full text-xs font-black ${ai.bgBadge}`;
+        }
+        if (recoEl) recoEl.innerText = ai.recommendation;
+    },
+
+    triggerAISmartReply: function() {
+        const select = document.getElementById('ai-lead-select');
+        const leadId = select ? select.value : '';
+        const lead = window.DisicureLeads?.getAllLeads().find(l => l.leadId === leadId);
+        
+        if (lead) {
+            this.openWhatsAppModal(lead.mobile, 'custom_msg', `*Disicure Care AI Auto-Reply Protocol*\n\nDear ${lead.name},\nThank you for reaching out regarding *${lead.productOrService}*. Our AI dispatch priority has fast-tracked your inquiry directly to our VP of Commercial Institutional Sales. We will contact you shortly.`);
+            this.showToast('success', `AI Smart Reply drafted for ${lead.name}!`);
+        } else {
+            this.showToast('info', 'Please select a lead to auto-draft an AI reply.');
+        }
+    },
+
+    handleSimulatePayment: function() {
+        if (!window.DisicureScalability) return;
+        const amount = parseFloat(document.getElementById('sim-gateway-amount')?.value || 500000);
+        const customer = document.getElementById('sim-gateway-customer')?.value || 'Medilink Pharma Network';
+        const mode = document.getElementById('sim-gateway-mode')?.value || 'Razorpay Virtual Account';
+
+        const result = window.DisicureScalability.simulateGatewayCheckout(amount, customer, mode);
+        this.renderEventBusTable();
+        this.showToast('success', `⚡ Gateway Payment Captured! Order: ${result.orderId}, Ref: ${result.transactionRef}`);
+    },
+
+    renderInventorySummary: function() {
+        if (!window.DisicureScalability) return;
+        const tbody = document.getElementById('inventory-summary-tbody');
+        if (!tbody) return;
+
+        const inventory = window.DisicureScalability.getInventorySummary();
+        tbody.innerHTML = inventory.map(i => `
+            <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="p-3.5">
+                    <span class="font-extrabold text-navy-950 block">${i.sku}</span>
+                    <span class="text-[10px] text-gray-400 font-mono">Formulation ID: SKU-${i.lotNo.slice(-3)}</span>
+                </td>
+                <td class="p-3.5 font-mono font-bold text-gray-700">${i.lotNo}</td>
+                <td class="p-3.5">
+                    <span class="font-extrabold text-navy-950">${i.stock.toLocaleString()} ${i.unit}</span>
+                </td>
+                <td class="p-3.5 whitespace-nowrap">
+                    <span class="text-gray-700 block">Mfg: ${i.mfgDate}</span>
+                    <span class="text-[10px] text-gray-500 font-bold">Exp: ${i.expDate}</span>
+                </td>
+                <td class="p-3.5 whitespace-nowrap">
+                    <span class="font-bold block ${i.daysLeft < 400 ? 'text-amber-700' : 'text-emerald-700'}">${i.status}</span>
+                    <span class="text-[10px] text-gray-400 font-mono">${i.daysLeft} Days Shelf Life Remaining</span>
+                </td>
+                <td class="p-3.5 text-right whitespace-nowrap">
+                    <button onclick="window.DisicureMain.showToast('info', 'Batch ${i.lotNo} allocated to manufacturing reserve ledger.')" class="px-3 py-1 bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white rounded text-xs font-bold transition-all">
+                        Allocate &rarr;
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    },
+
+    renderEventBusTable: function() {
+        if (!window.DisicureScalability) return;
+        const tbody = document.getElementById('event-bus-tbody');
+        if (!tbody) return;
+
+        const events = window.DisicureScalability.getAllEvents();
+        tbody.innerHTML = events.slice(0, 8).map(e => `
+            <tr class="hover:bg-slate-800/60 transition-colors">
+                <td class="p-2.5 font-bold text-cyan-400">${e.eventId}</td>
+                <td class="p-2.5 text-gray-400">${e.timestamp}</td>
+                <td class="p-2.5 font-bold text-white">${e.topic}</td>
+                <td class="p-2.5 text-indigo-300">${e.sourceModule}</td>
+                <td class="p-2.5 text-[10px] text-slate-300 font-mono truncate max-w-md">
+                    ${JSON.stringify(e.payload)}
+                </td>
+            </tr>
+        `).join('');
+    },
+
+    inspectModuleAPI: function(moduleId) {
+        if (!window.DisicureScalability) return;
+        const mod = window.DisicureScalability.getModuleById(moduleId);
+        if (!mod) return;
+
+        alert(`🚀 Module Specification: ${mod.name} (${mod.version})\n\nCategory: ${mod.category}\nStatus: ${mod.status}\n\nREST API Endpoints:\n• ${mod.endpoints.join('\n• ')}\n\nPub/Sub Events:\n• ${mod.events.join('\n• ')}\n\nDescription:\n${mod.description}`);
+    },
+
+    exportScalabilityBlueprintJSON: function() {
+        if (!window.DisicureScalability) return;
+        const data = {
+            company: 'Disicure Care Pvt. Ltd.',
+            architectureVersion: 'v2.4-Enterprise',
+            totalModules: 12,
+            modules: window.DisicureScalability.getAllModules(),
+            eventBusTopics: window.DisicureScalability.getAllEvents()
+        };
+
+        const jsonStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data, null, 2));
+        const link = document.createElement('a');
+        link.setAttribute('href', jsonStr);
+        link.setAttribute('download', `Disicure_Enterprise_Architecture_Blueprint_${new Date().toISOString().split('T')[0]}.json`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        this.showToast('success', 'Enterprise Scalability Architecture Blueprint exported to JSON!');
+    },
+
+    triggerEventBusDiagnostic: function() {
+        if (!window.DisicureScalability) return;
+        window.DisicureScalability.publishEvent('SYSTEM_DIAGNOSTIC_PING', 'core_kernel', {
+            status: 'HEALTHY',
+            memoryUsage: 'Optimal',
+            activeModules: 12,
+            timestamp: new Date().toISOString()
+        });
+        this.renderEventBusTable();
+        this.showToast('success', 'Event Bus diagnostic event dispatched and logged!');
     }
 };
 
@@ -8497,3 +8695,4 @@ window.DisicureMain = DisicureMain;
 
 // Initialize on load
 DisicureMain.init();
+

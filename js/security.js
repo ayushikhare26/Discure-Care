@@ -236,6 +236,9 @@ const DisicureSecurity = {
                 case 'security':
                 case 'rbac_control':
                     return perms.rbac_control === true;
+                case 'tab-scalability':
+                case 'scalability':
+                    return true;
                 default:
                     if (perms[moduleKey] !== undefined) {
                         return perms[moduleKey] === true;

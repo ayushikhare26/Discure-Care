@@ -1850,6 +1850,9 @@ const DisicureRouter = {
                         <button onclick="window.DisicureMain.switchAdminTab('tab-security')" id="btn-tab-security" class="admin-tab-btn px-4 py-2 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-blue-200 transition-all whitespace-nowrap flex items-center gap-2">
                             <span>🔐 Security & Audit Logs</span>
                         </button>
+                        <button onclick="window.DisicureMain.switchAdminTab('tab-scalability')" id="btn-tab-scalability" class="admin-tab-btn px-4 py-2 rounded-lg bg-indigo-900/60 hover:bg-indigo-800 text-indigo-200 transition-all whitespace-nowrap flex items-center gap-2 border border-indigo-500/40">
+                            <span>🚀 Future Scalability Hub</span>
+                        </button>
                     </div>
                 </div>
             </section>
@@ -3412,6 +3415,231 @@ const DisicureRouter = {
                                     </thead>
                                     <tbody id="sec-audit-tbody">
                                         <!-- Populated dynamically via window.DisicureMain.renderSecurityAuditTable() -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+            </div>
+
+            <!-- ================================================================= -->
+            <!-- TAB 10: ENTERPRISE SCALABILITY & EXTENSION HUB (MODULE 21)        -->
+            <!-- ================================================================= -->
+            <div id="tab-scalability" class="admin-tab-content hidden">
+                <section class="py-8 bg-white min-h-[75vh]">
+                    <div class="max-w-7xl mx-auto px-4 lg:px-8 space-y-8">
+                        
+                        <!-- Header & Actions Bar -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+                            <div>
+                                <h2 class="text-xl font-extrabold text-navy-950 flex items-center gap-2">
+                                    <span>🚀 Enterprise Scalability, Future Modules & API Ecosystem</span>
+                                    <span class="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-100">Zero-Rewrite Modular Architecture</span>
+                                </h2>
+                                <p class="text-xs text-gray-500 font-normal mt-0.5">Decoupled microservice-ready architecture prepared for plug-and-play integrations across CRM, OMS, Automated Invoicing, Warehouse Inventory, WhatsApp & Email Workflows, Field Force Tracking, Automated Commissions, Payment Gateways, PCD Subscriptions, BI Analytics, and AI Lead Intelligence.</p>
+                            </div>
+                            <div class="flex items-center gap-2.5 flex-wrap">
+                                <button onclick="window.DisicureMain.exportScalabilityBlueprintJSON()" class="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-gray-700 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 border border-gray-200 shadow-sm">
+                                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                    <span>Export Architecture Blueprint</span>
+                                </button>
+                                <button onclick="window.DisicureMain.triggerEventBusDiagnostic()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-2">
+                                    <span>⚡ Event Bus Diagnostic</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 4 Scalability Summary KPI Metric Cards -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="bg-indigo-50/40 border border-indigo-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-indigo-700 uppercase tracking-wider block">📦 Modular Extension Blocks</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-navy-950 mt-1.5">12 Enterprise Modules</div>
+                                <p class="text-[11px] text-indigo-700 font-medium mt-1">Zero-rewrite plug-and-play ready</p>
+                            </div>
+                            <div class="bg-emerald-50/40 border border-emerald-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-emerald-700 uppercase tracking-wider block">⚡ Pub/Sub Event Bus</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-emerald-600 mt-1.5">Active & Wired</div>
+                                <p class="text-[11px] text-emerald-700 font-medium mt-1">Decoupled microservices messaging</p>
+                            </div>
+                            <div class="bg-amber-50/40 border border-amber-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-amber-700 uppercase tracking-wider block">🧠 AI Intelligence Engine</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-amber-600 mt-1.5">0-100 Lead Scoring</div>
+                                <p class="text-[11px] text-amber-700 font-medium mt-1">Intent matrix & auto-replies</p>
+                            </div>
+                            <div class="bg-blue-50/40 border border-blue-100 p-5 rounded-2xl">
+                                <span class="text-[11px] font-extrabold text-blue-700 uppercase tracking-wider block">💳 Gateway & Cloud Hooks</span>
+                                <div class="text-2xl lg:text-3xl font-extrabold text-blue-700 mt-1.5">REST / Webhooks</div>
+                                <p class="text-[11px] text-blue-600 font-medium mt-1">Razorpay, WhatsApp API, AWS SES</p>
+                            </div>
+                        </div>
+
+                        <!-- 12 Future Scalability Modules Architecture Grid -->
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-sm font-extrabold text-navy-950 uppercase tracking-wide flex items-center gap-2">
+                                    <span>🧩 Next-Gen Microservice Architecture Registry</span>
+                                    <span class="text-[10px] font-bold bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full">12 Future-Proof Extension Modules</span>
+                                </h3>
+                                <span class="text-xs text-gray-500">Decoupled data contracts & API endpoints</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="scalability-modules-grid">
+                                <!-- Populated dynamically by window.DisicureMain.renderScalabilityModules() -->
+                            </div>
+                        </div>
+
+                        <!-- Live Interactive Future Extension Sandboxes -->
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-4 border-t border-gray-100">
+                            
+                            <!-- Left: Live AI Lead Scoring Simulator -->
+                            <div class="lg:col-span-6 bg-slate-50 border border-gray-200 rounded-2xl p-6 space-y-4">
+                                <div class="flex items-center justify-between border-b border-gray-200 pb-3">
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="text-2xl">🧠</span>
+                                        <div>
+                                            <h3 class="text-sm font-extrabold text-navy-950">AI Lead Scoring & Intent Simulator</h3>
+                                            <p class="text-[11px] text-gray-500">Heuristic + LLM algorithm predicting conversion probability & next action.</p>
+                                        </div>
+                                    </div>
+                                    <span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">Module 12: AI Core</span>
+                                </div>
+
+                                <div class="space-y-3">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Select Lead from CRM Database to Score:</label>
+                                        <select id="ai-lead-select" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-bold text-gray-800 focus:border-indigo-500" onchange="window.DisicureMain.handleAILeadSelected(this.value)">
+                                            <!-- Populated dynamically -->
+                                        </select>
+                                    </div>
+
+                                    <div id="ai-lead-result-card" class="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Calculated AI Intent Score</span>
+                                                <div class="text-3xl font-black text-navy-950 mt-0.5" id="ai-score-display">94 / 100</div>
+                                            </div>
+                                            <span id="ai-tier-badge" class="px-3 py-1 rounded-full text-xs font-black bg-rose-100 text-rose-800 border border-rose-300">
+                                                🔥 High-Value Hot Prospect
+                                            </span>
+                                        </div>
+
+                                        <div class="p-3 bg-blue-50/60 rounded-lg border border-blue-100 text-xs">
+                                            <span class="font-bold text-blue-900 block mb-0.5">🤖 AI Next-Best-Action Recommendation:</span>
+                                            <p class="text-blue-800 text-[11px]" id="ai-recommendation-text">⚡ Urgent Priority: Direct call by Senior Sales Manager + dispatch instant WhatsApp quotation within 2 hours.</p>
+                                        </div>
+
+                                        <div class="pt-2 flex items-center justify-end gap-2">
+                                            <button onclick="window.DisicureMain.triggerAISmartReply()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
+                                                <span>✨ Auto-Draft WhatsApp Reply</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Live Payment Gateway & Virtual Account Simulator -->
+                            <div class="lg:col-span-6 bg-slate-50 border border-gray-200 rounded-2xl p-6 space-y-4">
+                                <div class="flex items-center justify-between border-b border-gray-200 pb-3">
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="text-2xl">💳</span>
+                                        <div>
+                                            <h3 class="text-sm font-extrabold text-navy-950">Unified Payment Gateway Sandbox</h3>
+                                            <p class="text-[11px] text-gray-500">Simulate Razorpay, UPI Smart QR, and Virtual Account Webhook capture.</p>
+                                        </div>
+                                    </div>
+                                    <span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">Module 9: Gateway API</span>
+                                </div>
+
+                                <div class="space-y-3">
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Simulated Invoice Amount (₹)</label>
+                                            <input type="number" id="sim-gateway-amount" value="500000" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-extrabold text-navy-950">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Client / Partner Name</label>
+                                            <input type="text" id="sim-gateway-customer" value="Medilink Pharma Network" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs font-bold text-gray-800">
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">Payment Channel / Protocol</label>
+                                        <select id="sim-gateway-mode" class="w-full bg-white border border-gray-200 rounded-lg p-2 text-xs font-medium">
+                                            <option value="Razorpay Virtual Account (RTGS/NEFT)">Razorpay Virtual Account (RTGS / NEFT Direct Settlement)</option>
+                                            <option value="Dynamic UPI QR Intent">Dynamic UPI QR Intent (PhonePe, GPay, Paytm)</option>
+                                            <option value="Corporate Credit Card / Netbanking">Corporate Netbanking & Commercial Credit Card</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="pt-2 flex items-center justify-between">
+                                        <span class="text-[11px] text-gray-400 font-mono">Status: Ready to Dispatch Event</span>
+                                        <button id="btn-simulate-gateway-pay" onclick="window.DisicureMain.handleSimulatePayment()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
+                                            <span>⚡ Simulate Gateway Capture</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Warehouse Stock & Expiry Table (Inventory Module 4 Simulation) -->
+                        <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-4">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="text-2xl">🏭</span>
+                                    <div>
+                                        <h3 class="text-base font-extrabold text-navy-950">Warehouse Inventory, Batch Allocations & Expiry Monitor</h3>
+                                        <p class="text-xs text-gray-500 font-normal">Real-time stock ledger with lot-level aging, WHO-GMP release holds, and automated reorder triggers.</p>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100">
+                                    Module 4: OMS / Inventory Wired
+                                </span>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse text-xs">
+                                    <thead>
+                                        <tr class="bg-slate-50 text-[11px] font-extrabold text-gray-600 uppercase tracking-wider border-b border-gray-200">
+                                            <th class="p-3.5">Pharmaceutical SKU & Molecule</th>
+                                            <th class="p-3.5">Batch / Lot No.</th>
+                                            <th class="p-3.5">Available Stock</th>
+                                            <th class="p-3.5">Mfg / Expiry Date</th>
+                                            <th class="p-3.5">Shelf Life Status</th>
+                                            <th class="p-3.5 text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="inventory-summary-tbody" class="divide-y divide-gray-100 font-medium">
+                                        <!-- Populated dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Live Pub/Sub Event Bus Diagnostic Feed -->
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-white shadow-xl space-y-4">
+                            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                                    <h3 class="text-sm font-extrabold text-white">📡 Decoupled Pub/Sub Event Bus & Microservices Stream</h3>
+                                </div>
+                                <span class="text-[10px] text-cyan-300 font-mono font-bold">Standard Cloud Webhook JSON Ready</span>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse text-xs font-mono">
+                                    <thead>
+                                        <tr class="text-[10px] text-gray-400 uppercase tracking-wider border-b border-slate-800">
+                                            <th class="p-2.5">Event ID</th>
+                                            <th class="p-2.5">Timestamp</th>
+                                            <th class="p-2.5">Topic</th>
+                                            <th class="p-2.5">Source Module</th>
+                                            <th class="p-2.5">Payload Data (JSON Preview)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="event-bus-tbody" class="divide-y divide-slate-800 text-[11px] text-slate-300">
+                                        <!-- Populated dynamically -->
                                     </tbody>
                                 </table>
                             </div>
